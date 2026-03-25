@@ -1,0 +1,71 @@
+'use client'
+
+import { useQuery } from '@tanstack/react-query'
+import { ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
+import * as Sentry from '@sentry/nextjs'
+
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { FlightForm } from '@/components/flights/flight-form'
+import { getAircraftList } from '../actions'
+
+export default function NewFlightPage() {
+  const aircraftQuery = useQuery({
+    queryKey: ['aircraft-list'],
+    queryFn: async () => {
+      const result = await getAircraftList()
+      if (result.error) {
+        const err = new Error(result.error)
+        Sentry.captureException(err)
+        throw err
+      }
+      return result.data
+    },
+  })
+
+  return (
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="/flights">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold">Log Flight</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Record a new flight entry
+          </p>
+        </div>
+      </div>
+
+      {aircraftQuery.isLoading && (
+        <div className="space-y-4">
+          <Skeleton className="h-64 w-full rounded-xl" />
+          <Skeleton className="h-48 w-full rounded-xl" />
+        </div>
+      )}
+
+      {aircraftQuery.isError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
+          <p className="text-sm text-red-800 dark:text-red-200">
+            Failed to load aircraft list. Please try again.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3"
+            onClick={() => aircraftQuery.refetch()}
+          >
+            Retry
+          </Button>
+        </div>
+      )}
+
+      {aircraftQuery.isSuccess && (
+        <FlightForm aircraftList={aircraftQuery.data} />
+      )}
+    </div>
+  )
+}

@@ -1,9 +1,11 @@
-import { pgTable, uuid, text, timestamp } from 'drizzle-orm/pg-core'
-
-export const users = pgTable('users', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  email: text('email').notNull().unique(),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-})
+export * from './profiles'
+export * from './aircraft'
+export * from './flights'
+export * from './financial'
+export * from './milestones'
+export * from './goals'
+export * from './training'
+export * from './currency'
+export * from './imports'
+export * from './documents'
+export * from './audit'

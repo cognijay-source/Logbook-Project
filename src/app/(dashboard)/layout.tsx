@@ -1,4 +1,5 @@
-import { Skeleton } from '@/components/ui/skeleton'
+import { SidebarNav } from '@/components/dashboard/sidebar-nav'
+import { TopBar } from '@/components/dashboard/top-bar'
 
 export default function DashboardLayout({
   children,
@@ -7,18 +8,19 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="flex min-h-screen">
-      <aside className="bg-sidebar-background hidden w-64 border-r p-4 md:block">
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold">Logbook Project</h2>
+      <aside className="hidden w-64 flex-col border-r md:flex">
+        <div className="p-6">
+          <h2 className="text-lg font-semibold">Logbook</h2>
         </div>
-        <nav className="grid gap-2">
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-        </nav>
+        <div className="flex-1 px-3">
+          <SidebarNav />
+        </div>
       </aside>
-      <main className="flex-1 p-6">{children}</main>
+
+      <div className="flex flex-1 flex-col">
+        <TopBar />
+        <main className="flex-1 p-6">{children}</main>
+      </div>
     </div>
   )
 }

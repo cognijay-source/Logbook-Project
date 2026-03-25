@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { z } from 'zod'
 import * as Sentry from '@sentry/nextjs'
@@ -17,23 +16,29 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 
-const loginSchema = z.object({
+const signupSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
+  displayName: z.string().optional(),
 })
 
-export default function LoginPage() {
-  const router = useRouter()
+export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [displayName, setDisplayName] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
-    const result = loginSchema.safeParse({ email, password })
+    const result = signupSchema.safeParse({
+      email,
+      password,
+      displayName: displayName || undefined,
+    })
     if (!result.success) {
       setError(result.error.errors[0].message)
       return
@@ -43,9 +48,14 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient()
-      const { error: authError } = await supabase.auth.signInWithPassword({
+      const { error: authError } = await supabase.auth.signUp({
         email: result.data.email,
         password: result.data.password,
+        options: {
+          data: {
+            display_name: result.data.displayName,
+          },
+        },
       })
 
       if (authError) {
@@ -53,8 +63,7 @@ export default function LoginPage() {
         return
       }
 
-      router.push('/flights')
-      router.refresh()
+      setSuccess(true)
     } catch (err) {
       Sentry.captureException(err)
       setError('An unexpected error occurred. Please try again.')
@@ -63,13 +72,40 @@ export default function LoginPage() {
     }
   }
 
+  if (success) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader>
+            <CardTitle>Check your email</CardTitle>
+            <CardDescription>
+              We sent a verification link to <strong>{email}</strong>. Click the
+              link to activate your account.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground text-center text-sm">
+              Already verified?{' '}
+              <Link
+                href="/login"
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                Sign in
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Login</CardTitle>
+          <CardTitle>Create an account</CardTitle>
           <CardDescription>
-            Sign in to your Logbook Project account
+            Sign up for Logbook Project to start tracking your flights
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -79,6 +115,17 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
+            <div className="grid gap-2">
+              <Label htmlFor="display-name">Display name (optional)</Label>
+              <Input
+                id="display-name"
+                type="text"
+                placeholder="Captain Sully"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                disabled={loading}
+              />
+            </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -103,16 +150,16 @@ export default function LoginPage() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Creating account...' : 'Create account'}
             </Button>
           </form>
           <p className="text-muted-foreground mt-4 text-center text-sm">
-            Don&apos;t have an account?{' '}
+            Already have an account?{' '}
             <Link
-              href="/signup"
+              href="/login"
               className="text-primary underline-offset-4 hover:underline"
             >
-              Sign up
+              Sign in
             </Link>
           </p>
         </CardContent>

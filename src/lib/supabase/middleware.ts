@@ -34,10 +34,22 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Protect dashboard routes
-  if (
-    !user &&
-    request.nextUrl.pathname.startsWith('/flights') // Add other dashboard routes as needed
-  ) {
+  const protectedPrefixes = [
+    '/flights',
+    '/aircraft',
+    '/journey',
+    '/progress',
+    '/money',
+    '/settings',
+    '/imports',
+    '/documents',
+  ]
+
+  const isProtected = protectedPrefixes.some((prefix) =>
+    request.nextUrl.pathname.startsWith(prefix),
+  )
+
+  if (!user && isProtected) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
