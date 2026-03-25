@@ -121,9 +121,8 @@ export default function FlightDetailPage() {
               <DialogHeader>
                 <DialogTitle>Delete Flight</DialogTitle>
                 <DialogDescription>
-                  Are you sure you want to delete this flight? This action
-                  cannot be undone. All associated legs, approaches, and crew
-                  records will also be removed.
+                  This will permanently remove this flight and all associated
+                  legs, approaches, and crew records.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
@@ -159,8 +158,8 @@ export default function FlightDetailPage() {
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
           <p className="text-sm text-red-800 dark:text-red-200">
             {flightQuery.error?.message === 'Flight not found'
-              ? 'Flight not found. It may have been deleted.'
-              : 'Failed to load flight. Please try again.'}
+              ? 'Flight not found.'
+              : 'Could not load flight.'}
           </p>
           <div className="mt-3 flex justify-center gap-3">
             <Button variant="outline" size="sm" asChild>

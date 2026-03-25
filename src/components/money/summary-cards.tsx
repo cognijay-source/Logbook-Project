@@ -46,7 +46,7 @@ export function SummaryCards({
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-muted-foreground text-sm font-medium">
-            Total Expenses
+            Expenses
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -59,7 +59,7 @@ export function SummaryCards({
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-muted-foreground text-sm font-medium">
-            Total Income
+            Income
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -72,7 +72,7 @@ export function SummaryCards({
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-muted-foreground text-sm font-medium">
-            Net Amount
+            Net
           </CardTitle>
         </CardHeader>
         <CardContent>

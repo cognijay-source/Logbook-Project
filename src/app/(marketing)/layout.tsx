@@ -21,7 +21,7 @@ function Header() {
           <div className="bg-foreground flex h-8 w-8 items-center justify-center rounded-lg">
             <BookOpen className="text-background h-4 w-4" />
           </div>
-          <span className="text-lg font-semibold tracking-tight">Logbook</span>
+          <span className="text-lg font-semibold tracking-tight">SkyLog</span>
         </Link>
 
         {/* Desktop nav */}
@@ -94,7 +94,7 @@ function Footer() {
             <div className="bg-foreground flex h-7 w-7 items-center justify-center rounded-md">
               <BookOpen className="text-background h-3.5 w-3.5" />
             </div>
-            <span className="text-foreground text-sm font-medium">Logbook</span>
+            <span className="text-foreground text-sm font-medium">SkyLog</span>
           </div>
           <div className="flex items-center gap-6">
             <Link
@@ -119,7 +119,7 @@ function Footer() {
         </div>
         <div className="border-border/40 mt-8 border-t pt-8">
           <p className="text-muted-foreground text-center text-sm">
-            &copy; {new Date().getFullYear()} Logbook. All rights reserved.
+            &copy; {new Date().getFullYear()} SkyLog. All rights reserved.
           </p>
         </div>
       </div>

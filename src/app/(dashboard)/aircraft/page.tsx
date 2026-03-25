@@ -20,9 +20,7 @@ export default function AircraftPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Aircraft</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your fleet of aircraft.
-          </p>
+          <p className="text-muted-foreground mt-1">Your fleet</p>
         </div>
       </div>
 
@@ -36,7 +34,7 @@ export default function AircraftPage() {
 
       {isError && (
         <div className="text-destructive rounded-lg border p-4">
-          Failed to load aircraft. Please try again.
+          Could not load aircraft.
         </div>
       )}
 

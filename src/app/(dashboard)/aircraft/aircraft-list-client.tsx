@@ -61,7 +61,7 @@ export function AircraftListClient({ aircraft }: AircraftListClientProps) {
         <Plane className="text-muted-foreground mb-4 h-12 w-12" />
         <h2 className="text-lg font-semibold">No aircraft yet</h2>
         <p className="text-muted-foreground mb-6 text-sm">
-          Add your first aircraft to get started.
+          Add an aircraft to begin logging against it.
         </p>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
@@ -73,9 +73,7 @@ export function AircraftListClient({ aircraft }: AircraftListClientProps) {
           <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Add Aircraft</DialogTitle>
-              <DialogDescription>
-                Enter the details for a new aircraft.
-              </DialogDescription>
+              <DialogDescription>New aircraft details.</DialogDescription>
             </DialogHeader>
             <AircraftForm
               action={handleCreate}
@@ -100,9 +98,7 @@ export function AircraftListClient({ aircraft }: AircraftListClientProps) {
           <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Add Aircraft</DialogTitle>
-              <DialogDescription>
-                Enter the details for a new aircraft.
-              </DialogDescription>
+              <DialogDescription>New aircraft details.</DialogDescription>
             </DialogHeader>
             <AircraftForm
               action={handleCreate}

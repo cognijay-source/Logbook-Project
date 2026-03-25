@@ -17,7 +17,7 @@ export function TopBar() {
       <div className="flex items-center gap-3">
         <MobileNav />
         <span className="text-muted-foreground text-sm font-medium md:hidden">
-          Logbook
+          SkyLog
         </span>
       </div>
 

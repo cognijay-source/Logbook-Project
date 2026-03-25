@@ -35,24 +35,24 @@ function Hero() {
       <div className="mx-auto max-w-3xl text-center">
         <div className="border-border/60 bg-muted/50 text-muted-foreground mb-8 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm">
           <Clock className="h-3.5 w-3.5" />
-          <span>Pilot logbook &amp; career tracker</span>
+          <span>Intelligent pilot logbook</span>
         </div>
 
         <h1 className="text-foreground text-4xl leading-[1.1] font-bold tracking-tight sm:text-5xl lg:text-6xl">
-          Your flight time tells a story.{' '}
-          <span className="text-muted-foreground">Make it count.</span>
+          Your hours are building something.{' '}
+          <span className="text-muted-foreground">Know exactly what.</span>
         </h1>
 
         <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg leading-relaxed sm:text-xl">
-          The logbook built for career progression. Track every hour with
-          precision, surface the intelligence your experience contains, and
-          always know exactly where you stand.
+          Track every flight with precision. Measure your progress toward
+          certificates and career thresholds. Always know where you stand and
+          what comes next.
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button asChild size="lg" className="w-full px-8 sm:w-auto">
             <Link href="/signup">
-              Start Logging
+              Create Your Logbook
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -62,7 +62,7 @@ function Hero() {
             size="lg"
             className="w-full px-8 sm:w-auto"
           >
-            <Link href="#features">Learn More</Link>
+            <Link href="#features">See How It Works</Link>
           </Button>
         </div>
       </div>
@@ -79,25 +79,25 @@ const values = [
     icon: BookOpen,
     title: 'Precision Logging',
     description:
-      'Every leg, approach, and crew member captured with the detail your career demands. No shortcuts, no approximations.',
+      'Every leg, approach, and crew member captured with the detail your career demands. No shortcuts.',
   },
   {
     icon: Target,
-    title: 'Career Intelligence',
+    title: 'Readiness Tracking',
     description:
-      'Goal profiles, readiness tracking, and gap analysis that turn raw hours into a clear picture of where you stand.',
+      'Set goal profiles for your next certificate or position. See exactly where you stand and what remains.',
   },
   {
     icon: DollarSign,
-    title: 'Financial Clarity',
+    title: 'Financial Position',
     description:
-      "Training costs, income tracking, and career-phase financial intelligence. Know what you've invested and what you've earned.",
+      "Training costs, income, and career-phase totals. Know what you've invested and what you've earned.",
   },
   {
     icon: Award,
-    title: 'Milestone Tracking',
+    title: 'Milestone Detection',
     description:
-      'Automatic detection of career milestones as they happen. Your progression documented, your trajectory visible.',
+      'Automatic recognition of career thresholds as you reach them. Your trajectory, documented.',
   },
 ]
 
@@ -107,11 +107,11 @@ function ValueProposition() {
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-            A logbook that works as hard as you do
+            More than a digital logbook
           </h2>
           <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
-            Not another digital replica of a paper logbook. A system built for
-            the way serious pilots think about their careers.
+            Not a replica of your paper logbook. A career system built around
+            how serious pilots track, measure, and advance.
           </p>
         </div>
 
@@ -146,22 +146,22 @@ const audiences = [
   {
     icon: GraduationCap,
     label: 'Student Pilots',
-    detail: 'Build your foundation with structure from day one.',
+    detail: 'Build structure and discipline from your first entry.',
   },
   {
     icon: Plane,
     label: 'Time Builders',
-    detail: 'Every hour counted, every milestone within sight.',
+    detail: 'Every hour measured. Every threshold within sight.',
   },
   {
     icon: Users,
     label: 'Regional & 135 Pilots',
-    detail: 'Complex schedules, multi-leg days, crew tracking handled.',
+    detail: 'Multi-leg days, crew tracking, and complex schedules.',
   },
   {
     icon: Award,
     label: 'Career Captains',
-    detail: 'Your complete aviation career, structured and searchable.',
+    detail: 'Your complete record, structured and searchable.',
   },
 ]
 
@@ -171,11 +171,10 @@ function Audience() {
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-            Built for every stage of your career
+            From student to captain
           </h2>
           <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
-            From your first solo to your thousandth leg. One logbook that grows
-            with you.
+            One logbook from first solo to thousandth leg.
           </p>
         </div>
 
@@ -211,37 +210,37 @@ const features = [
     icon: BookOpen,
     title: 'Flight Logging',
     description:
-      'Multi-leg entries, instrument approaches, crew details, and a draft workflow that lets you log now and finalize later. Capture the full picture of every flight.',
+      'Multi-leg entries, approaches, crew, and a draft workflow. Log now, finalize later. The full picture of every flight.',
   },
   {
     icon: Target,
     title: 'Career Progress',
     description:
-      'Define goal profiles for your next certificate or position. Readiness tracking and gap analysis show exactly what stands between you and your next milestone.',
+      'Set goal profiles for certificates and positions. Gap analysis shows exactly what stands between you and your next threshold.',
   },
   {
     icon: Award,
     title: 'Milestone Timeline',
     description:
-      'Automatic milestone detection as you hit career benchmarks. Your journey from first flight to type rating, visualized and documented.',
+      'Automatic detection as you reach career benchmarks. First solo to type rating, documented as it happens.',
   },
   {
     icon: BarChart3,
-    title: 'Analytics',
+    title: 'Experience Analytics',
     description:
-      'Deep experience breakdowns by aircraft type, category, conditions, and time period. Understand your strengths and identify gaps before an interviewer does.',
+      'Breakdowns by aircraft, category, conditions, and period. Identify strengths and gaps before an interviewer does.',
   },
   {
     icon: DollarSign,
     title: 'Money Tracking',
     description:
-      'Training costs, checkride fees, equipment expenses, and income tracking. Career-phase financial intelligence that shows the true cost and return of your flying.',
+      'Training costs, checkride fees, and income by career phase. See the true cost and return of your flying.',
   },
   {
     icon: FileUp,
     title: 'Import & Smart Entry',
     description:
-      'CSV imports from existing logbooks and digital sources. AI-assisted draft entry parses your flight details and stages them for review.',
+      'CSV imports from existing logbooks. AI-assisted draft entry parses flight details and stages them for your review.',
   },
 ]
 
@@ -254,11 +253,10 @@ function Features() {
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-            Every tool a serious pilot needs
+            Built for the way pilots advance
           </h2>
           <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
-            Purpose-built features that respect the complexity of a real
-            aviation career.
+            Purpose-built for the complexity of a real aviation career.
           </p>
         </div>
 
@@ -293,19 +291,19 @@ const differentiators = [
     icon: Database,
     title: 'Structured Data',
     description:
-      'Your logbook stored in a normalized, queryable format. Not flat files. Not PDFs. Real structured data you can analyze, export, and rely on.',
+      'Normalized, queryable records. Not flat files or PDFs. Data you can analyze, export, and rely on.',
   },
   {
     icon: Brain,
-    title: 'Derived Intelligence',
+    title: 'Derived Insight',
     description:
-      "Automatic calculations, trend detection, and readiness scoring. Your logbook doesn't just record -- it understands your trajectory.",
+      'Automatic calculations, readiness scoring, and gap detection. Your logbook measures your trajectory.',
   },
   {
     icon: Shield,
-    title: 'Career-Grade Reliability',
+    title: 'Career-Grade Integrity',
     description:
-      'Your flight records deserve the same precision you bring to the cockpit. Audit trails, data integrity, and secure cloud storage.',
+      'Your records deserve the same precision you bring to the cockpit. Audit trails, data integrity, secure storage.',
   },
 ]
 
@@ -315,12 +313,11 @@ function Trust() {
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-            Built for pilots who take their career seriously
+            Engineered for precision
           </h2>
           <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
-            This is not a digital photocopy of your paper logbook. It is a
-            career instrument engineered to surface the intelligence your hours
-            contain.
+            Not a photocopy of your paper logbook. A career instrument that
+            turns hours into measurable progress.
           </p>
         </div>
 
@@ -356,7 +353,7 @@ function CTA() {
     <section className="border-border/40 border-t px-6 py-24 sm:py-32 lg:px-8">
       <div className="mx-auto max-w-xl text-center">
         <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-          Begin your logbook
+          Start your logbook
         </h2>
         <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
           Every career starts with the first entry. Build yours on a foundation
@@ -365,7 +362,7 @@ function CTA() {
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <Button asChild size="lg" className="w-full px-8 sm:w-auto">
             <Link href="/signup">
-              Start Logging
+              Create Your Logbook
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>

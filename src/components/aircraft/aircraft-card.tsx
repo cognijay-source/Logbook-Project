@@ -147,7 +147,7 @@ export function AircraftCard({ aircraft, onMutate }: AircraftCardProps) {
             <DialogHeader>
               <DialogTitle>Edit Aircraft</DialogTitle>
               <DialogDescription>
-                Update details for {aircraft.tailNumber}.
+                Update {aircraft.tailNumber}.
               </DialogDescription>
             </DialogHeader>
             <AircraftForm
@@ -169,8 +169,7 @@ export function AircraftCard({ aircraft, onMutate }: AircraftCardProps) {
             <DialogHeader>
               <DialogTitle>Delete Aircraft</DialogTitle>
               <DialogDescription>
-                Are you sure you want to delete {aircraft.tailNumber}? This
-                action cannot be undone.
+                Remove {aircraft.tailNumber} permanently? This cannot be undone.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>

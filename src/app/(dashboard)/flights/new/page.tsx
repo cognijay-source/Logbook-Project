@@ -33,9 +33,9 @@ export default function NewFlightPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">Log Flight</h1>
+          <h1 className="text-3xl font-bold">New Flight</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Record a new flight entry
+            Record a new entry
           </p>
         </div>
       </div>
@@ -50,7 +50,7 @@ export default function NewFlightPage() {
       {aircraftQuery.isError && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
           <p className="text-sm text-red-800 dark:text-red-200">
-            Failed to load aircraft list. Please try again.
+            Could not load aircraft list.
           </p>
           <Button
             variant="outline"

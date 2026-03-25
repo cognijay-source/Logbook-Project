@@ -55,8 +55,8 @@ export default function FlightsPage() {
           <h1 className="text-3xl font-bold">Flights</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             {flightsQuery.isSuccess
-              ? `${flights.length} flight${flights.length !== 1 ? 's' : ''} logged`
-              : 'Loading your flights...'}
+              ? `${flights.length} ${flights.length === 1 ? 'entry' : 'entries'}`
+              : '\u00A0'}
           </p>
         </div>
         <Button asChild>
@@ -72,7 +72,7 @@ export default function FlightsPage() {
         <div className="relative flex-1">
           <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
-            placeholder="Search airports, routes, remarks..."
+            placeholder="Search flights..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -109,7 +109,7 @@ export default function FlightsPage() {
       {flightsQuery.isError && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
           <p className="text-sm text-red-800 dark:text-red-200">
-            Failed to load flights. Please try again.
+            Could not load flights.
           </p>
           <Button
             variant="outline"
@@ -131,8 +131,8 @@ export default function FlightsPage() {
           <h3 className="mt-4 text-lg font-semibold">No flights found</h3>
           <p className="text-muted-foreground mt-1 text-sm">
             {search || aircraftId !== 'all' || status !== 'all'
-              ? 'Try adjusting your filters.'
-              : 'Log your first flight to get started.'}
+              ? 'Adjust your filters to find matching entries.'
+              : 'Record your first flight to begin building your logbook.'}
           </p>
           {!search && aircraftId === 'all' && status === 'all' && (
             <Button asChild className="mt-4">

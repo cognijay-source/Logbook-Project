@@ -341,7 +341,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
           })
           return
         }
-        toast({ title: 'Flight updated' })
+        toast({ title: 'Flight saved' })
         router.push('/flights')
         router.refresh()
       } else {
@@ -354,7 +354,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
           })
           return
         }
-        toast({ title: 'Flight logged' })
+        toast({ title: 'Flight recorded' })
         router.push('/flights')
         router.refresh()
       }
@@ -362,7 +362,8 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
       Sentry.captureException(error)
       toast({
         title: 'Error',
-        description: 'Something went wrong. Please try again.',
+        description:
+          'Could not save flight. Check your connection and try again.',
         variant: 'destructive',
       })
     } finally {
@@ -379,7 +380,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
         {/* ---- Flight Info ---- */}
         <Card>
           <CardHeader>
-            <CardTitle>Flight Information</CardTitle>
+            <CardTitle>Flight Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -478,7 +479,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
         {/* ---- Flight Times ---- */}
         <Card>
           <CardHeader>
-            <CardTitle>Flight Times</CardTitle>
+            <CardTitle>Time</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
@@ -564,10 +565,10 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
           </CardContent>
         </Card>
 
-        {/* ---- Classification ---- */}
+        {/* ---- Operation ---- */}
         <Card>
           <CardHeader>
-            <CardTitle>Classification</CardTitle>
+            <CardTitle>Operation</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -624,7 +625,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
         {/* ---- Remarks & Meta ---- */}
         <Card>
           <CardHeader>
-            <CardTitle>Remarks & Details</CardTitle>
+            <CardTitle>Remarks</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <FormField
@@ -636,7 +637,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
                   <FormControl>
                     <textarea
                       className="border-input bg-background min-h-[80px] w-full rounded-md border px-3 py-2 text-sm"
-                      placeholder="Notes about this flight..."
+                      placeholder="Remarks, endorsements, notes..."
                       {...field}
                     />
                   </FormControl>
@@ -651,10 +652,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
                 <FormItem>
                   <FormLabel>Tags</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Comma-separated, e.g. checkride, ifr, night"
-                      {...field}
-                    />
+                    <Input placeholder="checkride, ifr, night" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -1138,14 +1136,14 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
             disabled={saving}
             onClick={form.handleSubmit((v) => onSubmit(v, 'draft'))}
           >
-            {saving ? 'Saving...' : 'Save as Draft'}
+            {saving ? 'Saving...' : 'Save Draft'}
           </Button>
           <Button
             type="button"
             disabled={saving}
             onClick={form.handleSubmit((v) => onSubmit(v, 'final'))}
           >
-            {saving ? 'Saving...' : 'Save as Final'}
+            {saving ? 'Saving...' : 'Finalize Entry'}
           </Button>
         </div>
       </form>

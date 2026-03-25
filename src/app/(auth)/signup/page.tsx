@@ -17,8 +17,8 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 
 const signupSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email('Enter a valid email'),
+  password: z.string().min(6, 'Minimum 6 characters'),
   displayName: z.string().optional(),
 })
 
@@ -66,7 +66,7 @@ export default function SignupPage() {
       setSuccess(true)
     } catch (err) {
       Sentry.captureException(err)
-      setError('An unexpected error occurred. Please try again.')
+      setError('Something went wrong. Try again.')
     } finally {
       setLoading(false)
     }
@@ -77,10 +77,10 @@ export default function SignupPage() {
       <div className="flex min-h-screen items-center justify-center px-4">
         <Card className="w-full max-w-sm">
           <CardHeader>
-            <CardTitle>Check your email</CardTitle>
+            <CardTitle>Verify your email</CardTitle>
             <CardDescription>
-              We sent a verification link to <strong>{email}</strong>. Click the
-              link to activate your account.
+              We sent a verification link to <strong>{email}</strong>. Open it
+              to activate your account.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -103,9 +103,9 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Create an account</CardTitle>
+          <CardTitle>Create Your Account</CardTitle>
           <CardDescription>
-            Sign up for Logbook Project to start tracking your flights
+            Build your logbook from the first entry
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -116,11 +116,11 @@ export default function SignupPage() {
               </div>
             )}
             <div className="grid gap-2">
-              <Label htmlFor="display-name">Display name (optional)</Label>
+              <Label htmlFor="display-name">Display name</Label>
               <Input
                 id="display-name"
                 type="text"
-                placeholder="Captain Sully"
+                placeholder="Your name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 disabled={loading}

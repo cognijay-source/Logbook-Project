@@ -107,7 +107,8 @@ export default function JourneyPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Journey</h1>
           <p className="text-muted-foreground">
-            {achievedCount} milestone{achievedCount !== 1 ? 's' : ''} achieved
+            {achievedCount} {achievedCount === 1 ? 'milestone' : 'milestones'}{' '}
+            reached
             {pendingCount > 0 && ` \u00b7 ${pendingCount} ahead`}
           </p>
         </div>
@@ -133,14 +134,14 @@ export default function JourneyPage() {
             <DialogContent>
               <form onSubmit={handleCreateSubmit}>
                 <DialogHeader>
-                  <DialogTitle>Record a Milestone</DialogTitle>
+                  <DialogTitle>Record Milestone</DialogTitle>
                   <DialogDescription>
-                    Add a personal milestone to your journey.
+                    Add a milestone you have reached.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="name">Milestone Name</Label>
+                    <Label htmlFor="name">Name</Label>
                     <Input id="name" name="name" required />
                   </div>
                   <div className="grid gap-2">
@@ -148,7 +149,7 @@ export default function JourneyPage() {
                     <Input id="description" name="description" />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="achievedAt">Date Achieved</Label>
+                    <Label htmlFor="achievedAt">Date</Label>
                     <Input id="achievedAt" name="achievedAt" type="date" />
                   </div>
                   <div className="grid gap-2">
@@ -158,7 +159,7 @@ export default function JourneyPage() {
                 </div>
                 <DialogFooter>
                   <Button type="submit" disabled={createMutation.isPending}>
-                    {createMutation.isPending ? 'Saving...' : 'Save Milestone'}
+                    {createMutation.isPending ? 'Saving...' : 'Save'}
                   </Button>
                 </DialogFooter>
               </form>
@@ -269,12 +270,10 @@ export default function JourneyPage() {
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <Award className="text-muted-foreground/50 mb-4 h-12 w-12" />
-              <CardTitle className="mb-2 text-lg">
-                Your journey begins here
-              </CardTitle>
+              <CardTitle className="mb-2 text-lg">No milestones yet</CardTitle>
               <CardDescription className="max-w-sm">
-                Log your first flights to start tracking milestones. Each flight
-                builds toward the next marker in your aviation career.
+                Milestones appear here as you build flight time and reach career
+                thresholds.
               </CardDescription>
             </CardContent>
           </Card>

@@ -91,7 +91,7 @@ export function AircraftForm({
         }
       } catch (error) {
         Sentry.captureException(error)
-        setErrors({ _form: ['An unexpected error occurred'] })
+        setErrors({ _form: ['Something went wrong. Try again.'] })
       }
     })
   }
@@ -204,7 +204,7 @@ export function AircraftForm({
       </div>
 
       <fieldset className="space-y-3">
-        <legend className="text-sm font-medium">Aircraft Flags</legend>
+        <legend className="text-sm font-medium">Designations</legend>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -261,7 +261,7 @@ export function AircraftForm({
           name="notes"
           rows={3}
           defaultValue={initialData?.notes ?? ''}
-          placeholder="Optional notes about this aircraft..."
+          placeholder="Notes"
           className="border-input bg-background ring-offset-background focus:ring-ring flex w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
         />
       </div>

@@ -84,7 +84,7 @@ export default function ProgressPage() {
           <p className="text-muted-foreground">
             {progress
               ? `Tracking toward ${progress.goalProfile.name}`
-              : 'Set a goal to track your progress'}
+              : 'Select a goal to measure against'}
           </p>
         </div>
         <Dialog open={goalDialogOpen} onOpenChange={setGoalDialogOpen}>
@@ -96,9 +96,9 @@ export default function ProgressPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Select Goal Profile</DialogTitle>
+              <DialogTitle>Select Goal</DialogTitle>
               <DialogDescription>
-                Choose the certificate or career target to track against.
+                Choose the certificate or position you are working toward.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-2 py-4">
@@ -226,8 +226,8 @@ export default function ProgressPage() {
               No flights logged yet
             </CardTitle>
             <CardDescription className="max-w-sm">
-              Log your first flight to start seeing your progress. Every hour in
-              the air brings you closer to your next milestone.
+              Record your first flight to begin measuring progress toward
+              certification requirements.
             </CardDescription>
           </CardContent>
         </Card>

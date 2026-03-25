@@ -9,7 +9,7 @@ export default function AuthLayout({
     <div className="min-h-screen">
       <header className="flex items-center justify-center border-b px-4 py-3">
         <Link href="/" className="text-lg font-semibold">
-          Logbook Project
+          SkyLog
         </Link>
       </header>
       <main>{children}</main>

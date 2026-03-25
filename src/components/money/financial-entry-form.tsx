@@ -206,7 +206,7 @@ export function FinancialEntryForm({
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Brief description"
+                  placeholder="Description"
                   {...field}
                   value={field.value ?? ''}
                 />
@@ -228,7 +228,7 @@ export function FinancialEntryForm({
                   value={field.value ?? ''}
                   onChange={field.onChange}
                 >
-                  <option value="">Select a phase (optional)</option>
+                  <option value="">Select phase</option>
                   {CAREER_PHASES.map((phase) => (
                     <option key={phase} value={phase}>
                       {phase}
@@ -249,7 +249,7 @@ export function FinancialEntryForm({
               <FormLabel>Vendor</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Vendor name (optional)"
+                  placeholder="Vendor"
                   {...field}
                   value={field.value ?? ''}
                 />
@@ -268,7 +268,7 @@ export function FinancialEntryForm({
               <FormControl>
                 <textarea
                   className="border-input bg-background focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
-                  placeholder="Additional notes (optional)"
+                  placeholder="Notes"
                   {...field}
                   value={field.value ?? ''}
                 />
@@ -283,7 +283,7 @@ export function FinancialEntryForm({
             ? 'Saving...'
             : defaultValues?.entryType
               ? 'Update Entry'
-              : 'Add Entry'}
+              : 'Record Entry'}
         </Button>
       </form>
     </Form>

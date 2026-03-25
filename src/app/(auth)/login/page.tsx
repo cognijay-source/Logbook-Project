@@ -18,8 +18,8 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email('Enter a valid email'),
+  password: z.string().min(6, 'Minimum 6 characters'),
 })
 
 export default function LoginPage() {
@@ -57,7 +57,7 @@ export default function LoginPage() {
       router.refresh()
     } catch (err) {
       Sentry.captureException(err)
-      setError('An unexpected error occurred. Please try again.')
+      setError('Something went wrong. Try again.')
     } finally {
       setLoading(false)
     }
@@ -67,10 +67,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Login</CardTitle>
-          <CardDescription>
-            Sign in to your Logbook Project account
-          </CardDescription>
+          <CardTitle>Sign In</CardTitle>
+          <CardDescription>Welcome back to SkyLog</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">

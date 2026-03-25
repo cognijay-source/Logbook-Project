@@ -34,9 +34,7 @@ export function FlightCard({ flight }: { flight: FlightRow }) {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
-              <p className="truncate text-sm font-medium">
-                {route || 'No route'}
-              </p>
+              <p className="truncate text-sm font-medium">{route || 'Local'}</p>
               <StatusBadge status={flight.status} />
             </div>
             <div className="text-muted-foreground mt-1 flex items-center gap-3 text-xs">

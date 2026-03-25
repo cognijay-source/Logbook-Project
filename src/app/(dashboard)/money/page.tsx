@@ -70,14 +70,14 @@ export default function MoneyPage() {
       setDialogOpen(false)
       toast({
         title: 'Entry added',
-        description: 'Financial entry created successfully.',
+        description: 'Entry recorded.',
       })
     },
     onError: (error) => {
       Sentry.captureException(error)
       toast({
         title: 'Error',
-        description: 'Failed to create entry. Please try again.',
+        description: 'Could not save entry.',
         variant: 'destructive',
       })
     },
@@ -93,14 +93,14 @@ export default function MoneyPage() {
       setEditingEntry(null)
       toast({
         title: 'Entry updated',
-        description: 'Financial entry updated successfully.',
+        description: 'Entry updated.',
       })
     },
     onError: (error) => {
       Sentry.captureException(error)
       toast({
         title: 'Error',
-        description: 'Failed to update entry. Please try again.',
+        description: 'Could not update entry.',
         variant: 'destructive',
       })
     },
@@ -111,13 +111,13 @@ export default function MoneyPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['financial-entries'] })
       queryClient.invalidateQueries({ queryKey: ['financial-overview'] })
-      toast({ title: 'Entry deleted', description: 'Financial entry removed.' })
+      toast({ title: 'Entry removed' })
     },
     onError: (error) => {
       Sentry.captureException(error)
       toast({
         title: 'Error',
-        description: 'Failed to delete entry. Please try again.',
+        description: 'Could not remove entry.',
         variant: 'destructive',
       })
     },
@@ -160,12 +160,12 @@ export default function MoneyPage() {
         <div>
           <h1 className="text-3xl font-bold">Money</h1>
           <p className="text-muted-foreground mt-1">
-            Track your aviation expenses and income.
+            Expenses, income, and financial position.
           </p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Entry
+          Record Entry
         </Button>
       </div>
 
@@ -230,7 +230,7 @@ export default function MoneyPage() {
               No entries yet
             </p>
             <p className="text-muted-foreground mt-1 text-sm">
-              Add your first financial entry to start tracking.
+              Record your first expense or income entry.
             </p>
             <Button
               variant="outline"
@@ -238,7 +238,7 @@ export default function MoneyPage() {
               onClick={() => setDialogOpen(true)}
             >
               <Plus className="mr-2 h-4 w-4" />
-              Add Entry
+              Record Entry
             </Button>
           </div>
         )}
@@ -249,12 +249,12 @@ export default function MoneyPage() {
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {editingEntry ? 'Edit Entry' : 'Add Entry'}
+              {editingEntry ? 'Edit Entry' : 'Record Entry'}
             </DialogTitle>
             <DialogDescription>
               {editingEntry
-                ? 'Update the details of this financial entry.'
-                : 'Record a new expense or income entry.'}
+                ? 'Update this entry.'
+                : 'Log an expense or income.'}
             </DialogDescription>
           </DialogHeader>
           <FinancialEntryForm
