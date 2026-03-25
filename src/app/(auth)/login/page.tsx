@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { z } from 'zod'
 import * as Sentry from '@sentry/nextjs'
 import { createClient } from '@/lib/supabase/client'
+import { loginSchema } from '@/lib/validators/auth'
 import {
   Card,
   CardContent,
@@ -16,11 +16,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-
-const loginSchema = z.object({
-  email: z.string().email('Enter a valid email'),
-  password: z.string().min(6, 'Minimum 6 characters'),
-})
 
 export default function LoginPage() {
   const router = useRouter()

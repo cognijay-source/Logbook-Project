@@ -3,7 +3,7 @@
 import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db'
 import { goalProfiles, userGoalAssignments } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { getOrCreateProfile } from '@/lib/services/profile'
 import { getFlightTotals } from '@/lib/services/flight-totals'
 import { getGoalProgress } from '@/lib/services/goal-progress'
@@ -45,11 +45,38 @@ export async function assignGoal(data: unknown) {
     const profile = await getOrCreateProfile()
     const validated = goalAssignmentSchema.parse(data)
 
+    // Query existing active assignments for audit
+    const existingActive = await db
+      .select({ id: userGoalAssignments.id })
+      .from(userGoalAssignments)
+      .where(
+        and(
+          eq(userGoalAssignments.profileId, profile.id),
+          eq(userGoalAssignments.isActive, true),
+        ),
+      )
+
     // Deactivate existing active goals
-    await db
-      .update(userGoalAssignments)
-      .set({ isActive: false })
-      .where(eq(userGoalAssignments.profileId, profile.id))
+    if (existingActive.length > 0) {
+      await db
+        .update(userGoalAssignments)
+        .set({ isActive: false })
+        .where(
+          and(
+            eq(userGoalAssignments.profileId, profile.id),
+            eq(userGoalAssignments.isActive, true),
+          ),
+        )
+
+      for (const existing of existingActive) {
+        await createAuditEvent({
+          profileId: profile.id,
+          entityType: 'user_goal_assignment',
+          entityId: existing.id,
+          action: 'deactivated',
+        })
+      }
+    }
 
     const [assignment] = await db
       .insert(userGoalAssignments)

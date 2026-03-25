@@ -103,19 +103,6 @@ interface FlightFormProps {
 
 // ---------- Helpers ----------
 
-function parseTags(raw: string | null | undefined): string[] {
-  if (!raw) return []
-  try {
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return raw
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean)
-  }
-}
-
 const OPERATION_TYPES = [
   'Part 91',
   'Part 135',
@@ -202,7 +189,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
           operationType: initialData.operationType ?? '',
           roleType: initialData.roleType ?? '',
           remarks: initialData.remarks ?? '',
-          tags: parseTags(initialData.tags).join(', '),
+          tags: initialData.tags ?? '',
           isSoloFlight: initialData.isSoloFlight ?? false,
           isCheckride: initialData.isCheckride ?? false,
           status: (initialData.status as 'draft' | 'final') ?? 'draft',
@@ -277,13 +264,6 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
   async function onSubmit(values: FormValues, status: 'draft' | 'final') {
     setSaving(true)
     try {
-      const tagsArray = values.tags
-        ? values.tags
-            .split(',')
-            .map((t) => t.trim())
-            .filter(Boolean)
-        : []
-
       const flightPayload = {
         flightDate: values.flightDate,
         aircraftId: values.aircraftId || '',
@@ -308,7 +288,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
         operationType: values.operationType,
         roleType: values.roleType,
         remarks: values.remarks,
-        tags: tagsArray,
+        tags: values.tags,
         isSoloFlight: values.isSoloFlight,
         isCheckride: values.isCheckride,
         status,

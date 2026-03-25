@@ -3,7 +3,7 @@
 import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db'
 import { userMilestones, milestoneDefinitions } from '@/lib/db/schema'
-import { eq, desc } from 'drizzle-orm'
+import { eq, and, desc } from 'drizzle-orm'
 import { getOrCreateProfile } from '@/lib/services/profile'
 import { evaluateMilestones } from '@/lib/services/milestone-engine'
 import { createAuditEvent } from '@/lib/services/audit'
@@ -87,7 +87,14 @@ export async function deleteUserMilestone(id: string) {
   try {
     const profile = await getOrCreateProfile()
 
-    await db.delete(userMilestones).where(eq(userMilestones.id, id))
+    await db
+      .delete(userMilestones)
+      .where(
+        and(
+          eq(userMilestones.id, id),
+          eq(userMilestones.profileId, profile.id),
+        ),
+      )
 
     await createAuditEvent({
       profileId: profile.id,

@@ -64,7 +64,7 @@ const flightBase = z.object({
   operationType: optionalString,
   roleType: optionalString,
   remarks: optionalString,
-  tags: z.array(z.string()).optional().default([]),
+  tags: z.string().optional(),
   status: z.enum(['draft', 'final', 'archived']).default('draft'),
 
   // Flags

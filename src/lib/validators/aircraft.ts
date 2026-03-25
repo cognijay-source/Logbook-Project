@@ -12,7 +12,7 @@ const aircraftBase = z.object({
     .max(20, 'Tail number must be 20 characters or fewer'),
   manufacturer: optionalString,
   model: optionalString,
-  year: z.coerce.number().int().min(1900).max(2100).optional(),
+  year: z.string().regex(/^\d{4}$/, 'Must be a 4-digit year').optional(),
   category: optionalString,
   aircraftClass: optionalString,
   engineType: optionalString,
