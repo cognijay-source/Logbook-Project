@@ -75,4 +75,7 @@ npm run trigger:dev    # Start Trigger.dev dev server
 
 ## Git Workflow
 
-<!-- TODO: Ask about preferred branch naming and commit conventions -->
+- **Branch naming** — use Claude Code auto-generated branch names (no custom convention)
+- **Commit messages** — Conventional Commits: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`. Lowercase, imperative, no period. Body optional but encouraged for non-trivial changes
+- **PRs** — always squash merge into main. PR title follows the same conventional commit format (it becomes the squash commit message)
+- **Main branch** — keep deployable at all times. Never push directly to main
