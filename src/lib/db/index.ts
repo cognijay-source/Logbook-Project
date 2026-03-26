@@ -26,7 +26,14 @@ async function fetchWithRetry(
 
 neonConfig.fetchFunction = fetchWithRetry
 
-const sql = neon(process.env.DATABASE_URL!, {
+const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL
+if (!databaseUrl) {
+  throw new Error(
+    'Missing database connection string. Set DATABASE_URL or POSTGRES_URL.',
+  )
+}
+
+const sql = neon(databaseUrl, {
   fetchOptions: {
     cache: 'no-store',
   },
