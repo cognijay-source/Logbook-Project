@@ -209,6 +209,20 @@ export default function MoneyPage() {
               <Skeleton key={i} className="h-20 w-full rounded-xl" />
             ))}
           </div>
+        ) : entriesQuery.isError ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
+            <p className="text-sm text-red-800 dark:text-red-200">
+              Could not load entries.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={() => entriesQuery.refetch()}
+            >
+              Retry
+            </Button>
+          </div>
         ) : entriesQuery.data && entriesQuery.data.length > 0 ? (
           entriesQuery.data.map((entry) => (
             <EntryCard

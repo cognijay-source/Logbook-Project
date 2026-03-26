@@ -41,7 +41,7 @@ export default function JourneyPage() {
   const queryClient = useQueryClient()
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['milestones'],
     queryFn: getMilestoneTimeline,
   })
@@ -76,12 +76,12 @@ export default function JourneyPage() {
 
   function handleCreateSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const form = new FormData(e.currentTarget)
+    const fd = new FormData(e.currentTarget)
     createMutation.mutate({
-      name: form.get('name'),
-      description: form.get('description'),
-      achievedAt: form.get('achievedAt') || undefined,
-      notes: form.get('notes'),
+      name: (fd.get('name') as string) ?? '',
+      description: (fd.get('description') as string) || undefined,
+      achievedAt: (fd.get('achievedAt') as string) || undefined,
+      notes: (fd.get('notes') as string) || undefined,
     })
   }
 
@@ -93,6 +93,19 @@ export default function JourneyPage() {
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-32" />
           ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold tracking-tight">Journey</h1>
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
+          <p className="text-sm text-red-800 dark:text-red-200">
+            Could not load milestones.
+          </p>
         </div>
       </div>
     )

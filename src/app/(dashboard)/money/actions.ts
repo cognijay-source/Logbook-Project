@@ -92,6 +92,9 @@ export async function createFinancialEntry(
       .returning()
 
     const entry = inserted[0]
+    if (!entry) {
+      throw new Error('Failed to create financial entry')
+    }
 
     await createAuditEvent({
       profileId: profile.id,
@@ -164,6 +167,10 @@ export async function updateFinancialEntry(
         ),
       )
       .returning()
+
+    if (!updated[0]) {
+      throw new Error('Failed to update financial entry')
+    }
 
     await createAuditEvent({
       profileId: profile.id,
