@@ -59,8 +59,8 @@ export async function uploadDocument(formData: FormData): Promise<{
     const entityId = (formData.get('entityId') as string) || undefined
 
     const validated = documentUploadSchema.parse({
-      fileName: file.name,
-      category,
+      name: file.name,
+      documentType: category,
       entityType: entityType || undefined,
       entityId: entityId || undefined,
     })
@@ -88,7 +88,7 @@ export async function uploadDocument(formData: FormData): Promise<{
       .insert(schema.documents)
       .values({
         profileId: profile.id,
-        documentType: validated.category,
+        documentType: validated.documentType,
         name: file.name,
         storagePath,
         mimeType: file.type,
@@ -109,7 +109,7 @@ export async function uploadDocument(formData: FormData): Promise<{
       action: 'create',
       changes: {
         name: file.name,
-        category: validated.category,
+        documentType: validated.documentType,
         fileSize: file.size,
       },
     })
@@ -244,7 +244,7 @@ export async function updateDocument(
     const updated = await db
       .update(schema.documents)
       .set({
-        documentType: validated.category ?? existing[0].documentType,
+        documentType: validated.documentType ?? existing[0].documentType,
         entityType:
           validated.entityType !== undefined
             ? validated.entityType

@@ -1,7 +1,7 @@
 'use server'
 
 import * as Sentry from '@sentry/nextjs'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, sql } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import * as schema from '@/lib/db/schema'
 import {
@@ -30,20 +30,43 @@ function formDataToObject(formData: FormData) {
   }
 }
 
-export async function getAircraft() {
+export async function getAircraft(params?: {
+  page?: number
+  pageSize?: number
+}) {
   try {
     const profile = await getOrCreateProfile()
+    const page = params?.page ?? 1
+    const pageSize = params?.pageSize ?? 50
 
-    const result = await db
-      .select()
-      .from(schema.aircraft)
-      .where(eq(schema.aircraft.profileId, profile.id))
-      .orderBy(schema.aircraft.tailNumber)
+    const conditions = eq(schema.aircraft.profileId, profile.id)
 
-    return { data: result, error: null }
+    const [result, countResult] = await Promise.all([
+      db
+        .select()
+        .from(schema.aircraft)
+        .where(conditions)
+        .orderBy(schema.aircraft.tailNumber)
+        .limit(pageSize)
+        .offset((page - 1) * pageSize),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.aircraft)
+        .where(conditions),
+    ])
+
+    const total = Number(countResult[0]?.count) || 0
+
+    return { data: result, total, page, pageSize, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    return { data: null, error: 'Failed to fetch aircraft' }
+    return {
+      data: null,
+      total: 0,
+      page: 1,
+      pageSize: 50,
+      error: 'Failed to fetch aircraft',
+    }
   }
 }
 

@@ -6,10 +6,7 @@ import { db } from '@/lib/db'
 import * as schema from '@/lib/db/schema'
 import { createClient } from '@/lib/supabase/server'
 
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  maxAttempts = 3,
-): Promise<T> {
+async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await fn()
@@ -69,6 +66,10 @@ export async function getOrCreateProfile() {
         })
         .returning(),
     )
+
+    if (!inserted[0]) {
+      throw new Error('Failed to create profile')
+    }
 
     return inserted[0]
   } catch (error) {

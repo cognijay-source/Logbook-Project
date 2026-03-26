@@ -33,6 +33,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PaginationControls } from '@/components/ui/pagination-controls'
 import { useToast } from '@/hooks/use-toast'
 
 import {
@@ -162,15 +163,21 @@ function TrainingEntriesTab() {
   const [editing, setEditing] = useState<TrainingEntry | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<TrainingEntry | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [page, setPage] = useState(1)
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['training-entries'],
+  const queryResult = useQuery({
+    queryKey: ['training-entries', page],
     queryFn: async () => {
-      const result = await getTrainingEntries()
+      const result = await getTrainingEntries({ page })
       if (result.error) throw new Error(result.error)
-      return result.data as TrainingEntry[]
+      return result
     },
   })
+
+  const { isLoading, isError } = queryResult
+  const data = queryResult.data?.data as TrainingEntry[] | undefined
+  const total = queryResult.data?.total ?? 0
+  const pageSize = queryResult.data?.pageSize ?? 50
 
   function openCreate() {
     setEditing(null)
@@ -350,6 +357,13 @@ function TrainingEntriesTab() {
         </div>
       )}
 
+      <PaginationControls
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={setPage}
+      />
+
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
@@ -491,15 +505,21 @@ function CertificatesTab() {
   const [editing, setEditing] = useState<Certificate | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Certificate | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [certPage, setCertPage] = useState(1)
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['certificates'],
+  const queryResult = useQuery({
+    queryKey: ['certificates', certPage],
     queryFn: async () => {
-      const result = await getCertificates()
+      const result = await getCertificates({ page: certPage })
       if (result.error) throw new Error(result.error)
-      return result.data as Certificate[]
+      return result
     },
   })
+
+  const { isLoading, isError } = queryResult
+  const data = queryResult.data?.data as Certificate[] | undefined
+  const certTotal = queryResult.data?.total ?? 0
+  const certPageSize = queryResult.data?.pageSize ?? 50
 
   function openCreate() {
     setEditing(null)
@@ -699,6 +719,13 @@ function CertificatesTab() {
         </div>
       )}
 
+      <PaginationControls
+        page={certPage}
+        pageSize={certPageSize}
+        total={certTotal}
+        onPageChange={setCertPage}
+      />
+
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
@@ -826,15 +853,21 @@ function EndorsementsTab() {
   const [editing, setEditing] = useState<Endorsement | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Endorsement | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [endPage, setEndPage] = useState(1)
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['endorsements'],
+  const queryResult = useQuery({
+    queryKey: ['endorsements', endPage],
     queryFn: async () => {
-      const result = await getEndorsements()
+      const result = await getEndorsements({ page: endPage })
       if (result.error) throw new Error(result.error)
-      return result.data as Endorsement[]
+      return result
     },
   })
+
+  const { isLoading, isError } = queryResult
+  const data = queryResult.data?.data as Endorsement[] | undefined
+  const endTotal = queryResult.data?.total ?? 0
+  const endPageSize = queryResult.data?.pageSize ?? 50
 
   function openCreate() {
     setEditing(null)
@@ -1014,6 +1047,13 @@ function EndorsementsTab() {
           ))}
         </div>
       )}
+
+      <PaginationControls
+        page={endPage}
+        pageSize={endPageSize}
+        total={endTotal}
+        onPageChange={setEndPage}
+      />
 
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

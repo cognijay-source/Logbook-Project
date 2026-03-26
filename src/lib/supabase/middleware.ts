@@ -44,6 +44,9 @@ export async function updateSession(request: NextRequest) {
     '/settings',
     '/imports',
     '/documents',
+    '/currency',
+    '/training',
+    '/reports',
   ]
 
   const isProtected = protectedPrefixes.some((prefix) =>

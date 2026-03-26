@@ -161,6 +161,8 @@ export async function updatePreferences(formData: FormData) {
 
 export async function changePassword(formData: FormData) {
   try {
+    const profile = await getOrCreateProfile()
+
     const raw = {
       newPassword: formData.get('newPassword') as string,
       confirmPassword: formData.get('confirmPassword') as string,
@@ -181,6 +183,13 @@ export async function changePassword(formData: FormData) {
       return { data: null, error: error.message }
     }
 
+    await createAuditEvent({
+      profileId: profile.id,
+      entityType: 'profile',
+      entityId: profile.id,
+      action: 'password_changed',
+    })
+
     return { data: true, error: null }
   } catch (error) {
     Sentry.captureException(error)
@@ -191,6 +200,13 @@ export async function changePassword(formData: FormData) {
 export async function deleteAccount() {
   try {
     const profile = await getOrCreateProfile()
+
+    await createAuditEvent({
+      profileId: profile.id,
+      entityType: 'profile',
+      entityId: profile.id,
+      action: 'account_deleted',
+    })
 
     // Delete the profile row — all related data cascades
     await db.delete(schema.profiles).where(eq(schema.profiles.id, profile.id))

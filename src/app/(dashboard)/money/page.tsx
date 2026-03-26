@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as Sentry from '@sentry/nextjs'
 import { Plus } from 'lucide-react'
@@ -13,6 +14,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
+import { PaginationControls } from '@/components/ui/pagination-controls'
 import { SummaryCards } from '@/components/money/summary-cards'
 import { EntryCard } from '@/components/money/entry-card'
 import { FinancialEntryForm } from '@/components/money/financial-entry-form'
@@ -42,6 +44,7 @@ function getPeriodParams(period: Period): { year?: number; month?: number } {
 }
 
 export default function MoneyPage() {
+  const [page, setPage] = useState(1)
   const [period, setPeriod] = React.useState<Period>('month')
   const [dialogOpen, setDialogOpen] = React.useState(false)
   const [editingEntry, setEditingEntry] = React.useState<FinancialEntry | null>(
@@ -53,17 +56,28 @@ export default function MoneyPage() {
   const periodParams = getPeriodParams(period)
 
   const entriesQuery = useQuery({
-    queryKey: ['financial-entries', periodParams],
-    queryFn: () => getFinancialEntries(periodParams),
+    queryKey: ['financial-entries', periodParams, page],
+    queryFn: async () => {
+      const result = await getFinancialEntries({ ...periodParams, page })
+      return result
+    },
   })
 
   const overviewQuery = useQuery({
     queryKey: ['financial-overview', periodParams],
-    queryFn: () => getFinancialOverview(periodParams),
+    queryFn: async () => {
+      const result = await getFinancialOverview(periodParams)
+      if (result.error) throw new Error(result.error)
+      return result.data
+    },
   })
 
   const createMutation = useMutation({
-    mutationFn: (data: FinancialEntryCreate) => createFinancialEntry(data),
+    mutationFn: async (data: FinancialEntryCreate) => {
+      const result = await createFinancialEntry(data)
+      if (result.error) throw new Error(result.error)
+      return result.data
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['financial-entries'] })
       queryClient.invalidateQueries({ queryKey: ['financial-overview'] })
@@ -84,8 +98,17 @@ export default function MoneyPage() {
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: FinancialEntryCreate }) =>
-      updateFinancialEntry(id, data),
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string
+      data: FinancialEntryCreate
+    }) => {
+      const result = await updateFinancialEntry(id, data)
+      if (result.error) throw new Error(result.error)
+      return result.data
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['financial-entries'] })
       queryClient.invalidateQueries({ queryKey: ['financial-overview'] })
@@ -107,7 +130,10 @@ export default function MoneyPage() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteFinancialEntry(id),
+    mutationFn: async (id: string) => {
+      const result = await deleteFinancialEntry(id)
+      if (result.error) throw new Error(result.error)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['financial-entries'] })
       queryClient.invalidateQueries({ queryKey: ['financial-overview'] })
@@ -124,7 +150,7 @@ export default function MoneyPage() {
   })
 
   function handleEdit(id: string) {
-    const entry = entriesQuery.data?.find((e) => e.id === id)
+    const entry = entriesQuery.data?.data?.find((e) => e.id === id)
     if (entry) {
       setEditingEntry(entry)
       setDialogOpen(true)
@@ -181,7 +207,10 @@ export default function MoneyPage() {
           <button
             key={option.value}
             type="button"
-            onClick={() => setPeriod(option.value)}
+            onClick={() => {
+              setPeriod(option.value)
+              setPage(1)
+            }}
             className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
               period === option.value
                 ? 'bg-primary text-primary-foreground'
@@ -223,8 +252,8 @@ export default function MoneyPage() {
               Retry
             </Button>
           </div>
-        ) : entriesQuery.data && entriesQuery.data.length > 0 ? (
-          entriesQuery.data.map((entry) => (
+        ) : entriesQuery.data && entriesQuery.data.data.length > 0 ? (
+          entriesQuery.data.data.map((entry) => (
             <EntryCard
               key={entry.id}
               id={entry.id}
@@ -255,6 +284,14 @@ export default function MoneyPage() {
               Record Entry
             </Button>
           </div>
+        )}
+        {entriesQuery.data && (
+          <PaginationControls
+            page={entriesQuery.data.page}
+            pageSize={entriesQuery.data.pageSize}
+            total={entriesQuery.data.total}
+            onPageChange={setPage}
+          />
         )}
       </div>
 

@@ -39,9 +39,19 @@ export async function getFlights(params?: {
   search?: string
   aircraftId?: string
   status?: string
-}): Promise<{ data: FlightRow[]; error: string | null }> {
+  page?: number
+  pageSize?: number
+}): Promise<{
+  data: FlightRow[]
+  total: number
+  page: number
+  pageSize: number
+  error: string | null
+}> {
   try {
     const profile = await getOrCreateProfile()
+    const page = params?.page ?? 1
+    const pageSize = params?.pageSize ?? 50
 
     const conditions = [eq(schema.flights.profileId, profile.id)]
 
@@ -65,11 +75,24 @@ export async function getFlights(params?: {
       )
     }
 
-    const rows = await db
-      .select()
-      .from(schema.flights)
-      .where(and(...conditions))
-      .orderBy(desc(schema.flights.flightDate), desc(schema.flights.createdAt))
+    const [rows, countResult] = await Promise.all([
+      db
+        .select()
+        .from(schema.flights)
+        .where(and(...conditions))
+        .orderBy(
+          desc(schema.flights.flightDate),
+          desc(schema.flights.createdAt),
+        )
+        .limit(pageSize)
+        .offset((page - 1) * pageSize),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.flights)
+        .where(and(...conditions)),
+    ])
+
+    const total = Number(countResult[0]?.count) || 0
 
     // Collect unique aircraft IDs for a single lookup
     const aircraftIds = [
@@ -101,10 +124,16 @@ export async function getFlights(params?: {
         : null,
     }))
 
-    return { data, error: null }
+    return { data, total, page, pageSize, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    return { data: [], error: 'Failed to load flights' }
+    return {
+      data: [],
+      total: 0,
+      page: 1,
+      pageSize: 50,
+      error: 'Failed to load flights',
+    }
   }
 }
 
@@ -489,22 +518,19 @@ export async function deleteFlight(
   try {
     const profile = await getOrCreateProfile()
 
-    const existing = await db
-      .select({ id: schema.flights.id })
-      .from(schema.flights)
+    const deleted = await db
+      .delete(schema.flights)
       .where(
         and(
           eq(schema.flights.id, id),
           eq(schema.flights.profileId, profile.id),
         ),
       )
-      .limit(1)
+      .returning({ id: schema.flights.id })
 
-    if (existing.length === 0) {
+    if (deleted.length === 0) {
       return { success: false, error: 'Flight not found' }
     }
-
-    await db.delete(schema.flights).where(eq(schema.flights.id, id))
 
     await createAuditEvent({
       profileId: profile.id,

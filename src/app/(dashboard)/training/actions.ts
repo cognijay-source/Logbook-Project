@@ -1,7 +1,7 @@
 'use server'
 
 import * as Sentry from '@sentry/nextjs'
-import { eq, and, desc } from 'drizzle-orm'
+import { eq, and, desc, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import * as schema from '@/lib/db/schema'
@@ -18,18 +18,41 @@ import {
 
 // ==================== Training Entries ====================
 
-export async function getTrainingEntries() {
+export async function getTrainingEntries(params?: {
+  page?: number
+  pageSize?: number
+}) {
   try {
     const profile = await getOrCreateProfile()
-    const rows = await db
-      .select()
-      .from(schema.trainingEntries)
-      .where(eq(schema.trainingEntries.profileId, profile.id))
-      .orderBy(desc(schema.trainingEntries.entryDate))
-    return { data: rows, error: null }
+    const page = params?.page ?? 1
+    const pageSize = params?.pageSize ?? 50
+    const conditions = eq(schema.trainingEntries.profileId, profile.id)
+
+    const [rows, countResult] = await Promise.all([
+      db
+        .select()
+        .from(schema.trainingEntries)
+        .where(conditions)
+        .orderBy(desc(schema.trainingEntries.entryDate))
+        .limit(pageSize)
+        .offset((page - 1) * pageSize),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.trainingEntries)
+        .where(conditions),
+    ])
+
+    const total = Number(countResult[0]?.count) || 0
+    return { data: rows, total, page, pageSize, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    return { data: [], error: 'Failed to load training entries' }
+    return {
+      data: [],
+      total: 0,
+      page: 1,
+      pageSize: 50,
+      error: 'Failed to load training entries',
+    }
   }
 }
 
@@ -109,7 +132,12 @@ export async function updateTrainingEntry(id: string, data: unknown) {
         notes: parsed.notes ?? null,
         updatedAt: new Date(),
       })
-      .where(eq(schema.trainingEntries.id, id))
+      .where(
+        and(
+          eq(schema.trainingEntries.id, id),
+          eq(schema.trainingEntries.profileId, profile.id),
+        ),
+      )
 
     await createAuditEvent({
       profileId: profile.id,
@@ -136,24 +164,19 @@ export async function deleteTrainingEntry(id: string) {
   try {
     const profile = await getOrCreateProfile()
 
-    const existing = await db
-      .select({ id: schema.trainingEntries.id })
-      .from(schema.trainingEntries)
+    const deleted = await db
+      .delete(schema.trainingEntries)
       .where(
         and(
           eq(schema.trainingEntries.id, id),
           eq(schema.trainingEntries.profileId, profile.id),
         ),
       )
-      .limit(1)
+      .returning({ id: schema.trainingEntries.id })
 
-    if (existing.length === 0) {
+    if (deleted.length === 0) {
       return { success: false, error: 'Training entry not found' }
     }
-
-    await db
-      .delete(schema.trainingEntries)
-      .where(eq(schema.trainingEntries.id, id))
 
     await createAuditEvent({
       profileId: profile.id,
@@ -171,18 +194,41 @@ export async function deleteTrainingEntry(id: string) {
 
 // ==================== Certificates ====================
 
-export async function getCertificates() {
+export async function getCertificates(params?: {
+  page?: number
+  pageSize?: number
+}) {
   try {
     const profile = await getOrCreateProfile()
-    const rows = await db
-      .select()
-      .from(schema.certificates)
-      .where(eq(schema.certificates.profileId, profile.id))
-      .orderBy(desc(schema.certificates.issuedDate))
-    return { data: rows, error: null }
+    const page = params?.page ?? 1
+    const pageSize = params?.pageSize ?? 50
+    const conditions = eq(schema.certificates.profileId, profile.id)
+
+    const [rows, countResult] = await Promise.all([
+      db
+        .select()
+        .from(schema.certificates)
+        .where(conditions)
+        .orderBy(desc(schema.certificates.issuedDate))
+        .limit(pageSize)
+        .offset((page - 1) * pageSize),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.certificates)
+        .where(conditions),
+    ])
+
+    const total = Number(countResult[0]?.count) || 0
+    return { data: rows, total, page, pageSize, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    return { data: [], error: 'Failed to load certificates' }
+    return {
+      data: [],
+      total: 0,
+      page: 1,
+      pageSize: 50,
+      error: 'Failed to load certificates',
+    }
   }
 }
 
@@ -258,7 +304,12 @@ export async function updateCertificate(id: string, data: unknown) {
         notes: parsed.notes ?? null,
         updatedAt: new Date(),
       })
-      .where(eq(schema.certificates.id, id))
+      .where(
+        and(
+          eq(schema.certificates.id, id),
+          eq(schema.certificates.profileId, profile.id),
+        ),
+      )
 
     await createAuditEvent({
       profileId: profile.id,
@@ -285,22 +336,19 @@ export async function deleteCertificate(id: string) {
   try {
     const profile = await getOrCreateProfile()
 
-    const existing = await db
-      .select({ id: schema.certificates.id })
-      .from(schema.certificates)
+    const deleted = await db
+      .delete(schema.certificates)
       .where(
         and(
           eq(schema.certificates.id, id),
           eq(schema.certificates.profileId, profile.id),
         ),
       )
-      .limit(1)
+      .returning({ id: schema.certificates.id })
 
-    if (existing.length === 0) {
+    if (deleted.length === 0) {
       return { success: false, error: 'Certificate not found' }
     }
-
-    await db.delete(schema.certificates).where(eq(schema.certificates.id, id))
 
     await createAuditEvent({
       profileId: profile.id,
@@ -318,18 +366,41 @@ export async function deleteCertificate(id: string) {
 
 // ==================== Endorsements ====================
 
-export async function getEndorsements() {
+export async function getEndorsements(params?: {
+  page?: number
+  pageSize?: number
+}) {
   try {
     const profile = await getOrCreateProfile()
-    const rows = await db
-      .select()
-      .from(schema.endorsements)
-      .where(eq(schema.endorsements.profileId, profile.id))
-      .orderBy(desc(schema.endorsements.endorsedDate))
-    return { data: rows, error: null }
+    const page = params?.page ?? 1
+    const pageSize = params?.pageSize ?? 50
+    const conditions = eq(schema.endorsements.profileId, profile.id)
+
+    const [rows, countResult] = await Promise.all([
+      db
+        .select()
+        .from(schema.endorsements)
+        .where(conditions)
+        .orderBy(desc(schema.endorsements.endorsedDate))
+        .limit(pageSize)
+        .offset((page - 1) * pageSize),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.endorsements)
+        .where(conditions),
+    ])
+
+    const total = Number(countResult[0]?.count) || 0
+    return { data: rows, total, page, pageSize, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    return { data: [], error: 'Failed to load endorsements' }
+    return {
+      data: [],
+      total: 0,
+      page: 1,
+      pageSize: 50,
+      error: 'Failed to load endorsements',
+    }
   }
 }
 
@@ -405,7 +476,12 @@ export async function updateEndorsement(id: string, data: unknown) {
         notes: parsed.notes ?? null,
         updatedAt: new Date(),
       })
-      .where(eq(schema.endorsements.id, id))
+      .where(
+        and(
+          eq(schema.endorsements.id, id),
+          eq(schema.endorsements.profileId, profile.id),
+        ),
+      )
 
     await createAuditEvent({
       profileId: profile.id,
@@ -432,22 +508,19 @@ export async function deleteEndorsement(id: string) {
   try {
     const profile = await getOrCreateProfile()
 
-    const existing = await db
-      .select({ id: schema.endorsements.id })
-      .from(schema.endorsements)
+    const deleted = await db
+      .delete(schema.endorsements)
       .where(
         and(
           eq(schema.endorsements.id, id),
           eq(schema.endorsements.profileId, profile.id),
         ),
       )
-      .limit(1)
+      .returning({ id: schema.endorsements.id })
 
-    if (existing.length === 0) {
+    if (deleted.length === 0) {
       return { success: false, error: 'Endorsement not found' }
     }
-
-    await db.delete(schema.endorsements).where(eq(schema.endorsements.id, id))
 
     await createAuditEvent({
       profileId: profile.id,

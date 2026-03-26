@@ -1,4 +1,4 @@
-import { eq, and, gte, sql } from 'drizzle-orm'
+import { eq, and, gte, sql, desc } from 'drizzle-orm'
 import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db'
 import * as schema from '@/lib/db/schema'
@@ -24,11 +24,171 @@ export type CurrencyResult = {
   evaluatedAt: string
 }
 
+// Pre-fetched flight data shared across rule evaluators
+interface FlightData {
+  landingFlights: {
+    flightDate: string
+    dayLandings: number | null
+    nightLandings: number | null
+    holds: number | null
+  }[]
+  approachCount6m: number
+  approachCount12m: number
+  holdsTotal6m: number
+  holdsTotal12m: number
+  pilotProfile: { flightReviewDate: Date | null } | null
+  latestCheckride: { flightDate: string } | null
+  latestFlightReviewTraining: { entryDate: string } | null
+}
+
+async function prefetchFlightData(
+  profileId: string,
+  ninetyDayCutoff: string,
+  sixMonthCutoff: string,
+  twelveMonthCutoff: string,
+): Promise<FlightData> {
+  const [
+    landingFlights,
+    approachResult6m,
+    approachResult12m,
+    holdsAndFlights,
+    pilotProfileResult,
+    checkrideResult,
+    trainingResult,
+  ] = await Promise.all([
+    // All flights in last 90 days with landings
+    db
+      .select({
+        flightDate: schema.flights.flightDate,
+        dayLandings: schema.flights.dayLandings,
+        nightLandings: schema.flights.nightLandings,
+        holds: schema.flights.holds,
+      })
+      .from(schema.flights)
+      .where(
+        and(
+          eq(schema.flights.profileId, profileId),
+          eq(schema.flights.status, 'final'),
+          gte(schema.flights.flightDate, ninetyDayCutoff),
+        ),
+      )
+      .orderBy(schema.flights.flightDate),
+    // Approaches in last 6 months
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(schema.flightApproaches)
+      .innerJoin(
+        schema.flights,
+        eq(schema.flightApproaches.flightId, schema.flights.id),
+      )
+      .where(
+        and(
+          eq(schema.flights.profileId, profileId),
+          eq(schema.flights.status, 'final'),
+          gte(schema.flights.flightDate, sixMonthCutoff),
+        ),
+      ),
+    // Approaches in last 12 months
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(schema.flightApproaches)
+      .innerJoin(
+        schema.flights,
+        eq(schema.flightApproaches.flightId, schema.flights.id),
+      )
+      .where(
+        and(
+          eq(schema.flights.profileId, profileId),
+          eq(schema.flights.status, 'final'),
+          gte(schema.flights.flightDate, twelveMonthCutoff),
+        ),
+      ),
+    // Holds totals for 6 and 12 months via single query
+    db
+      .select({
+        flightDate: schema.flights.flightDate,
+        holds: schema.flights.holds,
+      })
+      .from(schema.flights)
+      .where(
+        and(
+          eq(schema.flights.profileId, profileId),
+          eq(schema.flights.status, 'final'),
+          gte(schema.flights.flightDate, twelveMonthCutoff),
+        ),
+      ),
+    // Pilot profile for flight review date
+    db
+      .select({ flightReviewDate: schema.pilotProfiles.flightReviewDate })
+      .from(schema.pilotProfiles)
+      .where(eq(schema.pilotProfiles.profileId, profileId))
+      .limit(1),
+    // Latest checkride
+    db
+      .select({ flightDate: schema.flights.flightDate })
+      .from(schema.flights)
+      .where(
+        and(
+          eq(schema.flights.profileId, profileId),
+          eq(schema.flights.status, 'final'),
+          eq(schema.flights.isCheckride, true),
+        ),
+      )
+      .orderBy(desc(schema.flights.flightDate))
+      .limit(1),
+    // Latest flight review training entry
+    db
+      .select({ entryDate: schema.trainingEntries.entryDate })
+      .from(schema.trainingEntries)
+      .where(
+        and(
+          eq(schema.trainingEntries.profileId, profileId),
+          eq(schema.trainingEntries.entryType, 'flight_review'),
+        ),
+      )
+      .orderBy(desc(schema.trainingEntries.entryDate))
+      .limit(1),
+  ])
+
+  // Compute holds totals for 6m and 12m from the single query
+  const holdsTotal6m = holdsAndFlights
+    .filter((f) => f.flightDate >= sixMonthCutoff)
+    .reduce((sum, f) => sum + (f.holds ?? 0), 0)
+  const holdsTotal12m = holdsAndFlights.reduce(
+    (sum, f) => sum + (f.holds ?? 0),
+    0,
+  )
+
+  return {
+    landingFlights,
+    approachCount6m: Number(approachResult6m[0]?.count) || 0,
+    approachCount12m: Number(approachResult12m[0]?.count) || 0,
+    holdsTotal6m,
+    holdsTotal12m,
+    pilotProfile: pilotProfileResult[0] ?? null,
+    latestCheckride: checkrideResult[0] ?? null,
+    latestFlightReviewTraining: trainingResult[0] ?? null,
+  }
+}
+
 export async function evaluateCurrency(
   profileId: string,
 ): Promise<CurrencyResult[]> {
   try {
-    const rules = await db.select().from(schema.currencyRuleDefinitions)
+    const now = new Date()
+    const ninetyDayCutoff = addDays(now, -90).toISOString().split('T')[0]
+    const sixMonthCutoff = subtractCalendarMonths(now, 6)
+    const twelveMonthCutoff = subtractCalendarMonths(now, 12)
+
+    const [rules, flightData] = await Promise.all([
+      db.select().from(schema.currencyRuleDefinitions),
+      prefetchFlightData(
+        profileId,
+        ninetyDayCutoff,
+        sixMonthCutoff,
+        twelveMonthCutoff,
+      ),
+    ])
 
     const results: CurrencyResult[] = []
 
@@ -37,16 +197,16 @@ export async function evaluateCurrency(
 
       switch (rule.code) {
         case 'passenger_day':
-          result = await evaluatePassengerDay(profileId, rule)
+          result = evaluatePassengerDay(rule, flightData, now)
           break
         case 'passenger_night':
-          result = await evaluatePassengerNight(profileId, rule)
+          result = evaluatePassengerNight(rule, flightData, now)
           break
         case 'instrument':
-          result = await evaluateInstrument(profileId, rule)
+          result = evaluateInstrument(rule, flightData, now, sixMonthCutoff)
           break
         case 'flight_review':
-          result = await evaluateFlightReview(profileId, rule)
+          result = evaluateFlightReview(rule, flightData, now)
           break
         default:
           result = {
@@ -56,7 +216,7 @@ export async function evaluateCurrency(
             expiresAt: null,
             details: `No evaluator implemented for rule: ${rule.code}`,
             needed: null,
-            evaluatedAt: new Date().toISOString(),
+            evaluatedAt: now.toISOString(),
           }
           break
       }
@@ -76,34 +236,17 @@ export async function evaluateCurrency(
  * 3 takeoffs and 3 landings within the preceding 90 days
  * in the same category, class, and type (if required).
  */
-async function evaluatePassengerDay(
-  profileId: string,
+function evaluatePassengerDay(
   rule: typeof schema.currencyRuleDefinitions.$inferSelect,
-): Promise<CurrencyResult> {
+  flightData: FlightData,
+  now: Date,
+): CurrencyResult {
   const requiredCount = rule.requiredCount ?? 3
-  const cutoffDate = addDays(new Date(), -90).toISOString().split('T')[0]
-  const now = new Date()
-
-  // Get individual flights with day landings in the period, ordered by date desc
-  const flights = await db
-    .select({
-      flightDate: schema.flights.flightDate,
-      dayLandings: schema.flights.dayLandings,
-    })
-    .from(schema.flights)
-    .where(
-      and(
-        eq(schema.flights.profileId, profileId),
-        eq(schema.flights.status, 'final'),
-        gte(schema.flights.flightDate, cutoffDate),
-      ),
-    )
-    .orderBy(schema.flights.flightDate)
+  const flights = flightData.landingFlights
 
   const total = flights.reduce((sum, f) => sum + (f.dayLandings ?? 0), 0)
   const isCurrent = total >= requiredCount
 
-  // Find the expiration date: date of the Nth-most-recent landing + 90 days
   const expiresAt = isCurrent
     ? findNthLandingExpiry(flights, 'dayLandings', requiredCount, 90)
     : null
@@ -127,28 +270,13 @@ async function evaluatePassengerDay(
  * Passenger night currency (14 CFR 61.57(b)):
  * 3 takeoffs and 3 full-stop landings at night within the preceding 90 days.
  */
-async function evaluatePassengerNight(
-  profileId: string,
+function evaluatePassengerNight(
   rule: typeof schema.currencyRuleDefinitions.$inferSelect,
-): Promise<CurrencyResult> {
+  flightData: FlightData,
+  now: Date,
+): CurrencyResult {
   const requiredCount = rule.requiredCount ?? 3
-  const cutoffDate = addDays(new Date(), -90).toISOString().split('T')[0]
-  const now = new Date()
-
-  const flights = await db
-    .select({
-      flightDate: schema.flights.flightDate,
-      nightLandings: schema.flights.nightLandings,
-    })
-    .from(schema.flights)
-    .where(
-      and(
-        eq(schema.flights.profileId, profileId),
-        eq(schema.flights.status, 'final'),
-        gte(schema.flights.flightDate, cutoffDate),
-      ),
-    )
-    .orderBy(schema.flights.flightDate)
+  const flights = flightData.landingFlights
 
   const total = flights.reduce((sum, f) => sum + (f.nightLandings ?? 0), 0)
   const isCurrent = total >= requiredCount
@@ -179,53 +307,16 @@ async function evaluatePassengerNight(
  * After that, a 6 calendar month grace period where you can use a
  * safety pilot but can't fly IFR with passengers.
  */
-async function evaluateInstrument(
-  profileId: string,
+function evaluateInstrument(
   rule: typeof schema.currencyRuleDefinitions.$inferSelect,
-): Promise<CurrencyResult> {
+  flightData: FlightData,
+  now: Date,
+  sixMonthCutoff: string,
+): CurrencyResult {
   const requiredApproaches = rule.requiredCount ?? 6
-  const now = new Date()
 
-  // 6 calendar months back from the end of the current month
-  const sixMonthCutoff = subtractCalendarMonths(now, 6)
-  // 12 calendar months back (grace period boundary)
-  const twelveMonthCutoff = subtractCalendarMonths(now, 12)
-
-  // Count approaches in the last 6 calendar months
-  const approachResult = await db
-    .select({
-      count: sql<number>`count(*)`,
-    })
-    .from(schema.flightApproaches)
-    .innerJoin(
-      schema.flights,
-      eq(schema.flightApproaches.flightId, schema.flights.id),
-    )
-    .where(
-      and(
-        eq(schema.flights.profileId, profileId),
-        eq(schema.flights.status, 'final'),
-        gte(schema.flights.flightDate, sixMonthCutoff),
-      ),
-    )
-
-  const approachCount = Number(approachResult[0]?.count) || 0
-
-  // Count holds in the last 6 calendar months
-  const holdsResult = await db
-    .select({
-      total: sql<number>`coalesce(sum(${schema.flights.holds}), 0)`,
-    })
-    .from(schema.flights)
-    .where(
-      and(
-        eq(schema.flights.profileId, profileId),
-        eq(schema.flights.status, 'final'),
-        gte(schema.flights.flightDate, sixMonthCutoff),
-      ),
-    )
-
-  const holdsCount = Number(holdsResult[0]?.total) || 0
+  const approachCount = flightData.approachCount6m
+  const holdsCount = flightData.holdsTotal6m
   const hasHolds = holdsCount >= 1
 
   const approachesMet = approachCount >= requiredApproaches
@@ -234,39 +325,8 @@ async function evaluateInstrument(
   // If not current in 6 months, check if still in grace period (6-12 months)
   let inGracePeriod = false
   if (!isCurrent) {
-    const graceApproachResult = await db
-      .select({
-        count: sql<number>`count(*)`,
-      })
-      .from(schema.flightApproaches)
-      .innerJoin(
-        schema.flights,
-        eq(schema.flightApproaches.flightId, schema.flights.id),
-      )
-      .where(
-        and(
-          eq(schema.flights.profileId, profileId),
-          eq(schema.flights.status, 'final'),
-          gte(schema.flights.flightDate, twelveMonthCutoff),
-        ),
-      )
-
-    const graceApproaches = Number(graceApproachResult[0]?.count) || 0
-
-    const graceHoldsResult = await db
-      .select({
-        total: sql<number>`coalesce(sum(${schema.flights.holds}), 0)`,
-      })
-      .from(schema.flights)
-      .where(
-        and(
-          eq(schema.flights.profileId, profileId),
-          eq(schema.flights.status, 'final'),
-          gte(schema.flights.flightDate, twelveMonthCutoff),
-        ),
-      )
-
-    const graceHolds = Number(graceHoldsResult[0]?.total) || 0
+    const graceApproaches = flightData.approachCount12m
+    const graceHolds = flightData.holdsTotal12m
     inGracePeriod = graceApproaches >= requiredApproaches && graceHolds >= 1
   }
 
@@ -317,65 +377,33 @@ async function evaluateInstrument(
  * Check: pilot_profiles.flightReviewDate, flights with isCheckride=true,
  * or training entries flagged as flight reviews.
  */
-async function evaluateFlightReview(
-  profileId: string,
+function evaluateFlightReview(
   rule: typeof schema.currencyRuleDefinitions.$inferSelect,
-): Promise<CurrencyResult> {
-  const now = new Date()
+  flightData: FlightData,
+  now: Date,
+): CurrencyResult {
   const twentyFourMonthCutoff = subtractCalendarMonths(now, 24)
 
-  // Source 1: pilotProfiles.flightReviewDate
-  const pilotProfile = await db
-    .select({ flightReviewDate: schema.pilotProfiles.flightReviewDate })
-    .from(schema.pilotProfiles)
-    .where(eq(schema.pilotProfiles.profileId, profileId))
-    .limit(1)
-
   let latestReviewDate: Date | null = null
-  if (pilotProfile[0]?.flightReviewDate) {
-    latestReviewDate = new Date(pilotProfile[0].flightReviewDate)
+
+  // Source 1: pilotProfiles.flightReviewDate
+  if (flightData.pilotProfile?.flightReviewDate) {
+    latestReviewDate = new Date(flightData.pilotProfile.flightReviewDate)
   }
 
   // Source 2: most recent checkride (counts as a flight review per 14 CFR 61.56(d))
-  const checkrideResult = await db
-    .select({
-      flightDate: schema.flights.flightDate,
-    })
-    .from(schema.flights)
-    .where(
-      and(
-        eq(schema.flights.profileId, profileId),
-        eq(schema.flights.status, 'final'),
-        eq(schema.flights.isCheckride, true),
-      ),
-    )
-    .orderBy(sql`${schema.flights.flightDate} desc`)
-    .limit(1)
-
-  if (checkrideResult[0]?.flightDate) {
-    const checkrideDate = new Date(checkrideResult[0].flightDate)
+  if (flightData.latestCheckride?.flightDate) {
+    const checkrideDate = new Date(flightData.latestCheckride.flightDate)
     if (!latestReviewDate || checkrideDate > latestReviewDate) {
       latestReviewDate = checkrideDate
     }
   }
 
   // Source 3: training entries with type 'flight_review'
-  const trainingResult = await db
-    .select({
-      entryDate: schema.trainingEntries.entryDate,
-    })
-    .from(schema.trainingEntries)
-    .where(
-      and(
-        eq(schema.trainingEntries.profileId, profileId),
-        eq(schema.trainingEntries.entryType, 'flight_review'),
-      ),
+  if (flightData.latestFlightReviewTraining?.entryDate) {
+    const trainingDate = new Date(
+      flightData.latestFlightReviewTraining.entryDate,
     )
-    .orderBy(sql`${schema.trainingEntries.entryDate} desc`)
-    .limit(1)
-
-  if (trainingResult[0]?.entryDate) {
-    const trainingDate = new Date(trainingResult[0].entryDate)
     if (!latestReviewDate || trainingDate > latestReviewDate) {
       latestReviewDate = trainingDate
     }

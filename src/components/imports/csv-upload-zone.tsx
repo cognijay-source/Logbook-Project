@@ -61,24 +61,24 @@ export function CsvUploadZone({
         'group flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-12 text-center transition-all duration-300',
         isDragOver
           ? 'scale-[1.01] border-sky-500 bg-sky-500/5 shadow-lg shadow-sky-500/10'
-          : 'border-muted-foreground/25 hover:border-sky-500/50 hover:bg-muted/30',
+          : 'border-muted-foreground/25 hover:bg-muted/30 hover:border-sky-500/50',
         isLoading && 'pointer-events-none opacity-50',
       )}
     >
       {isLoading ? (
-        <Loader2 className="mb-4 h-10 w-10 animate-spin text-muted-foreground" />
+        <Loader2 className="text-muted-foreground mb-4 h-10 w-10 animate-spin" />
       ) : (
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted transition-colors duration-300 group-hover:bg-sky-500/10">
-          <Upload className="h-6 w-6 text-muted-foreground transition-colors duration-300 group-hover:text-sky-500" />
+        <div className="bg-muted mb-4 flex h-14 w-14 items-center justify-center rounded-full transition-colors duration-300 group-hover:bg-sky-500/10">
+          <Upload className="text-muted-foreground h-6 w-6 transition-colors duration-300 group-hover:text-sky-500" />
         </div>
       )}
       <p className="text-sm font-medium">
         {isLoading ? 'Uploading...' : 'Drag & drop your CSV file here'}
       </p>
-      <p className="mt-1 text-xs text-muted-foreground">
+      <p className="text-muted-foreground mt-1 text-xs">
         or click to browse. Accepts .csv files only.
       </p>
-      <p className="mt-2 text-xs text-muted-foreground">
+      <p className="text-muted-foreground mt-2 text-xs">
         Supports ForeFlight, LogTen Pro, and MyFlightBook exports
       </p>
       <input
