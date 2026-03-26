@@ -4,11 +4,13 @@ import { useState, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import * as Sentry from '@sentry/nextjs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CsvUploadZone } from '@/components/imports/csv-upload-zone'
 import { CsvPreviewTable } from '@/components/imports/csv-preview-table'
 import { ColumnMappingStep } from '@/components/imports/column-mapping'
 import { ImportHistory } from '@/components/imports/import-history'
 import { BatchDetails } from '@/components/imports/batch-details'
+import { AiImportSection } from '@/components/imports/ai-import-section'
 import { uploadCsv, processImportBatch } from './actions'
 import {
   autoDetectMapping,
@@ -135,100 +137,115 @@ export default function ImportsPage() {
         </p>
       </div>
 
-      {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-          {error}
-        </div>
-      )}
+      <Tabs defaultValue="csv">
+        <TabsList>
+          <TabsTrigger value="csv">CSV Import</TabsTrigger>
+          <TabsTrigger value="ai">AI Import</TabsTrigger>
+        </TabsList>
 
-      {/* Step: Batch details view */}
-      {step === 'batch-details' && viewBatchId && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Import Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BatchDetails batchId={viewBatchId} onBack={handleBackFromBatch} />
-          </CardContent>
-        </Card>
-      )}
+        <TabsContent value="csv">
+          <div className="space-y-6">
+            {error && (
+              <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+                {error}
+              </div>
+            )}
 
-      {/* Step: Upload */}
-      {step === 'upload' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Upload CSV</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CsvUploadZone
-              onFileSelected={handleFileSelected}
-              isLoading={isUploading}
-            />
-          </CardContent>
-        </Card>
-      )}
+            {/* Step: Batch details view */}
+            {step === 'batch-details' && viewBatchId && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Import Details</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <BatchDetails batchId={viewBatchId} onBack={handleBackFromBatch} />
+                </CardContent>
+              </Card>
+            )}
 
-      {/* Step: Column Mapping */}
-      {step === 'mapping' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Map Columns</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <CsvPreviewTable headers={csvHeaders} rows={preview} />
-            <ColumnMappingStep
-              csvHeaders={csvHeaders}
-              preview={preview}
-              mapping={mapping}
-              onMappingChange={setMapping}
-              onImport={handleImport}
-              isProcessing={isProcessing}
-            />
-          </CardContent>
-        </Card>
-      )}
+            {/* Step: Upload */}
+            {step === 'upload' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Upload CSV</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CsvUploadZone
+                    onFileSelected={handleFileSelected}
+                    isLoading={isUploading}
+                  />
+                </CardContent>
+              </Card>
+            )}
 
-      {/* Step: Results */}
-      {step === 'results' && importResult && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Import Processing</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground text-sm">
-              Your import is being processed in the background. You can track
-              its progress in the import history below.
-            </p>
+            {/* Step: Column Mapping */}
+            {step === 'mapping' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Map Columns</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <CsvPreviewTable headers={csvHeaders} rows={preview} />
+                  <ColumnMappingStep
+                    csvHeaders={csvHeaders}
+                    preview={preview}
+                    mapping={mapping}
+                    onMappingChange={setMapping}
+                    onImport={handleImport}
+                    isProcessing={isProcessing}
+                  />
+                </CardContent>
+              </Card>
+            )}
 
-            <div className="flex gap-3">
-              <button
-                onClick={handleStartOver}
-                className="text-primary text-sm underline"
-              >
-                Import another file
-              </button>
-              <button
-                onClick={() => handleViewBatch(importResult.batchId)}
-                className="text-primary text-sm underline"
-              >
-                View import details
-              </button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            {/* Step: Results */}
+            {step === 'results' && importResult && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Import Processing</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-muted-foreground text-sm">
+                    Your import is being processed in the background. You can track
+                    its progress in the import history below.
+                  </p>
 
-      {/* Import History — always visible unless viewing batch details */}
-      {step !== 'batch-details' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Import History</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ImportHistory onViewBatch={handleViewBatch} />
-          </CardContent>
-        </Card>
-      )}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleStartOver}
+                      className="text-primary text-sm underline"
+                    >
+                      Import another file
+                    </button>
+                    <button
+                      onClick={() => handleViewBatch(importResult.batchId)}
+                      className="text-primary text-sm underline"
+                    >
+                      View import details
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Import History — always visible unless viewing batch details */}
+            {step !== 'batch-details' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Import History</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ImportHistory onViewBatch={handleViewBatch} />
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="ai">
+          <AiImportSection />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

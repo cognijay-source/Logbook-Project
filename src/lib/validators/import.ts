@@ -254,6 +254,63 @@ const allAliases: ColumnAliasMap = {
  * Given CSV column headers, returns a best-guess mapping to SkyLog fields.
  * Unrecognized columns are mapped to '' (unmapped).
  */
+// ---------- AI-parsed flight schema ----------
+
+const nullableString = z
+  .string()
+  .nullable()
+  .transform((v) => (v === '' ? null : v))
+
+const nullableNumeric = z
+  .union([z.string(), z.number()])
+  .nullable()
+  .transform((v) => {
+    if (v === '' || v === undefined || v === null) return null
+    const n = Number(v)
+    if (isNaN(n)) return null
+    return n
+  })
+  .pipe(z.number().min(0).nullable())
+
+const nullableInt = z
+  .union([z.string(), z.number()])
+  .nullable()
+  .transform((v) => {
+    if (v === '' || v === undefined || v === null) return null
+    const n = Number(v)
+    if (isNaN(n) || !Number.isInteger(n)) return null
+    return n
+  })
+  .pipe(z.number().int().min(0).nullable())
+
+export const aiParsedFlightSchema = z.object({
+  date: nullableString,
+  aircraft_type: nullableString,
+  aircraft_ident: nullableString,
+  route_from: nullableString,
+  route_to: nullableString,
+  route_via: nullableString,
+  total_time: nullableNumeric,
+  pic_time: nullableNumeric,
+  sic_time: nullableNumeric,
+  dual_received: nullableNumeric,
+  cross_country: nullableNumeric,
+  night_time: nullableNumeric,
+  instrument_actual: nullableNumeric,
+  instrument_simulated: nullableNumeric,
+  day_landings: nullableInt,
+  night_landings: nullableInt,
+  remarks: nullableString,
+})
+
+export type AiParsedFlight = z.infer<typeof aiParsedFlightSchema>
+
+/** Fields where AI returned null — these need user review */
+export function getNeedsReviewFields(flight: AiParsedFlight): string[] {
+  const required: (keyof AiParsedFlight)[] = ['date', 'aircraft_ident', 'route_from', 'route_to', 'total_time']
+  return required.filter((key) => flight[key] === null)
+}
+
 export function autoDetectMapping(csvColumns: string[]): ColumnMapping {
   const mapping: ColumnMapping = {}
   const usedFields = new Set<string>()
