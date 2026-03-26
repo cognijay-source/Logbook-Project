@@ -52,7 +52,7 @@ export default function FlightsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Flights</h1>
+          <h1 className="text-3xl font-bold">Logbook</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             {flightsQuery.isSuccess
               ? `${flights.length} ${flights.length === 1 ? 'entry' : 'entries'}`

@@ -97,9 +97,9 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Create Your Account</CardTitle>
+          <CardTitle>Create Your CrossCheck Account</CardTitle>
           <CardDescription>
-            Build your logbook from the first entry
+            See the system clearly. Build mastery deliberately.
           </CardDescription>
         </CardHeader>
         <CardContent>

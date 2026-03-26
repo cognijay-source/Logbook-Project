@@ -77,7 +77,7 @@ export const importRowSchema = z.object({
 
 export type ImportRow = z.infer<typeof importRowSchema>
 
-// ---------- SkyLog flight fields that can be mapped from CSV ----------
+// ---------- CrossCheck flight fields that can be mapped from CSV ----------
 
 export const skylogFields = [
   'flightDate',
@@ -133,7 +133,7 @@ export const skylogFieldLabels: Record<SkylogField, string> = {
 
 export const columnMappingSchema = z.record(
   z.string(), // CSV column name
-  z.enum([...skylogFields, '' as const]), // SkyLog field or unmapped
+  z.enum([...skylogFields, '' as const]), // CrossCheck field or unmapped
 )
 
 export type ColumnMapping = z.infer<typeof columnMappingSchema>
@@ -251,7 +251,7 @@ const allAliases: ColumnAliasMap = {
 }
 
 /**
- * Given CSV column headers, returns a best-guess mapping to SkyLog fields.
+ * Given CSV column headers, returns a best-guess mapping to CrossCheck fields.
  * Unrecognized columns are mapped to '' (unmapped).
  */
 // ---------- AI-parsed flight schema ----------

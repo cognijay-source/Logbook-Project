@@ -76,7 +76,7 @@ export function ColumnMappingStep({
     <div className="space-y-6">
       {/* Mapping selectors */}
       <div>
-        <h3 className="mb-3 text-sm font-medium">Map CSV columns to SkyLog fields</h3>
+        <h3 className="mb-3 text-sm font-medium">Map CSV columns to CrossCheck fields</h3>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {csvHeaders.map((col) => (
             <div key={col} className="flex flex-col gap-1">

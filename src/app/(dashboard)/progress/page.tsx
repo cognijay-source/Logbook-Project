@@ -76,7 +76,7 @@ export default function ProgressPage() {
   if (isError) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold tracking-tight">Progress</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Ready</h1>
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
           <p className="text-sm text-red-800 dark:text-red-200">
             Could not load progress data.
@@ -93,7 +93,7 @@ export default function ProgressPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Progress</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Ready</h1>
           <p className="text-muted-foreground">
             {progress
               ? `Tracking toward ${progress.goalProfile.name}`

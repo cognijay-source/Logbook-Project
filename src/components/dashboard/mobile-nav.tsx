@@ -29,7 +29,7 @@ export function MobileNav() {
       </SheetTrigger>
       <SheetContent side="left" className="w-64">
         <SheetHeader>
-          <SheetTitle className="text-left">SkyLog</SheetTitle>
+          <SheetTitle className="text-left">CrossCheck</SheetTitle>
           <SheetDescription className="sr-only">
             Navigation menu
           </SheetDescription>
