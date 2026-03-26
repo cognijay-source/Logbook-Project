@@ -35,6 +35,7 @@ export async function updateSession(request: NextRequest) {
 
   // Protect dashboard routes
   const protectedPrefixes = [
+    '/dashboard',
     '/flights',
     '/aircraft',
     '/journey',
