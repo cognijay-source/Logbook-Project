@@ -1,4 +1,11 @@
-import { pgTable, uuid, text, timestamp, index } from 'drizzle-orm/pg-core'
+import {
+  pgTable,
+  uuid,
+  text,
+  integer,
+  timestamp,
+  index,
+} from 'drizzle-orm/pg-core'
 import { profiles } from './profiles'
 
 export const documents = pgTable(
@@ -14,6 +21,7 @@ export const documents = pgTable(
     fileUrl: text('file_url'),
     storagePath: text('storage_path'),
     mimeType: text('mime_type'),
+    fileSize: integer('file_size'),
     entityType: text('entity_type'),
     entityId: uuid('entity_id'),
     createdAt: timestamp('created_at', { withTimezone: true })
@@ -23,5 +31,8 @@ export const documents = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [index('documents_profile_id_idx').on(table.profileId)],
+  (table) => [
+    index('documents_profile_id_idx').on(table.profileId),
+    index('documents_entity_idx').on(table.entityType, table.entityId),
+  ],
 )

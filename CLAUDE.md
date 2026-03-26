@@ -11,7 +11,7 @@ See @README.md for setup instructions and @package.json for available scripts.
 - **Zod** — validate form input, import rows, AI-parsed flight drafts, server action payloads
 - **Supabase Auth** — login, signup, sessions, passwordless flows
 - **Supabase Postgres** — source of truth for all domain data (flights, aircraft, milestones, goals, finance, currency, imports, audit)
-- **Supabase Storage** — receipts, endorsements, exports, uploaded CSVs, supporting docs
+- **Supabase Storage** — receipts, endorsements, exports, uploaded CSVs, supporting docs (bucket: `documents`, private)
 - **Supabase Edge Functions** — Stripe webhooks, email integrations, small secure service tasks
 - **Drizzle ORM** — schema definitions, migrations, typed relational queries
 - **TanStack Query** — client data fetching, caching, mutations, optimistic UX
