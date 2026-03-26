@@ -2,8 +2,8 @@
  * Seed script for milestone definitions, currency rules, and goal profiles.
  * Run with: npx tsx src/lib/db/seed.ts
  */
-import { neon } from '@neondatabase/serverless'
-import { drizzle } from 'drizzle-orm/neon-http'
+import postgres from 'postgres'
+import { drizzle } from 'drizzle-orm/postgres-js'
 import {
   milestoneDefinitions,
   currencyRuleDefinitions,
@@ -11,8 +11,13 @@ import {
   goalRequirements,
 } from './schema'
 
-const sql = neon(process.env.DATABASE_URL!)
-const db = drizzle(sql)
+const connectionString =
+  process.env.DATABASE_URL_DIRECT ||
+  process.env.POSTGRES_URL_NON_POOLING ||
+  process.env.DATABASE_URL!
+
+const client = postgres(connectionString, { prepare: false })
+const db = drizzle(client)
 
 const milestones = [
   // Event milestones
@@ -589,6 +594,7 @@ async function seed() {
   }
 
   console.log('Seed complete.')
+  await client.end()
 }
 
 seed().catch(console.error)

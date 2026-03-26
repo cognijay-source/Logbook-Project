@@ -1,42 +1,16 @@
-import { drizzle } from 'drizzle-orm/neon-http'
-import { neon, neonConfig } from '@neondatabase/serverless'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
 import * as schema from './schema'
 
-const MAX_RETRIES = 3
+const connectionString =
+  process.env.DATABASE_URL || process.env.POSTGRES_URL
 
-async function fetchWithRetry(
-  input: RequestInfo | URL,
-  init?: RequestInit,
-): Promise<Response> {
-  let lastError: unknown
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    try {
-      return await fetch(input, init)
-    } catch (error) {
-      lastError = error
-      if (attempt < MAX_RETRIES - 1) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, Math.pow(2, attempt) * 200),
-        )
-      }
-    }
-  }
-  throw lastError
-}
-
-neonConfig.fetchFunction = fetchWithRetry
-
-const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL
-if (!databaseUrl) {
+if (!connectionString) {
   throw new Error(
     'Missing database connection string. Set DATABASE_URL or POSTGRES_URL.',
   )
 }
 
-const sql = neon(databaseUrl, {
-  fetchOptions: {
-    cache: 'no-store',
-  },
-})
+const client = postgres(connectionString, { prepare: false })
 
-export const db = drizzle(sql, { schema })
+export const db = drizzle(client, { schema })
