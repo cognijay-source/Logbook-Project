@@ -13,10 +13,8 @@ import {
   getGoalProgress,
   type GoalProgress,
 } from '@/lib/services/goal-progress'
-import {
-  evaluateCurrency,
-  type CurrencyResult,
-} from '@/lib/services/currency-evaluator'
+import type { CurrencyResult } from '@/lib/services/currency-evaluator'
+import { evaluateCurrency } from '@/lib/services/currency-evaluator'
 
 export type RecentFlight = {
   id: string

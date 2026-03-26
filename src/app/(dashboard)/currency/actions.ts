@@ -2,12 +2,8 @@
 
 import * as Sentry from '@sentry/nextjs'
 import { getOrCreateProfile } from '@/lib/services/profile'
-import {
-  evaluateCurrency,
-  type CurrencyResult,
-} from '@/lib/services/currency-evaluator'
-
-export type { CurrencyResult }
+import type { CurrencyResult } from '@/lib/services/currency-evaluator'
+import { evaluateCurrency } from '@/lib/services/currency-evaluator'
 
 export async function getCurrencyStatus(): Promise<CurrencyResult[]> {
   try {

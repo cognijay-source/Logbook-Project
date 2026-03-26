@@ -14,11 +14,8 @@ import {
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
-import {
-  getCurrencyStatus,
-  refreshCurrency,
-  type CurrencyResult,
-} from './actions'
+import type { CurrencyResult } from '@/lib/services/currency-evaluator'
+import { getCurrencyStatus, refreshCurrency } from './actions'
 
 function StatusBadge({ status }: { status: CurrencyResult['status'] }) {
   switch (status) {
