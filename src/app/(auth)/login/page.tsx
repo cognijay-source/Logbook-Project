@@ -48,7 +48,7 @@ export default function LoginPage() {
         return
       }
 
-      router.push('/flights')
+      router.push('/dashboard')
       router.refresh()
     } catch (err) {
       Sentry.captureException(err)
