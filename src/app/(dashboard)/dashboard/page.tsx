@@ -32,11 +32,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { getDashboardData, type DashboardData } from './actions'
 
 function formatHours(n: number): string {
+  if (n === 0) return '\u2014'
   return n % 1 === 0 ? n.toFixed(0) : n.toFixed(1)
 }
 
 function formatRoute(dep: string | null, arr: string | null): string {
-  if (dep && arr) return `${dep} → ${arr}`
+  if (dep && arr) return `${dep} \u2192 ${arr}`
   if (dep) return dep
   if (arr) return arr
   return 'Local'
@@ -65,15 +66,16 @@ function SummaryCards({ totals }: { totals: DashboardData['totals'] }) {
             ? totals.actualInstrument + totals.simulatedInstrument
             : totals[c.key]
         return (
-          <Card key={c.key}>
+          <Card key={c.key} className="group relative overflow-hidden">
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-500/[0.03] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardDescription className="text-xs font-medium">
                 {c.label}
               </CardDescription>
-              <c.icon className="text-muted-foreground h-4 w-4" />
+              <c.icon className="h-4 w-4 text-muted-foreground transition-colors duration-200 group-hover:text-sky-500" />
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{formatHours(value)}</p>
+              <p className="text-2xl font-bold tabular-nums">{formatHours(value)}</p>
             </CardContent>
           </Card>
         )
@@ -120,31 +122,34 @@ function RecentFlights({
       </CardHeader>
       <CardContent>
         {flights.length === 0 ? (
-          <p className="text-muted-foreground py-6 text-center text-sm">
-            No flights recorded yet.
-          </p>
+          <div className="flex flex-col items-center gap-2 py-6">
+            <Plane className="h-8 w-8 text-muted-foreground/40" />
+            <p className="text-center text-sm text-muted-foreground">
+              No flights recorded yet.
+            </p>
+          </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-1">
             {flights.map((f) => (
               <Link
                 key={f.id}
                 href={`/flights/${f.id}`}
-                className="hover:bg-accent/50 flex items-center justify-between rounded-md px-3 py-2 transition-colors"
+                className="flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-accent/50"
               >
                 <div className="flex flex-col gap-0.5">
                   <span className="text-sm font-medium">
                     {formatRoute(f.departureAirport, f.arrivalAirport)}
                   </span>
-                  <span className="text-muted-foreground text-xs">
+                  <span className="text-xs text-muted-foreground">
                     {f.flightDate}
                     {f.aircraft &&
-                      ` · ${f.aircraft.tailNumber}${f.aircraft.model ? ` (${f.aircraft.model})` : ''}`}
+                      ` \u00b7 ${f.aircraft.tailNumber}${f.aircraft.model ? ` (${f.aircraft.model})` : ''}`}
                   </span>
                 </div>
-                <span className="text-sm font-medium">
+                <span className="text-sm font-medium tabular-nums">
                   {f.totalTime
                     ? `${formatHours(parseFloat(f.totalTime))}h`
-                    : '—'}
+                    : '\u2014'}
                 </span>
               </Link>
             ))}
@@ -174,7 +179,6 @@ function getCurrencyBadge(result: DashboardData['currency'][number]) {
       icon: XCircle,
     }
   }
-  // Current — check if expiring within 30 days
   if (result.expiresAt) {
     const daysRemaining = Math.ceil(
       (new Date(result.expiresAt).getTime() - Date.now()) / 86400000,
@@ -209,9 +213,12 @@ function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
       </CardHeader>
       <CardContent>
         {currency.length === 0 ? (
-          <p className="text-muted-foreground py-6 text-center text-sm">
-            No currency rules configured yet. Check back after adding flights.
-          </p>
+          <div className="flex flex-col items-center gap-2 py-6">
+            <ShieldCheck className="h-8 w-8 text-muted-foreground/40" />
+            <p className="text-center text-sm text-muted-foreground">
+              No currency rules configured yet. Check back after adding flights.
+            </p>
+          </div>
         ) : (
           <div className="space-y-3">
             {currency.map((c) => {
@@ -223,7 +230,7 @@ function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
                 >
                   <div className="flex flex-col gap-0.5">
                     <span className="text-sm font-medium">{c.rule.name}</span>
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-xs text-muted-foreground">
                       {c.details}
                     </span>
                   </div>
@@ -267,8 +274,8 @@ function GoalProgressPanel({
       <CardContent>
         {!goalProgress ? (
           <div className="flex flex-col items-center gap-3 py-6">
-            <Target className="text-muted-foreground h-8 w-8" />
-            <p className="text-muted-foreground text-center text-sm">
+            <Target className="h-8 w-8 text-muted-foreground/40" />
+            <p className="text-center text-sm text-muted-foreground">
               No goal assigned yet. Set one to track your progress.
             </p>
             <Button variant="outline" size="sm" asChild>
@@ -276,25 +283,25 @@ function GoalProgressPanel({
             </Button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {goalProgress.requirements.map((req) => (
-              <div key={req.field} className="space-y-1">
+              <div key={req.field} className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span>{req.label}</span>
-                  <span className="text-muted-foreground">
+                  <span className="tabular-nums text-muted-foreground">
                     {formatHours(req.current)} / {formatHours(req.required)}
                   </span>
                 </div>
-                <div className="bg-secondary h-2 overflow-hidden rounded-full">
+                <div className="h-2 overflow-hidden rounded-full bg-secondary">
                   <div
-                    className="bg-primary h-full rounded-full transition-all"
+                    className="h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 transition-all duration-700 ease-out"
                     style={{ width: `${Math.min(req.percentage, 100)}%` }}
                   />
                 </div>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs text-muted-foreground">
                   {req.percentage >= 100
                     ? 'Complete'
-                    : `${req.percentage}% — ${formatHours(req.remaining)} remaining`}
+                    : `${req.percentage}% \u2014 ${formatHours(req.remaining)} remaining`}
                 </p>
               </div>
             ))}
@@ -379,7 +386,7 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Daily</h1>
+        <h1 className="font-heading text-2xl font-bold">Daily</h1>
         <DashboardSkeleton />
       </div>
     )
@@ -388,7 +395,7 @@ export default function DashboardPage() {
   if (error || !data) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Daily</h1>
+        <h1 className="font-heading text-2xl font-bold">Daily</h1>
         <Card>
           <CardContent className="py-10 text-center">
             <p className="text-muted-foreground">
@@ -402,7 +409,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Daily</h1>
+      <h1 className="font-heading text-2xl font-bold">Daily</h1>
 
       <SummaryCards totals={data.totals} />
 

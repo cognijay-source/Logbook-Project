@@ -117,7 +117,7 @@ export default function TrainingPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Training</h1>
+        <h1 className="font-heading text-3xl font-bold">Training</h1>
         <p className="text-muted-foreground mt-1">
           Track training events, certificates, and endorsements
         </p>

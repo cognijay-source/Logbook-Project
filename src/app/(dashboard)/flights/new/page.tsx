@@ -33,7 +33,7 @@ export default function NewFlightPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">New Flight</h1>
+          <h1 className="font-heading text-3xl font-bold">New Flight</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             Record a new entry
           </p>
