@@ -33,8 +33,7 @@ export default function ImportsPage() {
 
   // Import results
   const [importResult, setImportResult] = useState<{
-    processed: number
-    errored: number
+    batchId: string
   } | null>(null)
 
   // Batch details view
@@ -193,36 +192,13 @@ export default function ImportsPage() {
       {step === 'results' && importResult && (
         <Card>
           <CardHeader>
-            <CardTitle>Import Complete</CardTitle>
+            <CardTitle>Import Processing</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              <div className="rounded-lg border p-4 text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {importResult.processed}
-                </div>
-                <div className="text-muted-foreground text-sm">Rows imported</div>
-              </div>
-              <div className="rounded-lg border p-4 text-center">
-                <div className="text-2xl font-bold text-red-600">
-                  {importResult.errored}
-                </div>
-                <div className="text-muted-foreground text-sm">Rows failed</div>
-              </div>
-              <div className="rounded-lg border p-4 text-center">
-                <div className="text-2xl font-bold">
-                  {importResult.processed + importResult.errored}
-                </div>
-                <div className="text-muted-foreground text-sm">Total rows</div>
-              </div>
-            </div>
-
-            {importResult.errored > 0 && batchId && (
-              <p className="text-muted-foreground text-sm">
-                Some rows failed validation. View the import details below to see errors
-                and retry.
-              </p>
-            )}
+            <p className="text-muted-foreground text-sm">
+              Your import is being processed in the background. You can track
+              its progress in the import history below.
+            </p>
 
             <div className="flex gap-3">
               <button
@@ -231,14 +207,12 @@ export default function ImportsPage() {
               >
                 Import another file
               </button>
-              {importResult.errored > 0 && batchId && (
-                <button
-                  onClick={() => handleViewBatch(batchId)}
-                  className="text-primary text-sm underline"
-                >
-                  View failed rows
-                </button>
-              )}
+              <button
+                onClick={() => handleViewBatch(importResult.batchId)}
+                className="text-primary text-sm underline"
+              >
+                View import details
+              </button>
             </div>
           </CardContent>
         </Card>

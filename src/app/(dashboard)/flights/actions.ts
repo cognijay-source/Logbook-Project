@@ -11,6 +11,9 @@ import { flightLegSchema } from '@/lib/validators/flight-leg'
 import { flightApproachSchema } from '@/lib/validators/flight-approach'
 import { flightCrewSchema } from '@/lib/validators/flight-crew'
 import { z } from 'zod'
+import { milestoneRecomputeTask } from '@/jobs/milestone-recompute'
+import { goalProgressRefreshTask } from '@/jobs/goal-progress-refresh'
+import { currencyRefreshTask } from '@/jobs/currency-refresh'
 
 // ---------- Types ----------
 
@@ -317,6 +320,11 @@ export async function createFlight(
       changes: flightData,
     })
 
+    // Fire-and-forget background jobs
+    milestoneRecomputeTask.trigger({ profileId: profile.id }).catch(() => {})
+    goalProgressRefreshTask.trigger({ profileId: profile.id }).catch(() => {})
+    currencyRefreshTask.trigger({ profileId: profile.id }).catch(() => {})
+
     return { id: flightId, error: null }
   } catch (error) {
     Sentry.captureException(error)
@@ -457,6 +465,11 @@ export async function updateFlight(
       changes: flightData,
     })
 
+    // Fire-and-forget background jobs
+    milestoneRecomputeTask.trigger({ profileId: profile.id }).catch(() => {})
+    goalProgressRefreshTask.trigger({ profileId: profile.id }).catch(() => {})
+    currencyRefreshTask.trigger({ profileId: profile.id }).catch(() => {})
+
     return { success: true, error: null }
   } catch (error) {
     Sentry.captureException(error)
@@ -499,6 +512,11 @@ export async function deleteFlight(
       entityId: id,
       action: 'delete',
     })
+
+    // Fire-and-forget background jobs
+    milestoneRecomputeTask.trigger({ profileId: profile.id }).catch(() => {})
+    goalProgressRefreshTask.trigger({ profileId: profile.id }).catch(() => {})
+    currencyRefreshTask.trigger({ profileId: profile.id }).catch(() => {})
 
     return { success: true, error: null }
   } catch (error) {
