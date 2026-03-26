@@ -37,3 +37,15 @@ export { goalAssignmentSchema, type GoalAssignment } from './goal'
 export { importRowSchema, type ImportRow } from './import'
 
 export { loginSchema, signupSchema, type Login, type Signup } from './auth'
+
+export {
+  documentUploadSchema,
+  documentUpdateSchema,
+  documentCategoryEnum,
+  entityTypeEnum,
+  DOCUMENT_CATEGORIES,
+  type DocumentUpload,
+  type DocumentUpdate,
+  type DocumentCategory,
+  type EntityType,
+} from './document'
