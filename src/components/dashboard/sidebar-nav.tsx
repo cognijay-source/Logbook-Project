@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Plane, Wrench, Map, Target, DollarSign, Upload, Settings } from 'lucide-react'
+import { LayoutDashboard, Plane, Wrench, Map, Target, DollarSign, Upload, Settings, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { label: 'Aircraft', href: '/aircraft', icon: Wrench },
   { label: 'Journey', href: '/journey', icon: Map },
   { label: 'Progress', href: '/progress', icon: Target },
+  { label: 'Currency', href: '/currency', icon: ShieldCheck },
   { label: 'Money', href: '/money', icon: DollarSign },
   { label: 'Imports', href: '/imports', icon: Upload },
   { label: 'Settings', href: '/settings', icon: Settings },
