@@ -10,7 +10,7 @@ export default function DashboardLayout({
     <div className="flex min-h-screen">
       <aside className="hidden w-64 flex-col border-r md:flex">
         <div className="p-6">
-          <h2 className="text-lg font-semibold">SkyLog</h2>
+          <h2 className="text-lg font-semibold">CrossCheck</h2>
         </div>
         <div className="flex-1 px-3">
           <SidebarNav />

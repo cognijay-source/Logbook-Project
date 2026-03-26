@@ -100,7 +100,7 @@ export default function ReportsPage() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `skylog-${reportType}-${startDate}-to-${endDate}.pdf`
+      a.download = `crosscheck-${reportType}-${startDate}-to-${endDate}.pdf`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)

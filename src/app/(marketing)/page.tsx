@@ -35,18 +35,18 @@ function Hero() {
       <div className="mx-auto max-w-3xl text-center">
         <div className="border-border/60 bg-muted/50 text-muted-foreground mb-8 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm">
           <Clock className="h-3.5 w-3.5" />
-          <span>Intelligent pilot logbook</span>
+          <span>The Pilot Operating System</span>
         </div>
 
         <h1 className="text-foreground text-4xl leading-[1.1] font-bold tracking-tight sm:text-5xl lg:text-6xl">
-          Your hours are building something.{' '}
-          <span className="text-muted-foreground">Know exactly what.</span>
+          See the system clearly.{' '}
+          <span className="text-muted-foreground">Build mastery deliberately.</span>
         </h1>
 
         <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg leading-relaxed sm:text-xl">
-          Track every flight with precision. Measure your progress toward
-          certificates and career thresholds. Always know where you stand and
-          what comes next.
+          From logged hours to real readiness. Track every flight, measure your
+          progress toward certificates and career thresholds. Stop guessing
+          where you stand.
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -107,7 +107,7 @@ function ValueProposition() {
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-            More than a digital logbook
+            Built for serious records and serious progress
           </h2>
           <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
             Not a replica of your paper logbook. A career system built around
@@ -232,7 +232,7 @@ const features = [
   },
   {
     icon: DollarSign,
-    title: 'Money Tracking',
+    title: 'Cost Tracking',
     description:
       'Training costs, checkride fees, and income by career phase. See the true cost and return of your flying.',
   },
@@ -353,7 +353,7 @@ function CTA() {
     <section className="border-border/40 border-t px-6 py-24 sm:py-32 lg:px-8">
       <div className="mx-auto max-w-xl text-center">
         <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-          Start your logbook
+          Start with CrossCheck
         </h2>
         <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
           Every career starts with the first entry. Build yours on a foundation

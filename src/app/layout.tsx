@@ -4,8 +4,8 @@ import { QueryProvider } from '@/components/query-provider'
 import { Toaster } from '@/components/ui/toaster'
 
 export const metadata: Metadata = {
-  title: 'Logbook Project',
-  description: 'Pilot logbook and aviation career tracker',
+  title: 'CrossCheck — The Pilot Operating System',
+  description: 'See the system clearly. Build mastery deliberately.',
 }
 
 export default function RootLayout({

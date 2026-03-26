@@ -2,20 +2,21 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Plane, Wrench, Map, Target, DollarSign, Upload, Settings, ShieldCheck, GraduationCap, FileText } from 'lucide-react'
+import { LayoutDashboard, Plane, Wrench, Map, Target, DollarSign, Upload, Settings, ShieldCheck, GraduationCap, FileText, BarChart3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Flights', href: '/flights', icon: Plane },
-  { label: 'Aircraft', href: '/aircraft', icon: Wrench },
-  { label: 'Journey', href: '/journey', icon: Map },
-  { label: 'Progress', href: '/progress', icon: Target },
-  { label: 'Training', href: '/training', icon: GraduationCap },
+  { label: 'Daily', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Logbook', href: '/flights', icon: Plane },
   { label: 'Currency', href: '/currency', icon: ShieldCheck },
-  { label: 'Money', href: '/money', icon: DollarSign },
-  { label: 'Reports', href: '/reports', icon: FileText },
+  { label: 'Mastery', href: '/journey', icon: Map },
+  { label: 'Ready', href: '/progress', icon: Target },
+  { label: 'Costs', href: '/money', icon: DollarSign },
+  { label: 'Documents', href: '/documents', icon: FileText },
   { label: 'Imports', href: '/imports', icon: Upload },
+  { label: 'Reports', href: '/reports', icon: BarChart3 },
+  { label: 'Aircraft', href: '/aircraft', icon: Wrench },
+  { label: 'Training', href: '/training', icon: GraduationCap },
   { label: 'Settings', href: '/settings', icon: Settings },
 ]
 

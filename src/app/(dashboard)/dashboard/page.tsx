@@ -121,7 +121,7 @@ function RecentFlights({
       <CardContent>
         {flights.length === 0 ? (
           <p className="text-muted-foreground py-6 text-center text-sm">
-            No flights logged yet. Ready for takeoff?
+            No flights recorded yet.
           </p>
         ) : (
           <div className="space-y-3">
@@ -381,7 +381,7 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl font-bold">Daily</h1>
         <DashboardSkeleton />
       </div>
     )
@@ -390,7 +390,7 @@ export default function DashboardPage() {
   if (error || !data) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl font-bold">Daily</h1>
         <Card>
           <CardContent className="py-10 text-center">
             <p className="text-muted-foreground">
@@ -404,7 +404,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <h1 className="text-2xl font-bold">Daily</h1>
 
       <SummaryCards totals={data.totals} />
 

@@ -63,7 +63,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Sign In</CardTitle>
-          <CardDescription>Welcome back to SkyLog</CardDescription>
+          <CardDescription>Sign in to CrossCheck</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-4">

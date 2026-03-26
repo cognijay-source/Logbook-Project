@@ -1,6 +1,6 @@
-# Logbook Project
+# CrossCheck
 
-Pilot logbook and aviation career tracker.
+The Pilot Operating System. See the system clearly. Build mastery deliberately.
 
 See @README.md for setup instructions and @package.json for available scripts.
 

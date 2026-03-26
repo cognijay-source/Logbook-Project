@@ -380,7 +380,7 @@ export async function generatePdf(
     // ---------- Header ----------
     doc.setFontSize(20)
     doc.setFont('helvetica', 'bold')
-    doc.text('SkyLog Flight Report', pageWidth / 2, 20, { align: 'center' })
+    doc.text('CrossCheck Flight Report', pageWidth / 2, 20, { align: 'center' })
 
     doc.setFontSize(12)
     doc.setFont('helvetica', 'normal')
