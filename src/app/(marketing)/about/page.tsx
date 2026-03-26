@@ -50,10 +50,10 @@ export default function AboutPage() {
       {/* Hero */}
       <section className="px-6 pt-24 pb-16 sm:pt-32 sm:pb-20 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-foreground text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
             About CrossCheck
           </h1>
-          <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
+          <p className="mt-4 text-lg leading-relaxed text-[#8a8a9a]">
             Built because aviation is structured on paper but opaque in
             practice.
           </p>
@@ -61,12 +61,12 @@ export default function AboutPage() {
       </section>
 
       {/* Origin */}
-      <section className="border-border/40 border-t px-6 py-24 sm:py-32 lg:px-8">
+      <section className="border-t border-white/[0.06] px-6 py-24 sm:py-32 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <h2 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Why CrossCheck exists
           </h2>
-          <div className="text-muted-foreground mt-6 space-y-4 text-base leading-relaxed">
+          <div className="mt-6 space-y-4 text-base leading-relaxed text-[#8a8a9a]">
             <p>
               Aviation demands precision. Regulations are specific. Standards
               are measurable. Progress is quantifiable. Yet the tools most
@@ -90,12 +90,12 @@ export default function AboutPage() {
       </section>
 
       {/* Mission */}
-      <section className="bg-muted/30 px-6 py-24 sm:py-32 lg:px-8">
+      <section className="bg-white/[0.02] px-6 py-24 sm:py-32 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <h2 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Mission
           </h2>
-          <p className="text-muted-foreground mt-6 text-base leading-relaxed">
+          <p className="mt-6 text-base leading-relaxed text-[#8a8a9a]">
             Help pilots navigate an opaque industry with cleaner records,
             clearer progress, and more objective readiness. CrossCheck exists so
             that every pilot can see the system clearly and build mastery
@@ -105,18 +105,18 @@ export default function AboutPage() {
       </section>
 
       {/* Values */}
-      <section className="border-border/40 border-t px-6 py-24 sm:py-32 lg:px-8">
+      <section className="border-t border-white/[0.06] px-6 py-24 sm:py-32 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <h2 className="text-foreground mb-12 text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2 className="mb-12 text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Values
           </h2>
           <div className="grid gap-8 sm:grid-cols-2">
             {values.map((v) => (
               <div key={v.principle}>
-                <h3 className="text-foreground text-base font-semibold">
+                <h3 className="text-base font-semibold text-white">
                   {v.principle}
                 </h3>
-                <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+                <p className="mt-2 text-sm leading-relaxed text-[#8a8a9a]">
                   {v.detail}
                 </p>
               </div>

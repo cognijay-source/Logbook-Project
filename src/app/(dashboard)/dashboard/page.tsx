@@ -66,16 +66,15 @@ function SummaryCards({ totals }: { totals: DashboardData['totals'] }) {
             ? totals.actualInstrument + totals.simulatedInstrument
             : totals[c.key]
         return (
-          <Card key={c.key} className="group relative overflow-hidden">
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-500/[0.03] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          <Card key={c.key} className="group relative overflow-hidden border-l-2 border-l-[#00b894]/30">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardDescription className="text-xs font-medium">
+              <CardDescription className="text-xs font-medium uppercase tracking-wider">
                 {c.label}
               </CardDescription>
-              <c.icon className="text-muted-foreground h-4 w-4 transition-colors duration-200 group-hover:text-sky-500" />
+              <c.icon className="h-4 w-4 text-muted-foreground transition-colors duration-200 group-hover:text-[#00b894]" />
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold tabular-nums">
+              <p className="text-[32px] font-bold leading-none tabular-nums">
                 {formatHours(value)}
               </p>
             </CardContent>
@@ -116,7 +115,7 @@ function RecentFlights({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base">Recent Flights</CardTitle>
-        <Button variant="ghost" size="sm" asChild>
+        <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
           <Link href="/flights">
             View all <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
@@ -124,11 +123,14 @@ function RecentFlights({
       </CardHeader>
       <CardContent>
         {flights.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-6">
-            <Plane className="text-muted-foreground/40 h-8 w-8" />
-            <p className="text-muted-foreground text-center text-sm">
+          <div className="flex flex-col items-center gap-3 py-8">
+            <Plane className="h-12 w-12 text-muted-foreground/30" />
+            <p className="text-center text-sm text-muted-foreground">
               No flights recorded yet.
             </p>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/flights/new">Log your first flight</Link>
+            </Button>
           </div>
         ) : (
           <div className="space-y-1">
@@ -136,13 +138,13 @@ function RecentFlights({
               <Link
                 key={f.id}
                 href={`/flights/${f.id}`}
-                className="hover:bg-accent/50 flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors duration-150"
+                className="flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-[#f5f5f7]"
               >
                 <div className="flex flex-col gap-0.5">
                   <span className="text-sm font-medium">
                     {formatRoute(f.departureAirport, f.arrivalAirport)}
                   </span>
-                  <span className="text-muted-foreground text-xs">
+                  <span className="text-xs text-muted-foreground">
                     {f.flightDate}
                     {f.aircraft &&
                       ` \u00b7 ${f.aircraft.tailNumber}${f.aircraft.model ? ` (${f.aircraft.model})` : ''}`}
@@ -176,7 +178,7 @@ function getCurrencyBadge(result: DashboardData['currency'][number]) {
   }
   if (!result.isCurrent) {
     return {
-      color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+      color: 'bg-red-500/10 text-red-600',
       label: 'Expired',
       icon: XCircle,
     }
@@ -187,16 +189,14 @@ function getCurrencyBadge(result: DashboardData['currency'][number]) {
     )
     if (daysRemaining <= 30) {
       return {
-        color:
-          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+        color: 'bg-amber-500/10 text-amber-600',
         label: `${daysRemaining}d left`,
         icon: AlertTriangle,
       }
     }
   }
   return {
-    color:
-      'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    color: 'bg-[#00d4aa]/10 text-[#00916e]',
     label: 'Current',
     icon: ShieldCheck,
   }
@@ -207,7 +207,7 @@ function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base">Currency Status</CardTitle>
-        <Button variant="ghost" size="sm" asChild>
+        <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
           <Link href="/currency">
             Details <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
@@ -215,9 +215,9 @@ function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
       </CardHeader>
       <CardContent>
         {currency.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-6">
-            <ShieldCheck className="text-muted-foreground/40 h-8 w-8" />
-            <p className="text-muted-foreground text-center text-sm">
+          <div className="flex flex-col items-center gap-3 py-8">
+            <ShieldCheck className="h-12 w-12 text-muted-foreground/30" />
+            <p className="text-center text-sm text-muted-foreground">
               No currency rules configured yet. Check back after adding flights.
             </p>
           </div>
@@ -232,7 +232,7 @@ function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
                 >
                   <div className="flex flex-col gap-0.5">
                     <span className="text-sm font-medium">{c.rule.name}</span>
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-xs text-muted-foreground">
                       {c.details}
                     </span>
                   </div>
@@ -275,9 +275,9 @@ function GoalProgressPanel({
       </CardHeader>
       <CardContent>
         {!goalProgress ? (
-          <div className="flex flex-col items-center gap-3 py-6">
-            <Target className="text-muted-foreground/40 h-8 w-8" />
-            <p className="text-muted-foreground text-center text-sm">
+          <div className="flex flex-col items-center gap-3 py-8">
+            <Target className="h-12 w-12 text-muted-foreground/30" />
+            <p className="text-center text-sm text-muted-foreground">
               No goal assigned yet. Set one to track your progress.
             </p>
             <Button variant="outline" size="sm" asChild>
@@ -290,17 +290,17 @@ function GoalProgressPanel({
               <div key={req.field} className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span>{req.label}</span>
-                  <span className="text-muted-foreground tabular-nums">
+                  <span className="tabular-nums text-muted-foreground">
                     {formatHours(req.current)} / {formatHours(req.required)}
                   </span>
                 </div>
-                <div className="bg-secondary h-2 overflow-hidden rounded-full">
+                <div className="h-2 overflow-hidden rounded-full bg-[#f0f0f3]">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 transition-all duration-700 ease-out"
+                    className="animate-progress-fill h-full rounded-full bg-gradient-to-r from-[#00b894] to-[#00d4aa]"
                     style={{ width: `${Math.min(req.percentage, 100)}%` }}
                   />
                 </div>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-xs text-muted-foreground">
                   {req.percentage >= 100
                     ? 'Complete'
                     : `${req.percentage}% \u2014 ${formatHours(req.remaining)} remaining`}
@@ -387,8 +387,8 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <h1 className="font-heading text-2xl font-bold">Daily</h1>
+      <div className="animate-fade-in space-y-6">
+        <h1 className="font-heading text-[28px] font-semibold">Daily</h1>
         <DashboardSkeleton />
       </div>
     )
@@ -396,13 +396,21 @@ export default function DashboardPage() {
 
   if (error || !data) {
     return (
-      <div className="space-y-6">
-        <h1 className="font-heading text-2xl font-bold">Daily</h1>
-        <Card>
+      <div className="animate-fade-in space-y-6">
+        <h1 className="font-heading text-[28px] font-semibold">Daily</h1>
+        <Card className="border-red-200 bg-red-50/50">
           <CardContent className="py-10 text-center">
-            <p className="text-muted-foreground">
+            <p className="text-red-600">
               Failed to load dashboard data. Please try refreshing.
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              onClick={() => window.location.reload()}
+            >
+              Try again
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -410,8 +418,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="font-heading text-2xl font-bold">Daily</h1>
+    <div className="animate-fade-in space-y-6">
+      <h1 className="font-heading text-[28px] font-semibold">Daily</h1>
 
       <SummaryCards totals={data.totals} />
 

@@ -190,9 +190,9 @@ const faqs = [
 
 function Dot({ active }: { active: boolean }) {
   return active ? (
-    <Check className="text-foreground mx-auto h-4 w-4" />
+    <Check className="mx-auto h-4 w-4 text-[#00d4aa]" />
   ) : (
-    <span className="text-muted-foreground/40 mx-auto block text-sm">—</span>
+    <span className="mx-auto block text-sm text-[#6b6b7b]">&mdash;</span>
   )
 }
 
@@ -202,10 +202,10 @@ export default function PricingPage() {
       {/* Hero */}
       <section className="px-6 pt-24 pb-16 sm:pt-32 sm:pb-20 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-foreground text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
             Pricing
           </h1>
-          <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
+          <p className="mt-4 text-lg leading-relaxed text-[#8a8a9a]">
             Start free. Scale as your career demands more visibility.
           </p>
         </div>
@@ -217,28 +217,35 @@ export default function PricingPage() {
           {tiers.map((tier) => (
             <div
               key={tier.name}
-              className={`border-border/60 flex flex-col rounded-2xl border p-8 ${
+              className={`relative flex flex-col rounded-2xl border p-8 ${
                 tier.highlight
-                  ? 'ring-foreground/20 bg-muted/30 ring-2'
-                  : 'bg-background'
+                  ? 'border-[#00d4aa]/40 bg-[#12121a] shadow-lg shadow-[#00d4aa]/[0.08]'
+                  : 'border-white/[0.08] bg-[#12121a]'
               }`}
             >
-              <h2 className="text-foreground text-base font-semibold">
+              {tier.highlight && (
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                  <span className="rounded-full bg-[#00d4aa] px-4 py-1 text-xs font-semibold text-[#0a0a0f] shadow-md shadow-[#00d4aa]/20">
+                    Most Popular
+                  </span>
+                </div>
+              )}
+              <h2 className="text-base font-semibold text-white">
                 {tier.name}
               </h2>
-              <p className="text-foreground mt-4 text-3xl font-bold tracking-tight">
+              <p className="mt-4 text-3xl font-bold tracking-tight text-white">
                 {tier.price}
               </p>
-              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+              <p className="mt-2 text-sm leading-relaxed text-[#8a8a9a]">
                 {tier.description}
               </p>
               <ul className="mt-8 flex-1 space-y-3">
                 {tier.features.map((feature) => (
                   <li
                     key={feature}
-                    className="text-muted-foreground flex items-start gap-3 text-sm"
+                    className="flex items-start gap-3 text-sm text-[#8a8a9a]"
                   >
-                    <Check className="text-foreground mt-0.5 h-4 w-4 shrink-0" />
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#00d4aa]" />
                     {feature}
                   </li>
                 ))}
@@ -246,8 +253,11 @@ export default function PricingPage() {
               <div className="mt-8">
                 <Button
                   asChild
-                  variant={tier.highlight ? 'default' : 'outline'}
-                  className="w-full"
+                  className={`w-full ${
+                    tier.highlight
+                      ? 'bg-[#00d4aa] text-[#0a0a0f] font-semibold shadow-md shadow-[#00d4aa]/25 hover:bg-[#00e8bb] hover:shadow-lg'
+                      : 'border border-white/[0.15] bg-transparent text-white hover:border-white/[0.3] hover:bg-white/[0.05]'
+                  }`}
                 >
                   <Link href="/signup">{tier.cta}</Link>
                 </Button>
@@ -258,25 +268,25 @@ export default function PricingPage() {
       </section>
 
       {/* Feature comparison table */}
-      <section className="border-border/40 border-t px-6 py-24 sm:py-32 lg:px-8">
+      <section className="border-t border-white/[0.06] px-6 py-24 sm:py-32 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          <h2 className="text-foreground mb-12 text-center text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2 className="mb-12 text-center text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Feature comparison
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-border/60 border-b">
-                  <th className="text-muted-foreground pb-4 text-left font-medium">
+                <tr className="border-b border-white/[0.08]">
+                  <th className="pb-4 text-left font-medium text-[#8a8a9a]">
                     Feature
                   </th>
-                  <th className="text-muted-foreground pb-4 text-center font-medium">
+                  <th className="pb-4 text-center font-medium text-[#8a8a9a]">
                     Core
                   </th>
-                  <th className="text-muted-foreground pb-4 text-center font-medium">
+                  <th className="pb-4 text-center font-medium text-[#8a8a9a]">
                     Mastery
                   </th>
-                  <th className="text-muted-foreground pb-4 text-center font-medium">
+                  <th className="pb-4 text-center font-medium text-[#8a8a9a]">
                     Command
                   </th>
                 </tr>
@@ -285,9 +295,9 @@ export default function PricingPage() {
                 {comparisonRows.map((row) => (
                   <tr
                     key={row.feature}
-                    className="border-border/40 border-b last:border-0"
+                    className="border-b border-white/[0.04] last:border-0"
                   >
-                    <td className="text-foreground py-3 pr-4">{row.feature}</td>
+                    <td className="py-3 pr-4 text-[#c0c0cc]">{row.feature}</td>
                     <td className="py-3 text-center">
                       <Dot active={row.core} />
                     </td>
@@ -306,18 +316,18 @@ export default function PricingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="bg-muted/30 px-6 py-24 sm:py-32 lg:px-8">
+      <section className="bg-white/[0.02] px-6 py-24 sm:py-32 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <h2 className="text-foreground mb-12 text-center text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2 className="mb-12 text-center text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Frequently asked questions
           </h2>
           <div className="space-y-8">
             {faqs.map((faq) => (
               <div key={faq.question}>
-                <h3 className="text-foreground text-base font-semibold">
+                <h3 className="text-base font-semibold text-white">
                   {faq.question}
                 </h3>
-                <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+                <p className="mt-2 text-sm leading-relaxed text-[#8a8a9a]">
                   {faq.answer}
                 </p>
               </div>
