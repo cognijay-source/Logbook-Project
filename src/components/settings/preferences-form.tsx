@@ -132,9 +132,7 @@ export function PreferencesForm({
                 ))}
               </select>
               {errors.timezone && (
-                <p className="text-destructive text-sm">
-                  {errors.timezone[0]}
-                </p>
+                <p className="text-destructive text-sm">{errors.timezone[0]}</p>
               )}
             </div>
           </div>

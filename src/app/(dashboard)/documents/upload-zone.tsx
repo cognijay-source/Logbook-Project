@@ -65,7 +65,11 @@ export function UploadZone({ onUploadComplete }: Props) {
     setProgress(100)
 
     if (result.error) {
-      toast({ title: 'Upload failed', description: result.error, variant: 'destructive' })
+      toast({
+        title: 'Upload failed',
+        description: result.error,
+        variant: 'destructive',
+      })
     } else {
       toast({ title: 'Document uploaded', description: selectedFile.name })
       setSelectedFile(null)

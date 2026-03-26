@@ -33,8 +33,7 @@ const tiers = [
   {
     name: 'CrossCheck Mastery',
     price: '$X/mo',
-    description:
-      'Build mastery with clear progress and disciplined tracking.',
+    description: 'Build mastery with clear progress and disciplined tracking.',
     features: [
       'Everything in Core',
       'Currency tracking',

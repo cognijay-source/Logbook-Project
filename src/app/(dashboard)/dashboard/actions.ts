@@ -5,8 +5,14 @@ import { eq, and, desc } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import * as schema from '@/lib/db/schema'
 import { getOrCreateProfile } from '@/lib/services/profile'
-import { getFlightTotals, type FlightTotals } from '@/lib/services/flight-totals'
-import { getGoalProgress, type GoalProgress } from '@/lib/services/goal-progress'
+import {
+  getFlightTotals,
+  type FlightTotals,
+} from '@/lib/services/flight-totals'
+import {
+  getGoalProgress,
+  type GoalProgress,
+} from '@/lib/services/goal-progress'
 import {
   evaluateCurrency,
   type CurrencyResult,

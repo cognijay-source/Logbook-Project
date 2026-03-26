@@ -48,7 +48,11 @@ function formatDate(date: Date | null | undefined): string {
   return d.toISOString().split('T')[0]
 }
 
-export function ProfileForm({ profile, pilotProfile, action }: ProfileFormProps) {
+export function ProfileForm({
+  profile,
+  pilotProfile,
+  action,
+}: ProfileFormProps) {
   const formRef = useRef<HTMLFormElement>(null)
   const [isPending, startTransition] = useTransition()
   const [errors, setErrors] = useState<Record<string, string[]>>({})
@@ -69,7 +73,10 @@ export function ProfileForm({ profile, pilotProfile, action }: ProfileFormProps)
             setErrors({ _form: [String(result.error)] })
           }
         } else {
-          toast({ title: 'Profile updated', description: 'Your changes have been saved.' })
+          toast({
+            title: 'Profile updated',
+            description: 'Your changes have been saved.',
+          })
         }
       } catch (error) {
         Sentry.captureException(error)
@@ -99,7 +106,9 @@ export function ProfileForm({ profile, pilotProfile, action }: ProfileFormProps)
               placeholder="Your name"
             />
             {errors.displayName && (
-              <p className="text-destructive text-sm">{errors.displayName[0]}</p>
+              <p className="text-destructive text-sm">
+                {errors.displayName[0]}
+              </p>
             )}
           </div>
 

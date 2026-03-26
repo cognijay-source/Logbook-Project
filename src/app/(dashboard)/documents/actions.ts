@@ -118,7 +118,10 @@ export async function uploadDocument(formData: FormData): Promise<{
   } catch (error) {
     Sentry.captureException(error)
     if (error instanceof z.ZodError) {
-      return { data: null, error: error.errors.map((e) => e.message).join(', ') }
+      return {
+        data: null,
+        error: error.errors.map((e) => e.message).join(', '),
+      }
     }
     return { data: null, error: 'Failed to upload document' }
   }
@@ -242,8 +245,14 @@ export async function updateDocument(
       .update(schema.documents)
       .set({
         documentType: validated.category ?? existing[0].documentType,
-        entityType: validated.entityType !== undefined ? validated.entityType : existing[0].entityType,
-        entityId: validated.entityId !== undefined ? validated.entityId : existing[0].entityId,
+        entityType:
+          validated.entityType !== undefined
+            ? validated.entityType
+            : existing[0].entityType,
+        entityId:
+          validated.entityId !== undefined
+            ? validated.entityId
+            : existing[0].entityId,
         updatedAt: new Date(),
       })
       .where(
@@ -266,7 +275,10 @@ export async function updateDocument(
   } catch (error) {
     Sentry.captureException(error)
     if (error instanceof z.ZodError) {
-      return { data: null, error: error.errors.map((e) => e.message).join(', ') }
+      return {
+        data: null,
+        error: error.errors.map((e) => e.message).join(', '),
+      }
     }
     return { data: null, error: 'Failed to update document' }
   }

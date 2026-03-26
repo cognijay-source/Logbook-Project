@@ -59,7 +59,8 @@ export const currencyRefreshTask = task({
           type: 'currency_expiring',
           profileId,
           title: 'Currency Expiring Soon',
-          message: `${result.rule.name} expires ${result.expiresAt}. ${result.needed ?? ''}`.trim(),
+          message:
+            `${result.rule.name} expires ${result.expiresAt}. ${result.needed ?? ''}`.trim(),
         })
       }
     }

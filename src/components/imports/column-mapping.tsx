@@ -11,10 +11,10 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import {
-  skylogFields,
-  skylogFieldLabels,
+  crosscheckFields,
+  crosscheckFieldLabels,
   type ColumnMapping,
-  type SkylogField,
+  type CrosscheckField,
 } from '@/lib/validators/import'
 
 interface ColumnMappingProps {
@@ -46,7 +46,7 @@ export function ColumnMappingStep({
   const hasFlightDate = usedFields.has('flightDate')
 
   function handleSelectChange(csvCol: string, value: string) {
-    onMappingChange({ ...mapping, [csvCol]: value as SkylogField | '' })
+    onMappingChange({ ...mapping, [csvCol]: value as CrosscheckField | '' })
   }
 
   // Build preview of mapped data (first 5 rows)
@@ -56,9 +56,9 @@ export function ColumnMappingStep({
 
     for (const previewRow of preview.slice(0, 5)) {
       const mapped: Record<string, string> = {}
-      for (const [csvCol, skylogField] of activeMappings) {
-        if (skylogField) {
-          mapped[skylogFieldLabels[skylogField as SkylogField]] =
+      for (const [csvCol, ccField] of activeMappings) {
+        if (ccField) {
+          mapped[crosscheckFieldLabels[ccField as CrosscheckField]] =
             previewRow[csvCol] ?? ''
         }
       }
@@ -76,11 +76,16 @@ export function ColumnMappingStep({
     <div className="space-y-6">
       {/* Mapping selectors */}
       <div>
-        <h3 className="mb-3 text-sm font-medium">Map CSV columns to CrossCheck fields</h3>
+        <h3 className="mb-3 text-sm font-medium">
+          Map CSV columns to CrossCheck fields
+        </h3>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {csvHeaders.map((col) => (
             <div key={col} className="flex flex-col gap-1">
-              <label className="text-muted-foreground truncate text-xs" title={col}>
+              <label
+                className="text-muted-foreground truncate text-xs"
+                title={col}
+              >
                 {col}
               </label>
               <select
@@ -89,13 +94,13 @@ export function ColumnMappingStep({
                 className="border-input bg-background ring-offset-background focus:ring-ring h-9 rounded-md border px-3 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
               >
                 <option value="">-- Skip --</option>
-                {skylogFields.map((field) => (
+                {crosscheckFields.map((field) => (
                   <option
                     key={field}
                     value={field}
                     disabled={usedFields.has(field) && mapping[col] !== field}
                   >
-                    {skylogFieldLabels[field]}
+                    {crosscheckFieldLabels[field]}
                   </option>
                 ))}
               </select>
@@ -108,8 +113,8 @@ export function ColumnMappingStep({
       {mappedHeaders.length > 0 && (
         <div>
           <h3 className="mb-3 text-sm font-medium">
-            Preview of mapped data ({mappedCount} field{mappedCount !== 1 ? 's' : ''}{' '}
-            mapped)
+            Preview of mapped data ({mappedCount} field
+            {mappedCount !== 1 ? 's' : ''} mapped)
           </h3>
           <div className="overflow-auto rounded-md border">
             <Table>

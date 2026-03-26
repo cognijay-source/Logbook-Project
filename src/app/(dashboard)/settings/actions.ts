@@ -193,9 +193,7 @@ export async function deleteAccount() {
     const profile = await getOrCreateProfile()
 
     // Delete the profile row — all related data cascades
-    await db
-      .delete(schema.profiles)
-      .where(eq(schema.profiles.id, profile.id))
+    await db.delete(schema.profiles).where(eq(schema.profiles.id, profile.id))
 
     // Delete the Supabase Auth user
     const supabase = await createClient()

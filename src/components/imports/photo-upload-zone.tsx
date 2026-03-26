@@ -10,7 +10,10 @@ interface PhotoUploadZoneProps {
   isLoading: boolean
 }
 
-export function PhotoUploadZone({ onFilesSelected, isLoading }: PhotoUploadZoneProps) {
+export function PhotoUploadZone({
+  onFilesSelected,
+  isLoading,
+}: PhotoUploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
@@ -37,13 +40,10 @@ export function PhotoUploadZone({ onFilesSelected, isLoading }: PhotoUploadZoneP
     [selectedFiles],
   )
 
-  const removeFile = useCallback(
-    (index: number) => {
-      setSelectedFiles((prev) => prev.filter((_, i) => i !== index))
-      setPreviews((prev) => prev.filter((_, i) => i !== index))
-    },
-    [],
-  )
+  const removeFile = useCallback((index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index))
+    setPreviews((prev) => prev.filter((_, i) => i !== index))
+  }, [])
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -119,7 +119,8 @@ export function PhotoUploadZone({ onFilesSelected, isLoading }: PhotoUploadZoneP
       {previews.length > 0 && (
         <div className="space-y-3">
           <p className="text-sm font-medium">
-            {selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''} selected
+            {selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''}{' '}
+            selected
           </p>
           <div className="flex flex-wrap gap-3">
             {previews.map((src, i) => (
@@ -135,17 +136,20 @@ export function PhotoUploadZone({ onFilesSelected, isLoading }: PhotoUploadZoneP
                     e.stopPropagation()
                     removeFile(i)
                   }}
-                  className="bg-destructive text-destructive-foreground absolute -right-2 -top-2 rounded-full p-0.5 opacity-0 transition-opacity group-hover:opacity-100"
+                  className="bg-destructive text-destructive-foreground absolute -top-2 -right-2 rounded-full p-0.5 opacity-0 transition-opacity group-hover:opacity-100"
                 >
                   <X className="h-3 w-3" />
                 </button>
-                <p className="mt-1 max-w-24 truncate text-xs text-muted-foreground">
+                <p className="text-muted-foreground mt-1 max-w-24 truncate text-xs">
                   {selectedFiles[i]?.name}
                 </p>
               </div>
             ))}
           </div>
-          <Button onClick={handleParse} disabled={isLoading || selectedFiles.length === 0}>
+          <Button
+            onClick={handleParse}
+            disabled={isLoading || selectedFiles.length === 0}
+          >
             {isLoading ? 'Parsing with AI...' : 'Parse with AI'}
           </Button>
         </div>

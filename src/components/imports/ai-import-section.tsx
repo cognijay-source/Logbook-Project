@@ -7,7 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PhotoUploadZone } from './photo-upload-zone'
 import { AiReviewTable } from './ai-review-table'
-import { parseLogbookImages, confirmAiImport } from '@/app/(dashboard)/imports/actions'
+import {
+  parseLogbookImages,
+  confirmAiImport,
+} from '@/app/(dashboard)/imports/actions'
 import { type AiParsedFlight } from '@/lib/validators/import'
 
 type AiStep = 'upload' | 'review' | 'results'
@@ -107,7 +110,10 @@ export function AiImportSection() {
             <CardTitle>Import from Photos</CardTitle>
           </CardHeader>
           <CardContent>
-            <PhotoUploadZone onFilesSelected={handleFilesSelected} isLoading={isParsing} />
+            <PhotoUploadZone
+              onFilesSelected={handleFilesSelected}
+              isLoading={isParsing}
+            />
           </CardContent>
         </Card>
       )}
@@ -121,10 +127,17 @@ export function AiImportSection() {
           <CardContent className="space-y-4">
             <AiReviewTable flights={flights} onFlightsChange={setFlights} />
             <div className="flex gap-3">
-              <Button onClick={handleConfirmImport} disabled={isImporting || flights.length === 0}>
+              <Button
+                onClick={handleConfirmImport}
+                disabled={isImporting || flights.length === 0}
+              >
                 {isImporting ? 'Importing...' : 'Confirm and Import'}
               </Button>
-              <Button variant="outline" onClick={handleStartOver} disabled={isImporting}>
+              <Button
+                variant="outline"
+                onClick={handleStartOver}
+                disabled={isImporting}
+              >
                 Start Over
               </Button>
             </div>
@@ -141,17 +154,23 @@ export function AiImportSection() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <p className="text-sm">
-                <span className="font-medium">{importResult.imported}</span> flight
+                <span className="font-medium">{importResult.imported}</span>{' '}
+                flight
                 {importResult.imported !== 1 ? 's' : ''} imported
                 {importResult.needsReview > 0 && (
                   <>
-                    , <span className="font-medium text-yellow-600">{importResult.needsReview}</span>{' '}
-                    need{importResult.needsReview !== 1 ? '' : 's'} manual review
+                    ,{' '}
+                    <span className="font-medium text-yellow-600">
+                      {importResult.needsReview}
+                    </span>{' '}
+                    need{importResult.needsReview !== 1 ? '' : 's'} manual
+                    review
                   </>
                 )}
               </p>
               <p className="text-muted-foreground text-xs">
-                Imported flights are saved as drafts. Review them in your flights list.
+                Imported flights are saved as drafts. Review them in your
+                flights list.
               </p>
             </div>
 
@@ -159,7 +178,10 @@ export function AiImportSection() {
               <Button variant="outline" onClick={handleStartOver}>
                 Import more photos
               </Button>
-              <a href="/flights" className="text-primary text-sm underline leading-9">
+              <a
+                href="/flights"
+                className="text-primary text-sm leading-9 underline"
+              >
                 View flights
               </a>
             </div>

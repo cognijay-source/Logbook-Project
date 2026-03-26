@@ -200,7 +200,11 @@ function TrainingEntriesTab() {
       if (editing) {
         const result = await updateTrainingEntry(editing.id, payload)
         if (result.error) {
-          toast({ title: 'Error', description: result.error, variant: 'destructive' })
+          toast({
+            title: 'Error',
+            description: result.error,
+            variant: 'destructive',
+          })
         } else {
           toast({ title: 'Training entry updated' })
           setDialogOpen(false)
@@ -209,7 +213,11 @@ function TrainingEntriesTab() {
       } else {
         const result = await createTrainingEntry(payload)
         if (result.error) {
-          toast({ title: 'Error', description: result.error, variant: 'destructive' })
+          toast({
+            title: 'Error',
+            description: result.error,
+            variant: 'destructive',
+          })
         } else {
           toast({ title: 'Training entry created' })
           setDialogOpen(false)
@@ -218,7 +226,11 @@ function TrainingEntriesTab() {
       }
     } catch (error) {
       Sentry.captureException(error)
-      toast({ title: 'Error', description: 'Something went wrong', variant: 'destructive' })
+      toast({
+        title: 'Error',
+        description: 'Something went wrong',
+        variant: 'destructive',
+      })
     } finally {
       setSubmitting(false)
     }
@@ -230,14 +242,22 @@ function TrainingEntriesTab() {
     try {
       const result = await deleteTrainingEntry(deleteTarget.id)
       if (result.error) {
-        toast({ title: 'Error', description: result.error, variant: 'destructive' })
+        toast({
+          title: 'Error',
+          description: result.error,
+          variant: 'destructive',
+        })
       } else {
         toast({ title: 'Training entry deleted' })
         queryClient.invalidateQueries({ queryKey: ['training-entries'] })
       }
     } catch (error) {
       Sentry.captureException(error)
-      toast({ title: 'Error', description: 'Something went wrong', variant: 'destructive' })
+      toast({
+        title: 'Error',
+        description: 'Something went wrong',
+        variant: 'destructive',
+      })
     } finally {
       setSubmitting(false)
       setDeleteTarget(null)
@@ -256,7 +276,7 @@ function TrainingEntriesTab() {
 
   if (isError) {
     return (
-      <div className="text-destructive rounded-lg border p-4 mt-4">
+      <div className="text-destructive mt-4 rounded-lg border p-4">
         Could not load training entries.
       </div>
     )
@@ -287,7 +307,7 @@ function TrainingEntriesTab() {
 
       {data && data.length > 0 && (
         <div className="rounded-lg border">
-          <div className="grid grid-cols-[1fr_100px_1fr_1fr_80px_auto] gap-4 border-b px-4 py-2 text-sm font-medium text-muted-foreground">
+          <div className="text-muted-foreground grid grid-cols-[1fr_100px_1fr_1fr_80px_auto] gap-4 border-b px-4 py-2 text-sm font-medium">
             <span>Date</span>
             <span>Type</span>
             <span>Subject</span>
@@ -298,12 +318,12 @@ function TrainingEntriesTab() {
           {data.map((entry) => (
             <div
               key={entry.id}
-              className="grid grid-cols-[1fr_100px_1fr_1fr_80px_auto] gap-4 border-b px-4 py-3 text-sm last:border-b-0 items-center"
+              className="grid grid-cols-[1fr_100px_1fr_1fr_80px_auto] items-center gap-4 border-b px-4 py-3 text-sm last:border-b-0"
             >
               <span>{entry.entryDate}</span>
               <span className="capitalize">{entry.entryType}</span>
               <span className="truncate">{entry.subject}</span>
-              <span className="truncate text-muted-foreground">
+              <span className="text-muted-foreground truncate">
                 {entry.instructor || '—'}
               </span>
               <span>{entry.duration ? `${entry.duration}h` : '—'}</span>
@@ -319,7 +339,7 @@ function TrainingEntriesTab() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-destructive"
+                  className="text-destructive h-8 w-8"
                   onClick={() => setDeleteTarget(entry)}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -362,7 +382,7 @@ function TrainingEntriesTab() {
                   name="entryType"
                   defaultValue={editing?.entryType ?? ''}
                   required
-                  className="border-input bg-transparent focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                  className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 >
                   <option value="" disabled>
                     Select type
@@ -412,7 +432,7 @@ function TrainingEntriesTab() {
                 name="description"
                 rows={2}
                 defaultValue={editing?.description ?? ''}
-                className="border-input bg-transparent focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                className="border-input focus-visible:ring-ring flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
               />
             </div>
             <div className="grid gap-2">
@@ -422,7 +442,7 @@ function TrainingEntriesTab() {
                 name="notes"
                 rows={2}
                 defaultValue={editing?.notes ?? ''}
-                className="border-input bg-transparent focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                className="border-input focus-visible:ring-ring flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
               />
             </div>
             <DialogFooter>
@@ -435,23 +455,17 @@ function TrainingEntriesTab() {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <Dialog
-        open={!!deleteTarget}
-        onOpenChange={() => setDeleteTarget(null)}
-      >
+      <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Training Entry</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &quot;{deleteTarget?.subject}&quot;? This
-              action cannot be undone.
+              Are you sure you want to delete &quot;{deleteTarget?.subject}
+              &quot;? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteTarget(null)}
-            >
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
               Cancel
             </Button>
             <Button
@@ -514,7 +528,11 @@ function CertificatesTab() {
       if (editing) {
         const result = await updateCertificate(editing.id, payload)
         if (result.error) {
-          toast({ title: 'Error', description: result.error, variant: 'destructive' })
+          toast({
+            title: 'Error',
+            description: result.error,
+            variant: 'destructive',
+          })
         } else {
           toast({ title: 'Certificate updated' })
           setDialogOpen(false)
@@ -523,7 +541,11 @@ function CertificatesTab() {
       } else {
         const result = await createCertificate(payload)
         if (result.error) {
-          toast({ title: 'Error', description: result.error, variant: 'destructive' })
+          toast({
+            title: 'Error',
+            description: result.error,
+            variant: 'destructive',
+          })
         } else {
           toast({ title: 'Certificate created' })
           setDialogOpen(false)
@@ -532,7 +554,11 @@ function CertificatesTab() {
       }
     } catch (error) {
       Sentry.captureException(error)
-      toast({ title: 'Error', description: 'Something went wrong', variant: 'destructive' })
+      toast({
+        title: 'Error',
+        description: 'Something went wrong',
+        variant: 'destructive',
+      })
     } finally {
       setSubmitting(false)
     }
@@ -544,14 +570,22 @@ function CertificatesTab() {
     try {
       const result = await deleteCertificate(deleteTarget.id)
       if (result.error) {
-        toast({ title: 'Error', description: result.error, variant: 'destructive' })
+        toast({
+          title: 'Error',
+          description: result.error,
+          variant: 'destructive',
+        })
       } else {
         toast({ title: 'Certificate deleted' })
         queryClient.invalidateQueries({ queryKey: ['certificates'] })
       }
     } catch (error) {
       Sentry.captureException(error)
-      toast({ title: 'Error', description: 'Something went wrong', variant: 'destructive' })
+      toast({
+        title: 'Error',
+        description: 'Something went wrong',
+        variant: 'destructive',
+      })
     } finally {
       setSubmitting(false)
       setDeleteTarget(null)
@@ -570,7 +604,7 @@ function CertificatesTab() {
 
   if (isError) {
     return (
-      <div className="text-destructive rounded-lg border p-4 mt-4">
+      <div className="text-destructive mt-4 rounded-lg border p-4">
         Could not load certificates.
       </div>
     )
@@ -625,7 +659,7 @@ function CertificatesTab() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-destructive"
+                      className="text-destructive h-8 w-8"
                       onClick={() => setDeleteTarget(cert)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -686,7 +720,7 @@ function CertificatesTab() {
                 name="certificateType"
                 defaultValue={editing?.certificateType ?? ''}
                 required
-                className="border-input bg-transparent focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
               >
                 <option value="" disabled>
                   Select type
@@ -742,7 +776,7 @@ function CertificatesTab() {
                 name="notes"
                 rows={2}
                 defaultValue={editing?.notes ?? ''}
-                className="border-input bg-transparent focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                className="border-input focus-visible:ring-ring flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
               />
             </div>
             <DialogFooter>
@@ -755,23 +789,18 @@ function CertificatesTab() {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <Dialog
-        open={!!deleteTarget}
-        onOpenChange={() => setDeleteTarget(null)}
-      >
+      <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Certificate</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete the {deleteTarget?.certificateType}{' '}
-              certificate? This action cannot be undone.
+              Are you sure you want to delete the{' '}
+              {deleteTarget?.certificateType} certificate? This action cannot be
+              undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteTarget(null)}
-            >
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
               Cancel
             </Button>
             <Button
@@ -834,7 +863,11 @@ function EndorsementsTab() {
       if (editing) {
         const result = await updateEndorsement(editing.id, payload)
         if (result.error) {
-          toast({ title: 'Error', description: result.error, variant: 'destructive' })
+          toast({
+            title: 'Error',
+            description: result.error,
+            variant: 'destructive',
+          })
         } else {
           toast({ title: 'Endorsement updated' })
           setDialogOpen(false)
@@ -843,7 +876,11 @@ function EndorsementsTab() {
       } else {
         const result = await createEndorsement(payload)
         if (result.error) {
-          toast({ title: 'Error', description: result.error, variant: 'destructive' })
+          toast({
+            title: 'Error',
+            description: result.error,
+            variant: 'destructive',
+          })
         } else {
           toast({ title: 'Endorsement created' })
           setDialogOpen(false)
@@ -852,7 +889,11 @@ function EndorsementsTab() {
       }
     } catch (error) {
       Sentry.captureException(error)
-      toast({ title: 'Error', description: 'Something went wrong', variant: 'destructive' })
+      toast({
+        title: 'Error',
+        description: 'Something went wrong',
+        variant: 'destructive',
+      })
     } finally {
       setSubmitting(false)
     }
@@ -864,14 +905,22 @@ function EndorsementsTab() {
     try {
       const result = await deleteEndorsement(deleteTarget.id)
       if (result.error) {
-        toast({ title: 'Error', description: result.error, variant: 'destructive' })
+        toast({
+          title: 'Error',
+          description: result.error,
+          variant: 'destructive',
+        })
       } else {
         toast({ title: 'Endorsement deleted' })
         queryClient.invalidateQueries({ queryKey: ['endorsements'] })
       }
     } catch (error) {
       Sentry.captureException(error)
-      toast({ title: 'Error', description: 'Something went wrong', variant: 'destructive' })
+      toast({
+        title: 'Error',
+        description: 'Something went wrong',
+        variant: 'destructive',
+      })
     } finally {
       setSubmitting(false)
       setDeleteTarget(null)
@@ -890,7 +939,7 @@ function EndorsementsTab() {
 
   if (isError) {
     return (
-      <div className="text-destructive rounded-lg border p-4 mt-4">
+      <div className="text-destructive mt-4 rounded-lg border p-4">
         Could not load endorsements.
       </div>
     )
@@ -921,7 +970,7 @@ function EndorsementsTab() {
 
       {data && data.length > 0 && (
         <div className="rounded-lg border">
-          <div className="grid grid-cols-[1fr_120px_1fr_1fr_1fr_auto] gap-4 border-b px-4 py-2 text-sm font-medium text-muted-foreground">
+          <div className="text-muted-foreground grid grid-cols-[1fr_120px_1fr_1fr_1fr_auto] gap-4 border-b px-4 py-2 text-sm font-medium">
             <span>Date</span>
             <span>Type</span>
             <span>Description</span>
@@ -932,15 +981,15 @@ function EndorsementsTab() {
           {data.map((endorsement) => (
             <div
               key={endorsement.id}
-              className="grid grid-cols-[1fr_120px_1fr_1fr_1fr_auto] gap-4 border-b px-4 py-3 text-sm last:border-b-0 items-center"
+              className="grid grid-cols-[1fr_120px_1fr_1fr_1fr_auto] items-center gap-4 border-b px-4 py-3 text-sm last:border-b-0"
             >
               <span>{endorsement.endorsedDate || '—'}</span>
               <span>{endorsement.endorsementType}</span>
               <span className="truncate">{endorsement.description}</span>
-              <span className="truncate text-muted-foreground">
+              <span className="text-muted-foreground truncate">
                 {endorsement.instructorName || '—'}
               </span>
-              <span className="truncate text-muted-foreground">
+              <span className="text-muted-foreground truncate">
                 {endorsement.instructorCertNumber || '—'}
               </span>
               <div className="flex gap-1">
@@ -955,7 +1004,7 @@ function EndorsementsTab() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-destructive"
+                  className="text-destructive h-8 w-8"
                   onClick={() => setDeleteTarget(endorsement)}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -988,7 +1037,7 @@ function EndorsementsTab() {
                   name="endorsementType"
                   defaultValue={editing?.endorsementType ?? ''}
                   required
-                  className="border-input bg-transparent focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                  className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                 >
                   <option value="" disabled>
                     Select type
@@ -1044,7 +1093,7 @@ function EndorsementsTab() {
                 name="notes"
                 rows={2}
                 defaultValue={editing?.notes ?? ''}
-                className="border-input bg-transparent focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                className="border-input focus-visible:ring-ring flex w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
               />
             </div>
             <DialogFooter>
@@ -1057,23 +1106,18 @@ function EndorsementsTab() {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <Dialog
-        open={!!deleteTarget}
-        onOpenChange={() => setDeleteTarget(null)}
-      >
+      <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Endorsement</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this {deleteTarget?.endorsementType}{' '}
-              endorsement? This action cannot be undone.
+              Are you sure you want to delete this{' '}
+              {deleteTarget?.endorsementType} endorsement? This action cannot be
+              undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteTarget(null)}
-            >
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
               Cancel
             </Button>
             <Button

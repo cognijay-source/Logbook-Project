@@ -64,7 +64,12 @@ function formatDate(date: Date | string) {
   })
 }
 
-export function DocumentCard({ document: doc, onPreview, onEdit, onDeleted }: Props) {
+export function DocumentCard({
+  document: doc,
+  onPreview,
+  onEdit,
+  onDeleted,
+}: Props) {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [downloading, setDownloading] = useState(false)
@@ -76,7 +81,11 @@ export function DocumentCard({ document: doc, onPreview, onEdit, onDeleted }: Pr
     setDownloading(false)
 
     if (result.error || !result.data) {
-      toast({ title: 'Download failed', description: result.error ?? 'Could not get URL', variant: 'destructive' })
+      toast({
+        title: 'Download failed',
+        description: result.error ?? 'Could not get URL',
+        variant: 'destructive',
+      })
       return
     }
 
@@ -92,7 +101,11 @@ export function DocumentCard({ document: doc, onPreview, onEdit, onDeleted }: Pr
     setDeleting(false)
 
     if (result.error) {
-      toast({ title: 'Delete failed', description: result.error, variant: 'destructive' })
+      toast({
+        title: 'Delete failed',
+        description: result.error,
+        variant: 'destructive',
+      })
     } else {
       toast({ title: 'Document deleted', description: doc.name })
       setDeleteOpen(false)
@@ -100,9 +113,7 @@ export function DocumentCard({ document: doc, onPreview, onEdit, onDeleted }: Pr
     }
   }
 
-  const entityLabel = doc.entityType
-    ? `Linked to ${doc.entityType}`
-    : null
+  const entityLabel = doc.entityType ? `Linked to ${doc.entityType}` : null
 
   return (
     <>

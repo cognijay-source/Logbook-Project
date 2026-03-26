@@ -453,8 +453,8 @@ function CustomRangePreview({
   return (
     <div className="space-y-4">
       <div className="text-muted-foreground text-sm">
-        {data.startDate} to {data.endDate} &middot; {data.flights.length} flights
-        &middot; {fmt(data.totalTime)} total hours
+        {data.startDate} to {data.endDate} &middot; {data.flights.length}{' '}
+        flights &middot; {fmt(data.totalTime)} total hours
       </div>
 
       <div className="overflow-x-auto">
