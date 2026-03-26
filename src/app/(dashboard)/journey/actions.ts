@@ -55,7 +55,7 @@ export async function createManualMilestone(data: unknown) {
     const profile = await getOrCreateProfile()
     const validated = milestoneCreateSchema.parse(data)
 
-    const [milestone] = await db
+    const inserted = await db
       .insert(userMilestones)
       .values({
         profileId: profile.id,
@@ -67,6 +67,11 @@ export async function createManualMilestone(data: unknown) {
         notes: validated.notes,
       })
       .returning()
+
+    const milestone = inserted[0]
+    if (!milestone) {
+      return { success: false, error: 'Failed to create milestone' }
+    }
 
     await createAuditEvent({
       profileId: profile.id,

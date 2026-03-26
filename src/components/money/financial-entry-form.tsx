@@ -67,7 +67,7 @@ export function FinancialEntryForm({
     defaultValues: {
       entryType: defaultValues?.entryType ?? 'expense',
       category: defaultValues?.category ?? '',
-      amount: defaultValues?.amount ?? ('' as unknown as number),
+      amount: defaultValues?.amount ?? (undefined as unknown as number),
       entryDate:
         defaultValues?.entryDate ?? new Date().toISOString().split('T')[0],
       description: defaultValues?.description ?? '',

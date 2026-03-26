@@ -41,7 +41,7 @@ export default function ProgressPage() {
   const queryClient = useQueryClient()
   const [goalDialogOpen, setGoalDialogOpen] = useState(false)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['progress'],
     queryFn: getProgressData,
   })
@@ -68,6 +68,19 @@ export default function ProgressPage() {
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-24" />
           ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold tracking-tight">Progress</h1>
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
+          <p className="text-sm text-red-800 dark:text-red-200">
+            Could not load progress data.
+          </p>
         </div>
       </div>
     )

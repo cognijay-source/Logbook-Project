@@ -260,6 +260,10 @@ export async function createFlight(
       })
       .returning({ id: schema.flights.id })
 
+    if (!inserted[0]) {
+      return { id: null, error: 'Failed to create flight record' }
+    }
+
     const flightId = inserted[0].id
 
     // Insert child records

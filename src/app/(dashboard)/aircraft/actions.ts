@@ -83,6 +83,10 @@ export async function createAircraft(formData: FormData) {
       })
       .returning()
 
+    if (!inserted[0]) {
+      return { data: null, error: 'Failed to create aircraft' }
+    }
+
     await createAuditEvent({
       profileId: profile.id,
       entityType: 'aircraft',
