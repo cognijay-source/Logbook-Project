@@ -52,7 +52,7 @@ export default function FlightsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Logbook</h1>
+          <h1 className="font-heading text-3xl font-bold">Logbook</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             {flightsQuery.isSuccess
               ? `${flights.length} ${flights.length === 1 ? 'entry' : 'entries'}`
@@ -81,7 +81,7 @@ export default function FlightsPage() {
         <select
           value={aircraftId}
           onChange={(e) => setAircraftId(e.target.value)}
-          className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+          className="border-input bg-background h-9 rounded-md border px-3 text-sm shadow-sm transition-colors duration-200 focus:border-ring focus:ring-2 focus:ring-ring/20 focus:outline-none"
         >
           <option value="all">All Aircraft</option>
           {aircraftOptions.map((ac) => (
@@ -94,7 +94,7 @@ export default function FlightsPage() {
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+          className="border-input bg-background h-9 rounded-md border px-3 text-sm shadow-sm transition-colors duration-200 focus:border-ring focus:ring-2 focus:ring-ring/20 focus:outline-none"
         >
           <option value="all">All Status</option>
           <option value="draft">Draft</option>
@@ -125,8 +125,8 @@ export default function FlightsPage() {
       {/* Empty state */}
       {flightsQuery.isSuccess && flights.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16">
-          <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
-            <Plane className="text-muted-foreground h-6 w-6" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+            <Plane className="h-6 w-6 text-muted-foreground" />
           </div>
           <h3 className="mt-4 text-lg font-semibold">No flights found</h3>
           <p className="text-muted-foreground mt-1 text-sm">

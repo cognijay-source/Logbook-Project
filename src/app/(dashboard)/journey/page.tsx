@@ -101,7 +101,7 @@ export default function JourneyPage() {
   if (isError) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold tracking-tight">Mastery</h1>
+        <h1 className="font-heading text-3xl font-bold tracking-tight">Mastery</h1>
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
           <p className="text-sm text-red-800 dark:text-red-200">
             Could not load milestones.
@@ -118,7 +118,7 @@ export default function JourneyPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Mastery</h1>
+          <h1 className="font-heading text-3xl font-bold tracking-tight">Mastery</h1>
           <p className="text-muted-foreground">
             {achievedCount} {achievedCount === 1 ? 'milestone' : 'milestones'}{' '}
             reached
@@ -185,11 +185,12 @@ export default function JourneyPage() {
       {achievedCount > 0 && (
         <section className="space-y-4">
           <h2 className="text-lg font-semibold">Achieved</h2>
-          <div className="space-y-3">
+          <div className="relative space-y-3">
+            <div className="absolute top-6 bottom-6 left-[23px] w-px bg-green-200 dark:bg-green-900/50" />
             {data?.achieved.map((m) => (
-              <Card key={m.id}>
+              <Card key={m.id} className="relative">
                 <CardContent className="flex items-start gap-4 p-4">
-                  <div className="mt-0.5 rounded-full bg-green-100 p-2 dark:bg-green-900/30">
+                  <div className="relative z-10 mt-0.5 rounded-full bg-green-100 p-2 ring-4 ring-card dark:bg-green-900/30">
                     <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -259,9 +260,9 @@ export default function JourneyPage() {
                           </span>
                           <span>{Math.round(m.progress)}%</span>
                         </div>
-                        <div className="bg-muted h-1.5 w-full rounded-full">
+                        <div className="h-1.5 w-full rounded-full bg-muted">
                           <div
-                            className="bg-primary h-1.5 rounded-full transition-all"
+                            className="h-1.5 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 transition-all duration-700 ease-out"
                             style={{
                               width: `${Math.min(100, m.progress)}%`,
                             }}

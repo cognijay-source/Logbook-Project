@@ -115,7 +115,7 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Reports</h1>
+        <h1 className="font-heading text-3xl font-bold">Reports</h1>
         <p className="text-muted-foreground mt-1">
           Generate professional PDF reports from your flight data
         </p>
@@ -140,7 +140,7 @@ export default function ReportsPage() {
                   setReportType(e.target.value as ReportType)
                   setPreviewData(null)
                 }}
-                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm transition-colors duration-200 focus:border-ring focus:ring-2 focus:ring-ring/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {reportTypes.map((rt) => (
                   <option key={rt.value} value={rt.value}>
