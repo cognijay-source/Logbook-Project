@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Plane, Wrench, Map, Target, DollarSign, Upload, Settings, ShieldCheck, GraduationCap } from 'lucide-react'
+import { LayoutDashboard, Plane, Wrench, Map, Target, DollarSign, Upload, Settings, ShieldCheck, GraduationCap, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -14,6 +14,7 @@ const navItems = [
   { label: 'Training', href: '/training', icon: GraduationCap },
   { label: 'Currency', href: '/currency', icon: ShieldCheck },
   { label: 'Money', href: '/money', icon: DollarSign },
+  { label: 'Reports', href: '/reports', icon: FileText },
   { label: 'Imports', href: '/imports', icon: Upload },
   { label: 'Settings', href: '/settings', icon: Settings },
 ]
