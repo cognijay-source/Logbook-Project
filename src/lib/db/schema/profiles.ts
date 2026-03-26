@@ -7,6 +7,7 @@ export const profiles = pgTable('profiles', {
   displayName: text('display_name'),
   avatarUrl: text('avatar_url'),
   timezone: text('timezone').default('UTC'),
+  timeFormat: text('time_format').default('decimal'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),
