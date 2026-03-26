@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, BookOpen } from 'lucide-react'
+import { Menu, Compass } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -27,13 +27,13 @@ export function MobileNav() {
           <span className="sr-only">Toggle navigation menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="bg-sidebar-background w-72 p-0">
+      <SheetContent side="left" className="w-72 border-white/[0.06] bg-[#111118] p-0">
         <SheetHeader className="px-6 pt-5 pb-4">
-          <SheetTitle className="text-sidebar-accent-foreground flex items-center gap-2.5 text-left">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-cyan-400 shadow-md">
-              <BookOpen className="h-4 w-4 text-white" />
+          <SheetTitle className="flex items-center gap-2.5 text-left text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#00d4aa] shadow-md shadow-[#00d4aa]/20">
+              <Compass className="h-4 w-4 text-[#111118]" />
             </div>
-            CrossCheck
+            <span className="font-brand">CrossCheck</span>
           </SheetTitle>
           <SheetDescription className="sr-only">
             Navigation menu
@@ -48,16 +48,19 @@ export function MobileNav() {
                 <Link
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                    'relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
                     isActive
-                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                      : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
+                      ? 'bg-white/[0.08] text-white'
+                      : 'text-[#8a8a9a] hover:bg-white/[0.04] hover:text-white',
                   )}
                 >
+                  {isActive && (
+                    <div className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[#00d4aa]" />
+                  )}
                   <item.icon
                     className={cn(
                       'h-4 w-4',
-                      isActive ? 'text-sidebar-primary' : 'text-sidebar-muted',
+                      isActive ? 'text-[#00d4aa]' : 'text-[#6b6b7b]',
                     )}
                   />
                   {item.label}

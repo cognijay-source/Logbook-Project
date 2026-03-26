@@ -46,24 +46,24 @@ export function SidebarNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
+              'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
               isActive
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
-                : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
+                ? 'bg-white/[0.08] text-white'
+                : 'text-[#8a8a9a] hover:bg-white/[0.04] hover:text-white',
             )}
           >
+            {isActive && (
+              <div className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[#00d4aa]" />
+            )}
             <item.icon
               className={cn(
                 'h-4 w-4 transition-colors duration-200',
                 isActive
-                  ? 'text-sidebar-primary'
-                  : 'text-sidebar-muted group-hover:text-sidebar-accent-foreground',
+                  ? 'text-[#00d4aa]'
+                  : 'text-[#6b6b7b] group-hover:text-[#8a8a9a]',
               )}
             />
             {item.label}
-            {isActive && (
-              <div className="bg-sidebar-primary ml-auto h-1.5 w-1.5 rounded-full" />
-            )}
           </Link>
         )
       })}
