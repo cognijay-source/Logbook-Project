@@ -5,16 +5,16 @@ import {
   Target,
   DollarSign,
   Award,
-  BarChart3,
-  FileUp,
-  Plane,
-  GraduationCap,
-  Users,
+  Compass,
+  LayoutDashboard,
   ArrowRight,
-  Shield,
-  Database,
-  Brain,
   Clock,
+  Check,
+  GraduationCap,
+  Plane,
+  Wrench,
+  Briefcase,
+  Users,
 } from 'lucide-react'
 
 /* ───────────────────────────────────────────────────────────── */
@@ -24,7 +24,6 @@ import {
 function Hero() {
   return (
     <section className="relative overflow-hidden px-6 pt-24 pb-28 sm:pt-32 sm:pb-36 lg:px-8 lg:pt-40 lg:pb-44">
-      {/* Subtle background gradient */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10"
@@ -39,20 +38,22 @@ function Hero() {
         </div>
 
         <h1 className="text-foreground text-4xl leading-[1.1] font-bold tracking-tight sm:text-5xl lg:text-6xl">
-          See the system clearly.{' '}
-          <span className="text-muted-foreground">Build mastery deliberately.</span>
+          CrossCheck
         </h1>
 
-        <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg leading-relaxed sm:text-xl">
-          From logged hours to real readiness. Track every flight, measure your
-          progress toward certificates and career thresholds. Stop guessing
-          where you stand.
+        <p className="text-muted-foreground mt-4 text-xl leading-relaxed font-medium sm:text-2xl">
+          See the system clearly. Build mastery deliberately.
+        </p>
+
+        <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg leading-relaxed">
+          The pilot operating system for flight records, training progress,
+          currency, costs, and career readiness.
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button asChild size="lg" className="w-full px-8 sm:w-auto">
             <Link href="/signup">
-              Create Your Logbook
+              Get Started
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -62,7 +63,7 @@ function Hero() {
             size="lg"
             className="w-full px-8 sm:w-auto"
           >
-            <Link href="#features">See How It Works</Link>
+            <Link href="#features">See Features</Link>
           </Button>
         </div>
       </div>
@@ -71,61 +72,97 @@ function Hero() {
 }
 
 /* ───────────────────────────────────────────────────────────── */
-/*  Value Proposition                                            */
+/*  Problem                                                      */
 /* ───────────────────────────────────────────────────────────── */
 
-const values = [
+function Problem() {
+  return (
+    <section className="border-border/40 border-t px-6 py-24 sm:py-32 lg:px-8">
+      <div className="mx-auto max-w-3xl text-center">
+        <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
+          Aviation runs on records. Too often, careers run on ambiguity.
+        </h2>
+        <p className="text-muted-foreground mt-6 text-lg leading-relaxed">
+          Pilots are expected to track standards, progress, costs, and readiness
+          in a system that often lacks clarity. Paper logbooks, scattered
+          spreadsheets, and manual calculations leave gaps where precision
+          matters most. CrossCheck makes that system legible.
+        </p>
+      </div>
+    </section>
+  )
+}
+
+/* ───────────────────────────────────────────────────────────── */
+/*  Feature Showcase — The CrossCheck Suite                       */
+/* ───────────────────────────────────────────────────────────── */
+
+const suiteFeatures = [
   {
     icon: BookOpen,
-    title: 'Precision Logging',
+    name: 'CrossCheck Logbook',
     description:
-      'Every leg, approach, and crew member captured with the detail your career demands. No shortcuts.',
+      'Clean, structured, reliable digital flight records. Fast entry. Smart search. Automatic totals.',
   },
   {
-    icon: Target,
-    title: 'Readiness Tracking',
+    icon: Clock,
+    name: 'CrossCheck Currency',
     description:
-      'Set goal profiles for your next certificate or position. See exactly where you stand and what remains.',
-  },
-  {
-    icon: DollarSign,
-    title: 'Financial Position',
-    description:
-      "Training costs, income, and career-phase totals. Know what you've invested and what you've earned.",
+      'Track recency requirements. See upcoming lapses. Stay operationally current.',
   },
   {
     icon: Award,
-    title: 'Milestone Detection',
+    name: 'CrossCheck Mastery',
     description:
-      'Automatic recognition of career thresholds as you reach them. Your trajectory, documented.',
+      'Monitor certificates, ratings, training progression, and milestone development.',
+  },
+  {
+    icon: Compass,
+    name: 'CrossCheck Ready',
+    description:
+      'Understand actual readiness for certifications, career goals, and hiring thresholds.',
+  },
+  {
+    icon: DollarSign,
+    name: 'CrossCheck Costs',
+    description:
+      'Track cost per flight, aircraft, training block, and time period. See where the money goes.',
+  },
+  {
+    icon: LayoutDashboard,
+    name: 'CrossCheck Daily',
+    description:
+      'Your operational dashboard. Recent activity, progress, currency, and what needs attention next.',
   },
 ]
 
-function ValueProposition() {
+function FeatureShowcase() {
   return (
-    <section className="border-border/40 border-t px-6 py-24 sm:py-32 lg:px-8">
+    <section
+      id="features"
+      className="bg-muted/30 scroll-mt-16 px-6 py-24 sm:py-32 lg:px-8"
+    >
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-            Built for serious records and serious progress
+            The CrossCheck Suite
           </h2>
           <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
-            Not a replica of your paper logbook. A career system built around
-            how serious pilots track, measure, and advance.
+            Six integrated modules. One operating system for your flying career.
           </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {values.map((item) => (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {suiteFeatures.map((item) => (
             <div
-              key={item.title}
-              className="group border-border/60 bg-card hover:border-border hover:bg-muted/30 rounded-2xl border p-6 transition-colors"
+              key={item.name}
+              className="border-border/60 bg-background hover:border-border rounded-2xl border p-6 transition-colors"
             >
               <div className="bg-foreground/5 mb-4 flex h-10 w-10 items-center justify-center rounded-lg">
                 <item.icon className="text-foreground h-5 w-5" />
               </div>
               <h3 className="text-foreground text-sm font-semibold">
-                {item.title}
+                {item.name}
               </h3>
               <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
                 {item.description}
@@ -133,6 +170,27 @@ function ValueProposition() {
             </div>
           ))}
         </div>
+      </div>
+    </section>
+  )
+}
+
+/* ───────────────────────────────────────────────────────────── */
+/*  Core Promise                                                 */
+/* ───────────────────────────────────────────────────────────── */
+
+function CorePromise() {
+  return (
+    <section className="border-border/40 border-t px-6 py-24 sm:py-32 lg:px-8">
+      <div className="mx-auto max-w-3xl text-center">
+        <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
+          From logged hours to real readiness.
+        </h2>
+        <p className="text-muted-foreground mt-6 text-lg leading-relaxed">
+          CrossCheck turns logged flights into clarity, readiness, and strategic
+          visibility. Track every flight. Measure real progress. Understand
+          where you stand. Build your flying career on evidence, not guesswork.
+        </p>
       </div>
     </section>
   )
@@ -146,22 +204,32 @@ const audiences = [
   {
     icon: GraduationCap,
     label: 'Student Pilots',
-    detail: 'Build structure and discipline from your first entry.',
+    detail: 'Beginning structured records from your first entry.',
   },
   {
     icon: Plane,
-    label: 'Time Builders',
-    detail: 'Every hour measured. Every threshold within sight.',
+    label: 'Time-Building Pilots',
+    detail: 'Tracking progress toward career goals with every hour.',
+  },
+  {
+    icon: Target,
+    label: 'Instrument & Commercial Students',
+    detail: 'Managing complex training requirements with clarity.',
+  },
+  {
+    icon: Wrench,
+    label: 'Flight Instructors',
+    detail: 'Maintaining currency and records across students and aircraft.',
+  },
+  {
+    icon: Briefcase,
+    label: 'Career-Track Pilots',
+    detail: 'Preparing for hiring minimums with objective evidence.',
   },
   {
     icon: Users,
-    label: 'Regional & 135 Pilots',
-    detail: 'Multi-leg days, crew tracking, and complex schedules.',
-  },
-  {
-    icon: Award,
-    label: 'Career Captains',
-    detail: 'Your complete record, structured and searchable.',
+    label: 'Professional Pilots',
+    detail: 'Maintaining operational discipline throughout a career.',
   },
 ]
 
@@ -171,107 +239,25 @@ function Audience() {
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-            From student to captain
+            Built for every stage of a flying career
           </h2>
-          <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
-            One logbook from first solo to thousandth leg.
-          </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {audiences.map((item) => (
             <div
               key={item.label}
-              className="bg-background ring-border/50 flex flex-col items-center rounded-xl p-8 text-center shadow-sm ring-1"
+              className="bg-background ring-border/50 flex items-start gap-4 rounded-xl p-6 shadow-sm ring-1"
             >
-              <div className="bg-foreground/5 flex h-12 w-12 items-center justify-center rounded-full">
-                <item.icon className="text-foreground h-5 w-5" />
-              </div>
-              <h3 className="text-foreground mt-5 text-sm font-semibold">
-                {item.label}
-              </h3>
-              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-                {item.detail}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ───────────────────────────────────────────────────────────── */
-/*  Features                                                     */
-/* ───────────────────────────────────────────────────────────── */
-
-const features = [
-  {
-    icon: BookOpen,
-    title: 'Flight Logging',
-    description:
-      'Multi-leg entries, approaches, crew, and a draft workflow. Log now, finalize later. The full picture of every flight.',
-  },
-  {
-    icon: Target,
-    title: 'Career Progress',
-    description:
-      'Set goal profiles for certificates and positions. Gap analysis shows exactly what stands between you and your next threshold.',
-  },
-  {
-    icon: Award,
-    title: 'Milestone Timeline',
-    description:
-      'Automatic detection as you reach career benchmarks. First solo to type rating, documented as it happens.',
-  },
-  {
-    icon: BarChart3,
-    title: 'Experience Analytics',
-    description:
-      'Breakdowns by aircraft, category, conditions, and period. Identify strengths and gaps before an interviewer does.',
-  },
-  {
-    icon: DollarSign,
-    title: 'Cost Tracking',
-    description:
-      'Training costs, checkride fees, and income by career phase. See the true cost and return of your flying.',
-  },
-  {
-    icon: FileUp,
-    title: 'Import & Smart Entry',
-    description:
-      'CSV imports from existing logbooks. AI-assisted draft entry parses flight details and stages them for your review.',
-  },
-]
-
-function Features() {
-  return (
-    <section
-      id="features"
-      className="border-border/40 scroll-mt-16 border-t px-6 py-24 sm:py-32 lg:px-8"
-    >
-      <div className="mx-auto max-w-6xl">
-        <div className="mx-auto mb-16 max-w-2xl text-center">
-          <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-            Built for the way pilots advance
-          </h2>
-          <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
-            Purpose-built for the complexity of a real aviation career.
-          </p>
-        </div>
-
-        <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((item) => (
-            <div key={item.title} className="flex gap-4">
               <div className="bg-foreground/5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
                 <item.icon className="text-foreground h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-foreground text-sm leading-6 font-semibold">
-                  {item.title}
+                <h3 className="text-foreground text-sm font-semibold">
+                  {item.label}
                 </h3>
-                <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">
-                  {item.description}
+                <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                  {item.detail}
                 </p>
               </div>
             </div>
@@ -283,59 +269,116 @@ function Features() {
 }
 
 /* ───────────────────────────────────────────────────────────── */
-/*  Trust / Credibility                                          */
+/*  Pricing                                                      */
 /* ───────────────────────────────────────────────────────────── */
 
-const differentiators = [
+const tiers = [
   {
-    icon: Database,
-    title: 'Structured Data',
-    description:
-      'Normalized, queryable records. Not flat files or PDFs. Data you can analyze, export, and rely on.',
+    name: 'CrossCheck Core',
+    price: 'Free',
+    description: 'Start with a record you can trust.',
+    features: [
+      'Digital logbook',
+      'Fast flight entry',
+      'Structured records',
+      'Basic totals',
+      'Basic search and filter',
+      'Basic dashboard',
+      'Mobile-friendly',
+    ],
+    cta: 'Start Free',
+    highlight: false,
   },
   {
-    icon: Brain,
-    title: 'Derived Insight',
+    name: 'CrossCheck Mastery',
+    price: '$X/mo',
     description:
-      'Automatic calculations, readiness scoring, and gap detection. Your logbook measures your trajectory.',
+      'Build mastery with clear progress and disciplined tracking.',
+    features: [
+      'Everything in Core',
+      'Currency tracking',
+      'Certificate and rating progress',
+      'Milestone detection',
+      'Cost tracking',
+      'Deeper summaries',
+      'Record review',
+    ],
+    cta: 'Start Mastery',
+    highlight: true,
   },
   {
-    icon: Shield,
-    title: 'Career-Grade Integrity',
-    description:
-      'Your records deserve the same precision you bring to the cockpit. Audit trails, data integrity, secure storage.',
+    name: 'CrossCheck Command',
+    price: '$X/mo',
+    description: 'Operate your flying career with precision.',
+    features: [
+      'Everything in Mastery',
+      'Career-readiness tracking',
+      'Advanced threshold visibility',
+      'Data quality checks',
+      'Derived intelligence',
+      'Advanced analysis',
+      'Premium reports and AI parsing',
+    ],
+    cta: 'Start Command',
+    highlight: false,
   },
 ]
 
-function Trust() {
+function Pricing() {
   return (
-    <section className="bg-muted/30 px-6 py-24 sm:py-32 lg:px-8">
+    <section
+      id="pricing"
+      className="border-border/40 scroll-mt-16 border-t px-6 py-24 sm:py-32 lg:px-8"
+    >
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-            Engineered for precision
+            Pricing
           </h2>
           <p className="text-muted-foreground mt-4 text-lg leading-relaxed">
-            Not a photocopy of your paper logbook. A career instrument that
-            turns hours into measurable progress.
+            Start free. Scale as your career demands more visibility.
           </p>
         </div>
 
-        <div className="grid gap-8 sm:grid-cols-3">
-          {differentiators.map((item) => (
+        <div className="grid gap-6 lg:grid-cols-3">
+          {tiers.map((tier) => (
             <div
-              key={item.title}
-              className="border-border/60 bg-background rounded-2xl border p-8 text-center"
+              key={tier.name}
+              className={`border-border/60 flex flex-col rounded-2xl border p-8 ${
+                tier.highlight
+                  ? 'ring-foreground/20 bg-muted/30 ring-2'
+                  : 'bg-background'
+              }`}
             >
-              <div className="bg-foreground/5 mx-auto flex h-12 w-12 items-center justify-center rounded-full">
-                <item.icon className="text-foreground h-5 w-5" />
-              </div>
-              <h3 className="text-foreground mt-6 text-sm font-semibold">
-                {item.title}
+              <h3 className="text-foreground text-base font-semibold">
+                {tier.name}
               </h3>
-              <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
-                {item.description}
+              <p className="text-foreground mt-4 text-3xl font-bold tracking-tight">
+                {tier.price}
               </p>
+              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+                {tier.description}
+              </p>
+              <ul className="mt-8 flex-1 space-y-3">
+                {tier.features.map((feature) => (
+                  <li
+                    key={feature}
+                    className="text-muted-foreground flex items-start gap-3 text-sm"
+                  >
+                    <Check className="text-foreground mt-0.5 h-4 w-4 shrink-0" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8">
+                <Button
+                  asChild
+                  variant={tier.highlight ? 'default' : 'outline'}
+                  className="w-full"
+                >
+                  <Link href="/signup">{tier.cta}</Link>
+                </Button>
+              </div>
             </div>
           ))}
         </div>
@@ -350,7 +393,7 @@ function Trust() {
 
 function CTA() {
   return (
-    <section className="border-border/40 border-t px-6 py-24 sm:py-32 lg:px-8">
+    <section className="bg-muted/30 px-6 py-24 sm:py-32 lg:px-8">
       <div className="mx-auto max-w-xl text-center">
         <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
           Start with CrossCheck
@@ -362,7 +405,7 @@ function CTA() {
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <Button asChild size="lg" className="w-full px-8 sm:w-auto">
             <Link href="/signup">
-              Create Your Logbook
+              Get Started
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -383,10 +426,11 @@ export default function LandingPage() {
   return (
     <>
       <Hero />
-      <ValueProposition />
+      <Problem />
+      <FeatureShowcase />
+      <CorePromise />
       <Audience />
-      <Features />
-      <Trust />
+      <Pricing />
       <CTA />
     </>
   )
