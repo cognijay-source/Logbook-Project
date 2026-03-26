@@ -110,8 +110,7 @@ async function evaluatePassengerDay(
 
   const status = computeStatus(isCurrent, expiresAt, now)
   const deficit = requiredCount - total
-  const needed =
-    deficit > 0 ? `Need ${deficit} more day landing(s)` : null
+  const needed = deficit > 0 ? `Need ${deficit} more day landing(s)` : null
 
   return {
     rule,
@@ -160,8 +159,7 @@ async function evaluatePassengerNight(
 
   const status = computeStatus(isCurrent, expiresAt, now)
   const deficit = requiredCount - total
-  const needed =
-    deficit > 0 ? `Need ${deficit} more night landing(s)` : null
+  const needed = deficit > 0 ? `Need ${deficit} more night landing(s)` : null
 
   return {
     rule,
@@ -290,8 +288,7 @@ async function evaluateInstrument(
     const approachDeficit = Math.max(0, requiredApproaches - approachCount)
     const holdDeficit = hasHolds ? 0 : 1
     const parts: string[] = []
-    if (approachDeficit > 0)
-      parts.push(`${approachDeficit} more approach(es)`)
+    if (approachDeficit > 0) parts.push(`${approachDeficit} more approach(es)`)
     if (holdDeficit > 0) parts.push(`1 holding procedure`)
     needed =
       parts.length > 0
@@ -403,9 +400,7 @@ async function evaluateFlightReview(
 
   const reviewDateStr = latestReviewDate.toISOString().split('T')[0]
   const details = `Last flight review: ${reviewDateStr}`
-  const needed = !isCurrent
-    ? 'Complete a flight review (BFR) with a CFI'
-    : null
+  const needed = !isCurrent ? 'Complete a flight review (BFR) with a CFI' : null
 
   return {
     rule,
@@ -426,7 +421,11 @@ async function evaluateFlightReview(
  * that flight's date + periodDays = expiration.
  */
 function findNthLandingExpiry(
-  flights: { flightDate: string; dayLandings?: number | null; nightLandings?: number | null }[],
+  flights: {
+    flightDate: string
+    dayLandings?: number | null
+    nightLandings?: number | null
+  }[],
   field: 'dayLandings' | 'nightLandings',
   requiredCount: number,
   periodDays: number,

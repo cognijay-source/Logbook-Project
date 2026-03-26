@@ -136,7 +136,10 @@ async function fetchFlightsInRange(
       isMultiEngine: schema.aircraft.isMultiEngine,
     })
     .from(schema.flights)
-    .leftJoin(schema.aircraft, eq(schema.flights.aircraftId, schema.aircraft.id))
+    .leftJoin(
+      schema.aircraft,
+      eq(schema.flights.aircraftId, schema.aircraft.id),
+    )
     .where(
       and(
         eq(schema.flights.profileId, profileId),
@@ -307,7 +310,8 @@ export async function getReportData(
             totalTime: periodRows.reduce((s, r) => s + num(r.totalTime), 0),
             nightTime: periodRows.reduce((s, r) => s + num(r.night), 0),
             instrumentTime: periodRows.reduce(
-              (s, r) => s + num(r.actualInstrument) + num(r.simulatedInstrument),
+              (s, r) =>
+                s + num(r.actualInstrument) + num(r.simulatedInstrument),
               0,
             ),
             landings: periodRows.reduce(
@@ -354,7 +358,8 @@ export async function getReportData(
     Sentry.captureException(error)
     return {
       data: null,
-      error: error instanceof Error ? error.message : 'Failed to fetch report data',
+      error:
+        error instanceof Error ? error.message : 'Failed to fetch report data',
     }
   }
 }
@@ -428,7 +433,10 @@ export async function generatePdf(
           ['Cross-Country', fmt(reportData.totals.crossCountry)],
           ['Night', fmt(reportData.totals.night)],
           ['Instrument (Actual)', fmt(reportData.totals.actualInstrument)],
-          ['Instrument (Simulated)', fmt(reportData.totals.simulatedInstrument)],
+          [
+            'Instrument (Simulated)',
+            fmt(reportData.totals.simulatedInstrument),
+          ],
           ['Multi-Engine', fmt(reportData.totals.multiEngine)],
           ['Single-Engine', fmt(reportData.totals.singleEngine)],
         ],
@@ -453,7 +461,10 @@ export async function generatePdf(
         autoTable(doc, {
           startY: cursorY,
           head: [['Tail Number', 'Hours']],
-          body: reportData.aircraftFlown.map((a) => [a.tailNumber, fmt(a.hours)]),
+          body: reportData.aircraftFlown.map((a) => [
+            a.tailNumber,
+            fmt(a.hours),
+          ]),
           theme: 'grid',
           headStyles: { fillColor: [41, 65, 122] },
           styles: { fontSize: 10 },

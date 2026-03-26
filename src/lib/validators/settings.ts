@@ -14,12 +14,7 @@ const CERTIFICATE_LEVELS = [
   'ATP',
 ] as const
 
-const MEDICAL_CLASSES = [
-  'First',
-  'Second',
-  'Third',
-  'BasicMed',
-] as const
+const MEDICAL_CLASSES = ['First', 'Second', 'Third', 'BasicMed'] as const
 
 const CAREER_PHASES = [
   'Student',
@@ -36,9 +31,7 @@ const TIME_FORMATS = ['decimal', 'hhmm'] as const
 
 export const profileUpdateSchema = z.object({
   displayName: optionalString,
-  certificateLevel: optionalString.pipe(
-    z.enum(CERTIFICATE_LEVELS).optional(),
-  ),
+  certificateLevel: optionalString.pipe(z.enum(CERTIFICATE_LEVELS).optional()),
   certificateNumber: optionalString,
   medicalClass: optionalString.pipe(z.enum(MEDICAL_CLASSES).optional()),
   medicalExpiry: optionalString,
@@ -59,9 +52,7 @@ export const preferencesSchema = z.object({
 
 export const changePasswordSchema = z
   .object({
-    newPassword: z
-      .string()
-      .min(8, 'Password must be at least 8 characters'),
+    newPassword: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -73,9 +64,4 @@ export type ProfileUpdate = z.infer<typeof profileUpdateSchema>
 export type PreferencesUpdate = z.infer<typeof preferencesSchema>
 export type ChangePassword = z.infer<typeof changePasswordSchema>
 
-export {
-  CERTIFICATE_LEVELS,
-  MEDICAL_CLASSES,
-  CAREER_PHASES,
-  TIME_FORMATS,
-}
+export { CERTIFICATE_LEVELS, MEDICAL_CLASSES, CAREER_PHASES, TIME_FORMATS }

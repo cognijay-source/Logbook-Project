@@ -99,7 +99,10 @@ export function DocumentsClient({ documents }: Props) {
       />
 
       {/* Edit dialog */}
-      <Dialog open={!!editDoc} onOpenChange={(open) => !open && setEditDoc(null)}>
+      <Dialog
+        open={!!editDoc}
+        onOpenChange={(open) => !open && setEditDoc(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Document</DialogTitle>

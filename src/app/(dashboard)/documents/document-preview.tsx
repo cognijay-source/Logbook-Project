@@ -24,7 +24,8 @@ export function DocumentPreview({ document: doc, onClose }: Props) {
     queryFn: async () => {
       if (!doc) return null
       const result = await getDocumentUrl(doc.id)
-      if (result.error || !result.data) throw new Error(result.error ?? 'Could not load file')
+      if (result.error || !result.data)
+        throw new Error(result.error ?? 'Could not load file')
       return result.data
     },
     enabled: !!doc,
@@ -52,7 +53,9 @@ export function DocumentPreview({ document: doc, onClose }: Props) {
         </DialogHeader>
 
         <div className="flex min-h-[300px] items-center justify-center">
-          {loading && <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />}
+          {loading && (
+            <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+          )}
 
           {!loading && url && isImage && (
             <img

@@ -46,7 +46,8 @@ export const milestoneRecomputeTask = task({
         name: result.definition.name,
         description: result.definition.description,
         category: result.definition.category,
-        achievedAt: result.achievedDate ?? new Date().toISOString().split('T')[0],
+        achievedAt:
+          result.achievedDate ?? new Date().toISOString().split('T')[0],
         isManual: false,
       })
 

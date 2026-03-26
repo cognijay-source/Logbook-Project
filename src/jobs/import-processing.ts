@@ -54,12 +54,19 @@ export const importProcessingTask = task({
     // Mark batch as processing
     await db
       .update(schema.importBatches)
-      .set({ status: 'processing', startedAt: new Date(), updatedAt: new Date() })
+      .set({
+        status: 'processing',
+        startedAt: new Date(),
+        updatedAt: new Date(),
+      })
       .where(eq(schema.importBatches.id, batchId))
 
     // Load user's existing aircraft for tail number matching
     const existingAircraft = await db
-      .select({ id: schema.aircraft.id, tailNumber: schema.aircraft.tailNumber })
+      .select({
+        id: schema.aircraft.id,
+        tailNumber: schema.aircraft.tailNumber,
+      })
       .from(schema.aircraft)
       .where(eq(schema.aircraft.profileId, profileId))
 
@@ -92,9 +99,9 @@ export const importProcessingTask = task({
 
           // Apply column mapping to build normalized row
           const mapped: Record<string, string> = {}
-          for (const [csvCol, skylogField] of Object.entries(columnMapping)) {
-            if (skylogField && rawData[csvCol] !== undefined) {
-              mapped[skylogField] = rawData[csvCol]
+          for (const [csvCol, ccField] of Object.entries(columnMapping)) {
+            if (ccField && rawData[csvCol] !== undefined) {
+              mapped[ccField] = rawData[csvCol]
             }
           }
 
@@ -246,7 +253,8 @@ export const importProcessingTask = task({
     await db
       .update(schema.importBatches)
       .set({
-        status: totalErrored > 0 && totalProcessed === 0 ? 'failed' : 'completed',
+        status:
+          totalErrored > 0 && totalProcessed === 0 ? 'failed' : 'completed',
         processedRows: totalProcessed,
         errorRows: totalErrored,
         completedAt: new Date(),

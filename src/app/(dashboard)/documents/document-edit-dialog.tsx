@@ -20,7 +20,11 @@ type Props = {
   onCancel: () => void
 }
 
-export function DocumentEditDialog({ document: doc, onSaved, onCancel }: Props) {
+export function DocumentEditDialog({
+  document: doc,
+  onSaved,
+  onCancel,
+}: Props) {
   const [category, setCategory] = useState<DocumentCategory>(
     (doc.documentType as DocumentCategory) ?? 'other',
   )

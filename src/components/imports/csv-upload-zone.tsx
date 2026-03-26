@@ -9,7 +9,10 @@ interface CsvUploadZoneProps {
   isLoading: boolean
 }
 
-export function CsvUploadZone({ onFileSelected, isLoading }: CsvUploadZoneProps) {
+export function CsvUploadZone({
+  onFileSelected,
+  isLoading,
+}: CsvUploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 

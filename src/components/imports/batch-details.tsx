@@ -54,7 +54,9 @@ export function BatchDetails({ batchId, onBack }: BatchDetailsProps) {
       } else if (result.data) {
         setRetryResult(result.data)
       }
-      await queryClient.invalidateQueries({ queryKey: ['importBatchDetails', batchId] })
+      await queryClient.invalidateQueries({
+        queryKey: ['importBatchDetails', batchId],
+      })
       await queryClient.invalidateQueries({ queryKey: ['importBatches'] })
     } catch (error) {
       Sentry.captureException(error)
@@ -76,8 +78,14 @@ export function BatchDetails({ batchId, onBack }: BatchDetailsProps) {
   if (detailsQuery.isError || !detailsQuery.data) {
     return (
       <div className="space-y-3 text-center">
-        <p className="text-destructive text-sm">Failed to load batch details.</p>
-        <Button variant="outline" size="sm" onClick={() => detailsQuery.refetch()}>
+        <p className="text-destructive text-sm">
+          Failed to load batch details.
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => detailsQuery.refetch()}
+        >
           Retry
         </Button>
       </div>
@@ -99,16 +107,16 @@ export function BatchDetails({ batchId, onBack }: BatchDetailsProps) {
         <div className="text-right text-sm">
           <span className="font-medium">{batch.fileName}</span>
           <span className="text-muted-foreground ml-2">
-            {batch.processedRows ?? 0} imported, {batch.errorRows ?? 0} failed of{' '}
-            {batch.totalRows ?? 0} total
+            {batch.processedRows ?? 0} imported, {batch.errorRows ?? 0} failed
+            of {batch.totalRows ?? 0} total
           </span>
         </div>
       </div>
 
       {retryResult && (
         <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm">
-          Retry complete: {retryResult.processed} imported, {retryResult.errored} still
-          failed.
+          Retry complete: {retryResult.processed} imported,{' '}
+          {retryResult.errored} still failed.
         </div>
       )}
 
@@ -164,7 +172,8 @@ export function BatchDetails({ batchId, onBack }: BatchDetailsProps) {
 }
 
 function ErrorList({ errors }: { errors: unknown }) {
-  if (!Array.isArray(errors)) return <span className="text-muted-foreground">-</span>
+  if (!Array.isArray(errors))
+    return <span className="text-muted-foreground">-</span>
   return (
     <ul className="list-inside list-disc text-xs">
       {(errors as { path: string; message: string }[]).map((e, i) => (

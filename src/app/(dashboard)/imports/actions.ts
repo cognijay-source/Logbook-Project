@@ -30,10 +30,12 @@ const uploadSchema = z.object({
   sourceType: z.string().default('csv'),
 })
 
-export async function uploadCsv(
-  data: unknown,
-): Promise<{
-  data: { batchId: string; headers: string[]; preview: Record<string, string>[] } | null
+export async function uploadCsv(data: unknown): Promise<{
+  data: {
+    batchId: string
+    headers: string[]
+    preview: Record<string, string>[]
+  } | null
   error: string | null
 }> {
   try {
@@ -46,7 +48,10 @@ export async function uploadCsv(
     })
 
     if (parsed.errors.length > 0 && parsed.data.length === 0) {
-      return { data: null, error: 'Failed to parse CSV: ' + parsed.errors[0].message }
+      return {
+        data: null,
+        error: 'Failed to parse CSV: ' + parsed.errors[0].message,
+      }
     }
 
     const headers = parsed.meta.fields ?? []
@@ -106,7 +111,10 @@ export async function uploadCsv(
   } catch (error) {
     Sentry.captureException(error)
     if (error instanceof z.ZodError) {
-      return { data: null, error: error.errors.map((e) => e.message).join(', ') }
+      return {
+        data: null,
+        error: error.errors.map((e) => e.message).join(', '),
+      }
     }
     return { data: null, error: 'Failed to upload CSV' }
   }
@@ -175,9 +183,7 @@ export async function getImportBatchDetails(batchId: string): Promise<{
 
 // ---------- Process Import Batch ----------
 
-export async function processImportBatch(
-  data: unknown,
-): Promise<{
+export async function processImportBatch(data: unknown): Promise<{
   data: { batchId: string } | null
   error: string | null
 }> {
@@ -219,7 +225,10 @@ export async function processImportBatch(
   } catch (error) {
     Sentry.captureException(error)
     if (error instanceof z.ZodError) {
-      return { data: null, error: error.errors.map((e) => e.message).join(', ') }
+      return {
+        data: null,
+        error: error.errors.map((e) => e.message).join(', '),
+      }
     }
     return { data: null, error: 'Failed to start import processing' }
   }
@@ -227,9 +236,7 @@ export async function processImportBatch(
 
 // ---------- Retry Failed Rows ----------
 
-export async function retryFailedRows(
-  data: unknown,
-): Promise<{
+export async function retryFailedRows(data: unknown): Promise<{
   data: { processed: number; errored: number } | null
   error: string | null
 }> {
@@ -280,7 +287,10 @@ export async function retryFailedRows(
 
     // Load aircraft
     const existingAircraft = await db
-      .select({ id: schema.aircraft.id, tailNumber: schema.aircraft.tailNumber })
+      .select({
+        id: schema.aircraft.id,
+        tailNumber: schema.aircraft.tailNumber,
+      })
       .from(schema.aircraft)
       .where(eq(schema.aircraft.profileId, profile.id))
 
@@ -297,7 +307,10 @@ export async function retryFailedRows(
     for (const row of rows) {
       try {
         // Use normalizedData if available, otherwise rawData
-        const mapped = (row.normalizedData ?? row.rawData) as Record<string, string>
+        const mapped = (row.normalizedData ?? row.rawData) as Record<
+          string,
+          string
+        >
 
         const result = importRowSchema.safeParse({
           ...mapped,
@@ -399,7 +412,9 @@ export async function retryFailedRows(
           .update(schema.importRows)
           .set({
             status: 'errored',
-            errors: [{ path: 'unknown', message: 'Unexpected error processing row' }],
+            errors: [
+              { path: 'unknown', message: 'Unexpected error processing row' },
+            ],
             updatedAt: new Date(),
           })
           .where(eq(schema.importRows.id, row.id))
@@ -435,7 +450,10 @@ export async function retryFailedRows(
   } catch (error) {
     Sentry.captureException(error)
     if (error instanceof z.ZodError) {
-      return { data: null, error: error.errors.map((e) => e.message).join(', ') }
+      return {
+        data: null,
+        error: error.errors.map((e) => e.message).join(', '),
+      }
     }
     return { data: null, error: 'Failed to retry import' }
   }
@@ -466,10 +484,12 @@ Return a JSON array of flight objects. If you cannot read a field clearly, set i
 
 Respond with ONLY the JSON array, no other text.`
 
-export async function parseLogbookImages(
-  formData: FormData,
-): Promise<{
-  data: { batchId: string; flights: AiParsedFlight[]; imageUrls: string[] } | null
+export async function parseLogbookImages(formData: FormData): Promise<{
+  data: {
+    batchId: string
+    flights: AiParsedFlight[]
+    imageUrls: string[]
+  } | null
   error: string | null
 }> {
   try {
@@ -538,7 +558,10 @@ export async function parseLogbookImages(
 
       if (uploadError) {
         Sentry.captureException(uploadError)
-        return { data: null, error: `Failed to upload ${file.name}: ${uploadError.message}` }
+        return {
+          data: null,
+          error: `Failed to upload ${file.name}: ${uploadError.message}`,
+        }
       }
 
       storagePaths.push(storagePath)
@@ -567,7 +590,11 @@ export async function parseLogbookImages(
       const mediaType =
         file.type === 'image/heic' || file.type === 'image/heif'
           ? 'image/jpeg'
-          : (file.type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp')
+          : (file.type as
+              | 'image/jpeg'
+              | 'image/png'
+              | 'image/gif'
+              | 'image/webp')
 
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -604,7 +631,9 @@ export async function parseLogbookImages(
 
       if (!response.ok) {
         const errorBody = await response.text()
-        Sentry.captureException(new Error(`Anthropic API error: ${response.status} ${errorBody}`))
+        Sentry.captureException(
+          new Error(`Anthropic API error: ${response.status} ${errorBody}`),
+        )
         return {
           data: null,
           error: `AI parsing failed (${response.status}). Please try again.`,
@@ -623,7 +652,9 @@ export async function parseLogbookImages(
       // Parse JSON from the response — handle markdown code blocks
       let jsonText = textContent.text.trim()
       if (jsonText.startsWith('```')) {
-        jsonText = jsonText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
+        jsonText = jsonText
+          .replace(/^```(?:json)?\n?/, '')
+          .replace(/\n?```$/, '')
       }
 
       let parsed: unknown[]
@@ -631,7 +662,9 @@ export async function parseLogbookImages(
         parsed = JSON.parse(jsonText) as unknown[]
       } catch {
         Sentry.captureException(
-          new Error(`Failed to parse AI response as JSON: ${jsonText.slice(0, 200)}`),
+          new Error(
+            `Failed to parse AI response as JSON: ${jsonText.slice(0, 200)}`,
+          ),
         )
         continue
       }
@@ -697,9 +730,7 @@ const confirmAiImportSchema = z.object({
   ),
 })
 
-export async function confirmAiImport(
-  data: unknown,
-): Promise<{
+export async function confirmAiImport(data: unknown): Promise<{
   data: { imported: number; needsReview: number; batchId: string } | null
   error: string | null
 }> {
@@ -726,7 +757,10 @@ export async function confirmAiImport(
 
     // Load existing aircraft
     const existingAircraft = await db
-      .select({ id: schema.aircraft.id, tailNumber: schema.aircraft.tailNumber })
+      .select({
+        id: schema.aircraft.id,
+        tailNumber: schema.aircraft.tailNumber,
+      })
       .from(schema.aircraft)
       .where(eq(schema.aircraft.profileId, profile.id))
 
@@ -788,7 +822,11 @@ export async function confirmAiImport(
       }
 
       // Build route string
-      const routeParts = [flight.route_from, flight.route_via, flight.route_to].filter(Boolean)
+      const routeParts = [
+        flight.route_from,
+        flight.route_via,
+        flight.route_to,
+      ].filter(Boolean)
       const route = routeParts.length > 1 ? routeParts.join(' - ') : undefined
 
       const insertedFlight = await db
@@ -857,7 +895,10 @@ export async function confirmAiImport(
   } catch (error) {
     Sentry.captureException(error)
     if (error instanceof z.ZodError) {
-      return { data: null, error: error.errors.map((e) => e.message).join(', ') }
+      return {
+        data: null,
+        error: error.errors.map((e) => e.message).join(', '),
+      }
     }
     return { data: null, error: 'Failed to import flights' }
   }

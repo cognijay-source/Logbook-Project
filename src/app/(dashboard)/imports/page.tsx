@@ -12,10 +12,7 @@ import { ImportHistory } from '@/components/imports/import-history'
 import { BatchDetails } from '@/components/imports/batch-details'
 import { AiImportSection } from '@/components/imports/ai-import-section'
 import { uploadCsv, processImportBatch } from './actions'
-import {
-  autoDetectMapping,
-  type ColumnMapping,
-} from '@/lib/validators/import'
+import { autoDetectMapping, type ColumnMapping } from '@/lib/validators/import'
 
 type Step = 'upload' | 'mapping' | 'results' | 'batch-details'
 
@@ -158,7 +155,10 @@ export default function ImportsPage() {
                   <CardTitle>Import Details</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <BatchDetails batchId={viewBatchId} onBack={handleBackFromBatch} />
+                  <BatchDetails
+                    batchId={viewBatchId}
+                    onBack={handleBackFromBatch}
+                  />
                 </CardContent>
               </Card>
             )}
@@ -206,8 +206,8 @@ export default function ImportsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-muted-foreground text-sm">
-                    Your import is being processed in the background. You can track
-                    its progress in the import history below.
+                    Your import is being processed in the background. You can
+                    track its progress in the import history below.
                   </p>
 
                   <div className="flex gap-3">

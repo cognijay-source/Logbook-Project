@@ -79,7 +79,7 @@ export type ImportRow = z.infer<typeof importRowSchema>
 
 // ---------- CrossCheck flight fields that can be mapped from CSV ----------
 
-export const skylogFields = [
+export const crosscheckFields = [
   'flightDate',
   'tailNumber',
   'departureAirport',
@@ -103,9 +103,9 @@ export const skylogFields = [
   'remarks',
 ] as const
 
-export type SkylogField = (typeof skylogFields)[number]
+export type CrosscheckField = (typeof crosscheckFields)[number]
 
-export const skylogFieldLabels: Record<SkylogField, string> = {
+export const crosscheckFieldLabels: Record<CrosscheckField, string> = {
   flightDate: 'Flight Date',
   tailNumber: 'Tail Number',
   departureAirport: 'Departure Airport',
@@ -133,7 +133,7 @@ export const skylogFieldLabels: Record<SkylogField, string> = {
 
 export const columnMappingSchema = z.record(
   z.string(), // CSV column name
-  z.enum([...skylogFields, '' as const]), // CrossCheck field or unmapped
+  z.enum([...crosscheckFields, '' as const]), // CrossCheck field or unmapped
 )
 
 export type ColumnMapping = z.infer<typeof columnMappingSchema>
@@ -149,10 +149,9 @@ export const retryImportSchema = z.object({
 
 // ---------- Auto-detect column mappings for popular logbook apps ----------
 
-type ColumnAliasMap = Record<string, SkylogField>
+type ColumnAliasMap = Record<string, CrosscheckField>
 
-const normalize = (s: string) =>
-  s.toLowerCase().replace(/[^a-z0-9]/g, '')
+const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
 
 const foreflightAliases: ColumnAliasMap = {
   date: 'flightDate',
@@ -307,7 +306,13 @@ export type AiParsedFlight = z.infer<typeof aiParsedFlightSchema>
 
 /** Fields where AI returned null — these need user review */
 export function getNeedsReviewFields(flight: AiParsedFlight): string[] {
-  const required: (keyof AiParsedFlight)[] = ['date', 'aircraft_ident', 'route_from', 'route_to', 'total_time']
+  const required: (keyof AiParsedFlight)[] = [
+    'date',
+    'aircraft_ident',
+    'route_from',
+    'route_to',
+    'total_time',
+  ]
   return required.filter((key) => flight[key] === null)
 }
 

@@ -31,8 +31,7 @@ const values = [
   },
   {
     principle: 'Structure over clutter',
-    detail:
-      'Clean records, clean interface, clean data. Nothing unnecessary.',
+    detail: 'Clean records, clean interface, clean data. Nothing unnecessary.',
   },
   {
     principle: 'Trust over novelty',
@@ -81,10 +80,10 @@ export default function AboutPage() {
               invisible. Career readiness is guessed at, not measured.
             </p>
             <p>
-              CrossCheck was built to close that gap. Not with another app
-              that looks like a paper logbook on a screen, but with a
-              structured operating system that turns flight records into
-              clarity, progress, and readiness.
+              CrossCheck was built to close that gap. Not with another app that
+              looks like a paper logbook on a screen, but with a structured
+              operating system that turns flight records into clarity, progress,
+              and readiness.
             </p>
           </div>
         </div>
@@ -98,8 +97,8 @@ export default function AboutPage() {
           </h2>
           <p className="text-muted-foreground mt-6 text-base leading-relaxed">
             Help pilots navigate an opaque industry with cleaner records,
-            clearer progress, and more objective readiness. CrossCheck exists
-            so that every pilot can see the system clearly and build mastery
+            clearer progress, and more objective readiness. CrossCheck exists so
+            that every pilot can see the system clearly and build mastery
             deliberately.
           </p>
         </div>

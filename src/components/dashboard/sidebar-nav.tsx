@@ -2,7 +2,20 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Plane, Wrench, Map, Target, DollarSign, Upload, Settings, ShieldCheck, GraduationCap, FileText, BarChart3 } from 'lucide-react'
+import {
+  LayoutDashboard,
+  Plane,
+  Wrench,
+  Map,
+  Target,
+  DollarSign,
+  Upload,
+  Settings,
+  ShieldCheck,
+  GraduationCap,
+  FileText,
+  BarChart3,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [

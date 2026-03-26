@@ -14,7 +14,9 @@ export const goalProgressRefreshTask = task({
     const progress = await getGoalProgress(profileId)
 
     if (!progress) {
-      console.log(`[goal-progress-refresh] No active goal for profile ${profileId}`)
+      console.log(
+        `[goal-progress-refresh] No active goal for profile ${profileId}`,
+      )
       return { success: true, profileId, hasGoal: false }
     }
 

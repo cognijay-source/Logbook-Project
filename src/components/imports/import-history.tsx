@@ -72,8 +72,14 @@ export function ImportHistory({ onViewBatch }: ImportHistoryProps) {
   if (batchesQuery.isError) {
     return (
       <div className="text-center">
-        <p className="text-destructive text-sm">Failed to load import history.</p>
-        <Button variant="outline" size="sm" onClick={() => batchesQuery.refetch()}>
+        <p className="text-destructive text-sm">
+          Failed to load import history.
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => batchesQuery.refetch()}
+        >
           Retry
         </Button>
       </div>
@@ -111,9 +117,15 @@ export function ImportHistory({ onViewBatch }: ImportHistoryProps) {
                 {batch.fileName ?? 'Untitled'}
               </TableCell>
               <TableCell>{statusBadge(batch.status)}</TableCell>
-              <TableCell className="text-right">{batch.totalRows ?? 0}</TableCell>
-              <TableCell className="text-right">{batch.processedRows ?? 0}</TableCell>
-              <TableCell className="text-right">{batch.errorRows ?? 0}</TableCell>
+              <TableCell className="text-right">
+                {batch.totalRows ?? 0}
+              </TableCell>
+              <TableCell className="text-right">
+                {batch.processedRows ?? 0}
+              </TableCell>
+              <TableCell className="text-right">
+                {batch.errorRows ?? 0}
+              </TableCell>
               <TableCell className="whitespace-nowrap">
                 {formatDate(batch.createdAt)}
               </TableCell>

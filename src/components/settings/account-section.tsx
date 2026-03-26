@@ -189,9 +189,7 @@ function DeleteAccountCard({
               </DialogDescription>
             </DialogHeader>
 
-            {error && (
-              <p className="text-destructive text-sm">{error}</p>
-            )}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <div className="space-y-2">
               <Label htmlFor="deleteConfirmation">

@@ -47,7 +47,8 @@ export async function createTrainingEntry(data: unknown) {
         description: parsed.description ?? null,
         instructor: parsed.instructor ?? null,
         entryDate: parsed.entryDate,
-        duration: parsed.duration !== undefined ? String(parsed.duration) : null,
+        duration:
+          parsed.duration !== undefined ? String(parsed.duration) : null,
         notes: parsed.notes ?? null,
       })
       .returning({ id: schema.trainingEntries.id })
@@ -103,7 +104,8 @@ export async function updateTrainingEntry(id: string, data: unknown) {
         description: parsed.description ?? null,
         instructor: parsed.instructor ?? null,
         entryDate: parsed.entryDate,
-        duration: parsed.duration !== undefined ? String(parsed.duration) : null,
+        duration:
+          parsed.duration !== undefined ? String(parsed.duration) : null,
         notes: parsed.notes ?? null,
         updatedAt: new Date(),
       })
@@ -298,9 +300,7 @@ export async function deleteCertificate(id: string) {
       return { success: false, error: 'Certificate not found' }
     }
 
-    await db
-      .delete(schema.certificates)
-      .where(eq(schema.certificates.id, id))
+    await db.delete(schema.certificates).where(eq(schema.certificates.id, id))
 
     await createAuditEvent({
       profileId: profile.id,
@@ -447,9 +447,7 @@ export async function deleteEndorsement(id: string) {
       return { success: false, error: 'Endorsement not found' }
     }
 
-    await db
-      .delete(schema.endorsements)
-      .where(eq(schema.endorsements.id, id))
+    await db.delete(schema.endorsements).where(eq(schema.endorsements.id, id))
 
     await createAuditEvent({
       profileId: profile.id,

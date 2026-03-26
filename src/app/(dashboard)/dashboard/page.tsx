@@ -142,7 +142,9 @@ function RecentFlights({
                   </span>
                 </div>
                 <span className="text-sm font-medium">
-                  {f.totalTime ? `${formatHours(parseFloat(f.totalTime))}h` : '—'}
+                  {f.totalTime
+                    ? `${formatHours(parseFloat(f.totalTime))}h`
+                    : '—'}
                 </span>
               </Link>
             ))}
@@ -194,11 +196,7 @@ function getCurrencyBadge(result: DashboardData['currency'][number]) {
   }
 }
 
-function CurrencyPanel({
-  currency,
-}: {
-  currency: DashboardData['currency']
-}) {
+function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">

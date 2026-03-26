@@ -18,24 +18,66 @@ See @README.md for setup instructions and @package.json for available scripts.
 - **Trigger.dev** — CSV import pipeline, milestone recompute, goal/readiness refresh, scheduled currency checks, PDF generation, AI parsing workflows
 - **Sentry** — runtime error capture, slow route monitoring, workflow tracing
 
+## Feature Naming
+
+All features use branded names throughout the UI and codebase:
+
+| Brand Name          | Route        | Description                                    |
+| ------------------- | ------------ | ---------------------------------------------- |
+| CrossCheck Daily    | `/dashboard` | Summary cards, recent flights, currency, goals |
+| CrossCheck Logbook  | `/flights`   | Flight log CRUD, search, filtering             |
+| CrossCheck Currency | `/currency`  | FAA currency status tracking                   |
+| CrossCheck Mastery  | `/journey`   | Milestones, evaluations, career progress       |
+| CrossCheck Ready    | `/progress`  | Goal tracking and readiness bars               |
+| CrossCheck Costs    | `/money`     | Income/expense tracking, financial summary     |
+
+Additional pages: `/aircraft`, `/training`, `/documents`, `/imports`, `/reports`, `/settings`
+
+## Pricing Tiers
+
+- **CrossCheck Core** — free tier, basic logbook and currency
+- **CrossCheck Mastery** — mid tier, adds mastery tracking, goals, training
+- **CrossCheck Command** — top tier, full suite with AI, reports, priority support
+
 ## Directory Map
 
 ```
 src/
   app/
-    (auth)/         — login, signup, callback
-    (dashboard)/    — authenticated pages
-    (marketing)/    — landing, pricing, etc.
-    api/            — route handlers
+    (auth)/             — login, signup, callback
+    (dashboard)/        — all authenticated pages
+      aircraft/         — aircraft CRUD
+      currency/         — currency status
+      dashboard/        — CrossCheck Daily
+      documents/        — document management
+      flights/          — logbook (list, new, [id])
+      imports/          — CSV and AI import
+      journey/          — mastery milestones
+      money/            — costs tracking
+      progress/         — goals and readiness
+      reports/          — PDF report generation
+      settings/         — profile and preferences
+      training/         — training entries, certificates, endorsements
+    (marketing)/        — landing, pricing, about
+    api/                — route handlers
   components/
-    ui/             — shadcn/ui components
+    aircraft/           — aircraft form, list
+    dashboard/          — sidebar nav, header, notifications
+    documents/          — upload, preview, entity docs
+    flights/            — flight form, flight card
+    imports/            — CSV upload, column mapping, AI import
+    money/              — financial entry form
+    settings/           — profile, preferences, account forms
+    ui/                 — shadcn/ui primitives
+  hooks/                — custom React hooks (toast)
+  jobs/                 — Trigger.dev job definitions
   lib/
-    db/             — Drizzle client, schema, migrations
-    supabase/       — Supabase client helpers (server, client, middleware)
-    validators/     — Zod schemas
-  hooks/            — custom React hooks (TanStack Query wrappers, etc.)
-  jobs/             — Trigger.dev job definitions
-  types/            — shared TypeScript types
+    db/                 — Drizzle client, schema, migrations, seed
+    services/           — domain logic (currency, milestones, goals, totals, audit)
+    supabase/           — Supabase client helpers (server, client, middleware)
+    validators/         — Zod schemas per domain
+  middleware.ts         — Supabase auth session refresh
+  trigger.ts            — Trigger.dev project config
 ```
 
 ## Dev Commands
@@ -64,6 +106,7 @@ npm run trigger:dev    # Start Trigger.dev dev server
 - Use `"use server"` and `"use client"` directives intentionally — default to server
 - Prefer small, focused files — one component per file, one schema per domain
 - Every catch block should capture to Sentry — never silently swallow errors
+- Brand voice: operational, restrained, no gamification or aviation clichés
 
 ### Important
 
