@@ -72,10 +72,12 @@ function SummaryCards({ totals }: { totals: DashboardData['totals'] }) {
               <CardDescription className="text-xs font-medium">
                 {c.label}
               </CardDescription>
-              <c.icon className="h-4 w-4 text-muted-foreground transition-colors duration-200 group-hover:text-sky-500" />
+              <c.icon className="text-muted-foreground h-4 w-4 transition-colors duration-200 group-hover:text-sky-500" />
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold tabular-nums">{formatHours(value)}</p>
+              <p className="text-2xl font-bold tabular-nums">
+                {formatHours(value)}
+              </p>
             </CardContent>
           </Card>
         )
@@ -123,8 +125,8 @@ function RecentFlights({
       <CardContent>
         {flights.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-6">
-            <Plane className="h-8 w-8 text-muted-foreground/40" />
-            <p className="text-center text-sm text-muted-foreground">
+            <Plane className="text-muted-foreground/40 h-8 w-8" />
+            <p className="text-muted-foreground text-center text-sm">
               No flights recorded yet.
             </p>
           </div>
@@ -134,13 +136,13 @@ function RecentFlights({
               <Link
                 key={f.id}
                 href={`/flights/${f.id}`}
-                className="flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-accent/50"
+                className="hover:bg-accent/50 flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors duration-150"
               >
                 <div className="flex flex-col gap-0.5">
                   <span className="text-sm font-medium">
                     {formatRoute(f.departureAirport, f.arrivalAirport)}
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-muted-foreground text-xs">
                     {f.flightDate}
                     {f.aircraft &&
                       ` \u00b7 ${f.aircraft.tailNumber}${f.aircraft.model ? ` (${f.aircraft.model})` : ''}`}
@@ -214,8 +216,8 @@ function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
       <CardContent>
         {currency.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-6">
-            <ShieldCheck className="h-8 w-8 text-muted-foreground/40" />
-            <p className="text-center text-sm text-muted-foreground">
+            <ShieldCheck className="text-muted-foreground/40 h-8 w-8" />
+            <p className="text-muted-foreground text-center text-sm">
               No currency rules configured yet. Check back after adding flights.
             </p>
           </div>
@@ -230,7 +232,7 @@ function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
                 >
                   <div className="flex flex-col gap-0.5">
                     <span className="text-sm font-medium">{c.rule.name}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {c.details}
                     </span>
                   </div>
@@ -274,8 +276,8 @@ function GoalProgressPanel({
       <CardContent>
         {!goalProgress ? (
           <div className="flex flex-col items-center gap-3 py-6">
-            <Target className="h-8 w-8 text-muted-foreground/40" />
-            <p className="text-center text-sm text-muted-foreground">
+            <Target className="text-muted-foreground/40 h-8 w-8" />
+            <p className="text-muted-foreground text-center text-sm">
               No goal assigned yet. Set one to track your progress.
             </p>
             <Button variant="outline" size="sm" asChild>
@@ -288,17 +290,17 @@ function GoalProgressPanel({
               <div key={req.field} className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span>{req.label}</span>
-                  <span className="tabular-nums text-muted-foreground">
+                  <span className="text-muted-foreground tabular-nums">
                     {formatHours(req.current)} / {formatHours(req.required)}
                   </span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-secondary">
+                <div className="bg-secondary h-2 overflow-hidden rounded-full">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 transition-all duration-700 ease-out"
                     style={{ width: `${Math.min(req.percentage, 100)}%` }}
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   {req.percentage >= 100
                     ? 'Complete'
                     : `${req.percentage}% \u2014 ${formatHours(req.remaining)} remaining`}

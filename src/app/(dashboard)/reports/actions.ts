@@ -7,14 +7,30 @@ import * as schema from '@/lib/db/schema'
 import { getOrCreateProfile } from '@/lib/services/profile'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { z } from 'zod'
+
+// ---------- Validation ----------
+
+const reportTypeEnum = z.enum([
+  'flight-summary',
+  '8710-time',
+  'insurance',
+  'custom-range',
+])
+
+const reportParamsSchema = z.object({
+  type: reportTypeEnum,
+  startDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (expected YYYY-MM-DD)'),
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (expected YYYY-MM-DD)'),
+})
 
 // ---------- Types ----------
 
-export type ReportType =
-  | 'flight-summary'
-  | '8710-time'
-  | 'insurance'
-  | 'custom-range'
+export type ReportType = z.infer<typeof reportTypeEnum>
 
 export interface FlightSummaryData {
   type: 'flight-summary'
@@ -187,6 +203,14 @@ export async function getReportData(
   endDate: string,
 ): Promise<{ data: ReportData | null; error: string | null }> {
   try {
+    const params = reportParamsSchema.safeParse({ type, startDate, endDate })
+    if (!params.success) {
+      return {
+        data: null,
+        error: params.error.errors.map((e) => e.message).join(', '),
+      }
+    }
+
     const profile = await getOrCreateProfile()
 
     if (type === 'flight-summary') {
@@ -370,6 +394,14 @@ export async function generatePdf(
   endDate: string,
 ): Promise<{ data: number[] | null; error: string | null }> {
   try {
+    const params = reportParamsSchema.safeParse({ type, startDate, endDate })
+    if (!params.success) {
+      return {
+        data: null,
+        error: params.error.errors.map((e) => e.message).join(', '),
+      }
+    }
+
     const profile = await getOrCreateProfile()
     const result = await getReportData(type, startDate, endDate)
     if (result.error || !result.data) {

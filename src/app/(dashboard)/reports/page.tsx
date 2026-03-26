@@ -140,7 +140,7 @@ export default function ReportsPage() {
                   setReportType(e.target.value as ReportType)
                   setPreviewData(null)
                 }}
-                className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm transition-colors duration-200 focus:border-ring focus:ring-2 focus:ring-ring/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                className="border-input bg-background focus:border-ring focus:ring-ring/20 flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm transition-colors duration-200 focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {reportTypes.map((rt) => (
                   <option key={rt.value} value={rt.value}>

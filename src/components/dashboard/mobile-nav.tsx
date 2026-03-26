@@ -27,9 +27,9 @@ export function MobileNav() {
           <span className="sr-only">Toggle navigation menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-72 bg-sidebar-background p-0">
+      <SheetContent side="left" className="bg-sidebar-background w-72 p-0">
         <SheetHeader className="px-6 pt-5 pb-4">
-          <SheetTitle className="flex items-center gap-2.5 text-left text-sidebar-accent-foreground">
+          <SheetTitle className="text-sidebar-accent-foreground flex items-center gap-2.5 text-left">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-cyan-400 shadow-md">
               <BookOpen className="h-4 w-4 text-white" />
             </div>
@@ -57,9 +57,7 @@ export function MobileNav() {
                   <item.icon
                     className={cn(
                       'h-4 w-4',
-                      isActive
-                        ? 'text-sidebar-primary'
-                        : 'text-sidebar-muted',
+                      isActive ? 'text-sidebar-primary' : 'text-sidebar-muted',
                     )}
                   />
                   {item.label}

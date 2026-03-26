@@ -1,7 +1,7 @@
 'use server'
 
 import * as Sentry from '@sentry/nextjs'
-import { eq, and, gte, lte, desc } from 'drizzle-orm'
+import { eq, and, gte, lte, desc, sql } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import * as schema from '@/lib/db/schema'
 import { getOrCreateProfile } from '@/lib/services/profile'
@@ -21,13 +21,20 @@ type GetEntriesParams = {
   year?: number
   month?: number
   type?: string
+  page?: number
+  pageSize?: number
 }
 
-export async function getFinancialEntries(
-  params?: GetEntriesParams,
-): Promise<FinancialEntry[]> {
+export async function getFinancialEntries(params?: GetEntriesParams): Promise<{
+  data: FinancialEntry[]
+  total: number
+  page: number
+  pageSize: number
+}> {
   try {
     const profile = await getOrCreateProfile()
+    const page = params?.page ?? 1
+    const pageSize = params?.pageSize ?? 50
     const conditions = [eq(schema.financialEntries.profileId, profile.id)]
 
     if (params?.year) {
@@ -54,13 +61,23 @@ export async function getFinancialEntries(
       conditions.push(eq(schema.financialEntries.entryType, params.type))
     }
 
-    const entries = await db
-      .select()
-      .from(schema.financialEntries)
-      .where(and(...conditions))
-      .orderBy(desc(schema.financialEntries.entryDate))
+    const [entries, countResult] = await Promise.all([
+      db
+        .select()
+        .from(schema.financialEntries)
+        .where(and(...conditions))
+        .orderBy(desc(schema.financialEntries.entryDate))
+        .limit(pageSize)
+        .offset((page - 1) * pageSize),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.financialEntries)
+        .where(and(...conditions)),
+    ])
 
-    return entries
+    const total = Number(countResult[0]?.count) || 0
+
+    return { data: entries, total, page, pageSize }
   } catch (error) {
     Sentry.captureException(error)
     throw error
@@ -69,7 +86,7 @@ export async function getFinancialEntries(
 
 export async function createFinancialEntry(
   data: unknown,
-): Promise<FinancialEntry> {
+): Promise<{ data: FinancialEntry | null; error: string | null }> {
   try {
     const profile = await getOrCreateProfile()
     const validated = financialEntryCreateSchema.parse(data)
@@ -93,7 +110,7 @@ export async function createFinancialEntry(
 
     const entry = inserted[0]
     if (!entry) {
-      throw new Error('Failed to create financial entry')
+      return { data: null, error: 'Failed to create financial entry' }
     }
 
     await createAuditEvent({
@@ -104,17 +121,23 @@ export async function createFinancialEntry(
       changes: validated,
     })
 
-    return entry
+    return { data: entry, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    throw error
+    return {
+      data: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to create financial entry',
+    }
   }
 }
 
 export async function updateFinancialEntry(
   id: string,
   data: unknown,
-): Promise<FinancialEntry> {
+): Promise<{ data: FinancialEntry | null; error: string | null }> {
   try {
     const profile = await getOrCreateProfile()
     const validated = financialEntryUpdateSchema.parse(data)
@@ -132,7 +155,7 @@ export async function updateFinancialEntry(
       .limit(1)
 
     if (existing.length === 0) {
-      throw new Error('Financial entry not found')
+      return { data: null, error: 'Financial entry not found' }
     }
 
     const updateValues: Record<string, unknown> = { updatedAt: new Date() }
@@ -169,7 +192,7 @@ export async function updateFinancialEntry(
       .returning()
 
     if (!updated[0]) {
-      throw new Error('Failed to update financial entry')
+      return { data: null, error: 'Failed to update financial entry' }
     }
 
     await createAuditEvent({
@@ -180,34 +203,26 @@ export async function updateFinancialEntry(
       changes: validated,
     })
 
-    return updated[0]
+    return { data: updated[0], error: null }
   } catch (error) {
     Sentry.captureException(error)
-    throw error
+    return {
+      data: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to update financial entry',
+    }
   }
 }
 
-export async function deleteFinancialEntry(id: string): Promise<void> {
+export async function deleteFinancialEntry(
+  id: string,
+): Promise<{ error: string | null }> {
   try {
     const profile = await getOrCreateProfile()
 
-    // Verify ownership
-    const existing = await db
-      .select()
-      .from(schema.financialEntries)
-      .where(
-        and(
-          eq(schema.financialEntries.id, id),
-          eq(schema.financialEntries.profileId, profile.id),
-        ),
-      )
-      .limit(1)
-
-    if (existing.length === 0) {
-      throw new Error('Financial entry not found')
-    }
-
-    await db
+    const deleted = await db
       .delete(schema.financialEntries)
       .where(
         and(
@@ -215,6 +230,11 @@ export async function deleteFinancialEntry(id: string): Promise<void> {
           eq(schema.financialEntries.profileId, profile.id),
         ),
       )
+      .returning({ id: schema.financialEntries.id })
+
+    if (deleted.length === 0) {
+      return { error: 'Financial entry not found' }
+    }
 
     await createAuditEvent({
       profileId: profile.id,
@@ -222,21 +242,35 @@ export async function deleteFinancialEntry(id: string): Promise<void> {
       entityId: id,
       action: 'delete',
     })
+
+    return { error: null }
   } catch (error) {
     Sentry.captureException(error)
-    throw error
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete financial entry',
+    }
   }
 }
 
 export async function getFinancialOverview(options?: {
   year?: number
   month?: number
-}): Promise<FinancialSummary> {
+}): Promise<{ data: FinancialSummary | null; error: string | null }> {
   try {
     const profile = await getOrCreateProfile()
-    return await getFinancialSummary(profile.id, options)
+    const summary = await getFinancialSummary(profile.id, options)
+    return { data: summary, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    throw error
+    return {
+      data: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to load financial overview',
+    }
   }
 }

@@ -81,7 +81,9 @@ export function EntryCard({
         <div className="flex items-center gap-2 pl-4">
           <p
             className={`text-lg font-semibold whitespace-nowrap tabular-nums ${
-              isExpense ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+              isExpense
+                ? 'text-red-600 dark:text-red-400'
+                : 'text-green-600 dark:text-green-400'
             }`}
           >
             {isExpense ? '-' : '+'}

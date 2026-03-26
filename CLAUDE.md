@@ -107,6 +107,10 @@ npm run trigger:dev    # Start Trigger.dev dev server
 - Prefer small, focused files — one component per file, one schema per domain
 - Every catch block should capture to Sentry — never silently swallow errors
 - Brand voice: operational, restrained, no gamification or aviation clichés
+- Server actions return `{ data, error }` tuples. Never throw unhandled — always catch and return `{ error: message }`
+- List queries support pagination with `page` and `pageSize` params. Default: page=1, pageSize=50. Return `{ data, total, page, pageSize }`
+- All delete operations must include `profileId` in the WHERE clause alongside the record id. Never delete by id alone
+- All security-sensitive actions (password change, account deletion) must call `createAuditEvent()`
 
 ### Important
 

@@ -59,6 +59,7 @@ const certificateBase = z.object({
     .string()
     .optional()
     .transform((v) => (v === '' ? undefined : v)),
+  documentUrl: z.string().url().optional().or(z.literal('')),
   notes: z
     .string()
     .optional()
@@ -101,6 +102,7 @@ const endorsementBase = z.object({
     .string()
     .optional()
     .transform((v) => (v === '' ? undefined : v)),
+  documentUrl: z.string().url().optional().or(z.literal('')),
   notes: z
     .string()
     .optional()

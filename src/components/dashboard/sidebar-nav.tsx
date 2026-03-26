@@ -62,7 +62,7 @@ export function SidebarNav() {
             />
             {item.label}
             {isActive && (
-              <div className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary" />
+              <div className="bg-sidebar-primary ml-auto h-1.5 w-1.5 rounded-full" />
             )}
           </Link>
         )

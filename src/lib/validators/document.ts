@@ -26,14 +26,14 @@ export const entityTypeEnum = z.enum(['flight', 'aircraft', 'training'])
 export type EntityType = z.infer<typeof entityTypeEnum>
 
 export const documentUploadSchema = z.object({
-  fileName: z.string().min(1, 'File name is required'),
-  category: documentCategoryEnum,
+  name: z.string().min(1, 'File name is required'),
+  documentType: documentCategoryEnum,
   entityType: entityTypeEnum.optional(),
   entityId: z.string().uuid().optional(),
 })
 
 export const documentUpdateSchema = z.object({
-  category: documentCategoryEnum.optional(),
+  documentType: documentCategoryEnum.optional(),
   entityType: entityTypeEnum.nullable().optional(),
   entityId: z.string().uuid().nullable().optional(),
 })

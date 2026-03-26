@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { Plus, Search, Plane } from 'lucide-react'
@@ -9,6 +9,7 @@ import * as Sentry from '@sentry/nextjs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PaginationControls } from '@/components/ui/pagination-controls'
 import { FlightTable } from '@/components/flights/flight-table'
 import { FlightCard } from '@/components/flights/flight-card'
 import { getFlights, getAircraftList } from './actions'
@@ -17,17 +18,31 @@ export default function FlightsPage() {
   const [search, setSearch] = useState('')
   const [aircraftId, setAircraftId] = useState('all')
   const [status, setStatus] = useState('all')
+  const [page, setPage] = useState(1)
+
+  const setSearchAndReset = useCallback((v: string) => {
+    setSearch(v)
+    setPage(1)
+  }, [])
+  const setAircraftIdAndReset = useCallback((v: string) => {
+    setAircraftId(v)
+    setPage(1)
+  }, [])
+  const setStatusAndReset = useCallback((v: string) => {
+    setStatus(v)
+    setPage(1)
+  }, [])
 
   const flightsQuery = useQuery({
-    queryKey: ['flights', { search, aircraftId, status }],
+    queryKey: ['flights', { search, aircraftId, status, page }],
     queryFn: async () => {
-      const result = await getFlights({ search, aircraftId, status })
+      const result = await getFlights({ search, aircraftId, status, page })
       if (result.error) {
         const err = new Error(result.error)
         Sentry.captureException(err)
         throw err
       }
-      return result.data
+      return result
     },
   })
 
@@ -44,7 +59,9 @@ export default function FlightsPage() {
     },
   })
 
-  const flights = flightsQuery.data ?? []
+  const flights = flightsQuery.data?.data ?? []
+  const total = flightsQuery.data?.total ?? 0
+  const pageSize = flightsQuery.data?.pageSize ?? 50
   const aircraftOptions = aircraftQuery.data ?? []
 
   return (
@@ -55,7 +72,7 @@ export default function FlightsPage() {
           <h1 className="font-heading text-3xl font-bold">Logbook</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             {flightsQuery.isSuccess
-              ? `${flights.length} ${flights.length === 1 ? 'entry' : 'entries'}`
+              ? `${total} ${total === 1 ? 'entry' : 'entries'}`
               : '\u00A0'}
           </p>
         </div>
@@ -74,14 +91,14 @@ export default function FlightsPage() {
           <Input
             placeholder="Search flights..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => setSearchAndReset(e.target.value)}
             className="pl-9"
           />
         </div>
         <select
           value={aircraftId}
-          onChange={(e) => setAircraftId(e.target.value)}
-          className="border-input bg-background h-9 rounded-md border px-3 text-sm shadow-sm transition-colors duration-200 focus:border-ring focus:ring-2 focus:ring-ring/20 focus:outline-none"
+          onChange={(e) => setAircraftIdAndReset(e.target.value)}
+          className="border-input bg-background focus:border-ring focus:ring-ring/20 h-9 rounded-md border px-3 text-sm shadow-sm transition-colors duration-200 focus:ring-2 focus:outline-none"
         >
           <option value="all">All Aircraft</option>
           {aircraftOptions.map((ac) => (
@@ -93,8 +110,8 @@ export default function FlightsPage() {
         </select>
         <select
           value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="border-input bg-background h-9 rounded-md border px-3 text-sm shadow-sm transition-colors duration-200 focus:border-ring focus:ring-2 focus:ring-ring/20 focus:outline-none"
+          onChange={(e) => setStatusAndReset(e.target.value)}
+          className="border-input bg-background focus:border-ring focus:ring-ring/20 h-9 rounded-md border px-3 text-sm shadow-sm transition-colors duration-200 focus:ring-2 focus:outline-none"
         >
           <option value="all">All Status</option>
           <option value="draft">Draft</option>
@@ -125,8 +142,8 @@ export default function FlightsPage() {
       {/* Empty state */}
       {flightsQuery.isSuccess && flights.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-            <Plane className="h-6 w-6 text-muted-foreground" />
+          <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
+            <Plane className="text-muted-foreground h-6 w-6" />
           </div>
           <h3 className="mt-4 text-lg font-semibold">No flights found</h3>
           <p className="text-muted-foreground mt-1 text-sm">
@@ -158,6 +175,12 @@ export default function FlightsPage() {
               <FlightCard key={flight.id} flight={flight} />
             ))}
           </div>
+          <PaginationControls
+            page={page}
+            pageSize={pageSize}
+            total={total}
+            onPageChange={setPage}
+          />
         </>
       )}
     </div>

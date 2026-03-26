@@ -1,19 +1,27 @@
 'use client'
 
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PaginationControls } from '@/components/ui/pagination-controls'
 import { AircraftListClient } from './aircraft-list-client'
 import { getAircraft } from './actions'
 
 export default function AircraftPage() {
+  const [page, setPage] = useState(1)
+
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['aircraft'],
+    queryKey: ['aircraft', { page }],
     queryFn: async () => {
-      const result = await getAircraft()
+      const result = await getAircraft({ page })
       if (result.error) throw new Error(result.error)
-      return result.data ?? []
+      return result
     },
   })
+
+  const aircraft = data?.data ?? []
+  const total = data?.total ?? 0
+  const pageSize = data?.pageSize ?? 50
 
   return (
     <div className="space-y-6">
@@ -38,7 +46,21 @@ export default function AircraftPage() {
         </div>
       )}
 
-      {data && <AircraftListClient aircraft={data} />}
+      {aircraft.length > 0 && (
+        <>
+          <AircraftListClient aircraft={aircraft} />
+          <PaginationControls
+            page={page}
+            pageSize={pageSize}
+            total={total}
+            onPageChange={setPage}
+          />
+        </>
+      )}
+
+      {!isLoading && !isError && aircraft.length === 0 && data && (
+        <AircraftListClient aircraft={[]} />
+      )}
     </div>
   )
 }

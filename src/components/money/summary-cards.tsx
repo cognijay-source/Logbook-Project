@@ -46,13 +46,13 @@ export function SummaryCards({
     <div className="grid gap-4 sm:grid-cols-3">
       <Card className="border-l-4 border-l-red-400">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardTitle className="text-muted-foreground text-sm font-medium">
             Expenses
           </CardTitle>
           <ArrowDownRight className="h-4 w-4 text-red-500" />
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold tabular-nums text-red-600 dark:text-red-400">
+          <p className="text-2xl font-bold text-red-600 tabular-nums dark:text-red-400">
             {formatCurrency(totalExpenses)}
           </p>
         </CardContent>
@@ -60,13 +60,13 @@ export function SummaryCards({
 
       <Card className="border-l-4 border-l-green-400">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardTitle className="text-muted-foreground text-sm font-medium">
             Income
           </CardTitle>
           <ArrowUpRight className="h-4 w-4 text-green-500" />
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold tabular-nums text-green-600 dark:text-green-400">
+          <p className="text-2xl font-bold text-green-600 tabular-nums dark:text-green-400">
             {formatCurrency(totalIncome)}
           </p>
         </CardContent>
@@ -74,7 +74,7 @@ export function SummaryCards({
 
       <Card className="border-l-4 border-l-sky-400">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardTitle className="text-muted-foreground text-sm font-medium">
             Net
           </CardTitle>
           <TrendingUp className="h-4 w-4 text-sky-500" />
@@ -82,7 +82,9 @@ export function SummaryCards({
         <CardContent>
           <p
             className={`text-2xl font-bold tabular-nums ${
-              netAmount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+              netAmount >= 0
+                ? 'text-green-600 dark:text-green-400'
+                : 'text-red-600 dark:text-red-400'
             }`}
           >
             {formatCurrency(netAmount)}

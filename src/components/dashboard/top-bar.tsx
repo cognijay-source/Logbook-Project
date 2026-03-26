@@ -13,10 +13,10 @@ import { logout } from '@/app/(dashboard)/actions'
 
 export function TopBar() {
   return (
-    <header className="flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
+    <header className="bg-background/80 flex h-14 items-center justify-between border-b px-4 backdrop-blur-sm md:px-6">
       <div className="flex items-center gap-3">
         <MobileNav />
-        <span className="font-heading text-sm font-medium text-muted-foreground md:hidden">
+        <span className="font-heading text-muted-foreground text-sm font-medium md:hidden">
           CrossCheck
         </span>
       </div>
@@ -24,8 +24,8 @@ export function TopBar() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="rounded-full">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted transition-colors duration-200 hover:bg-muted/80">
-              <User className="h-4 w-4 text-muted-foreground" />
+            <div className="bg-muted hover:bg-muted/80 flex h-8 w-8 items-center justify-center rounded-full transition-colors duration-200">
+              <User className="text-muted-foreground h-4 w-4" />
             </div>
             <span className="sr-only">Account menu</span>
           </Button>

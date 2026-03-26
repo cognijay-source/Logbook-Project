@@ -16,7 +16,7 @@ The Pilot Operating System. See the system clearly. Build mastery deliberately.
 - **Imports** — CSV import with column mapping and AI-assisted photo parsing
 - **Reports** — PDF report generation for flight records
 - **Settings** — Pilot profile, preferences, and account management
-- **Notifications** — In-app notification bell with unread count
+- **Notifications** — In-app notification bell with unread count (coming soon)
 
 ## Getting Started
 
