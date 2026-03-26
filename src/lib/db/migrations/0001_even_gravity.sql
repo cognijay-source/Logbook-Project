@@ -1,0 +1,1 @@
+ALTER TABLE "profiles" ADD COLUMN "time_format" text DEFAULT 'decimal';
