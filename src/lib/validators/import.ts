@@ -76,3 +76,198 @@ export const importRowSchema = z.object({
 })
 
 export type ImportRow = z.infer<typeof importRowSchema>
+
+// ---------- SkyLog flight fields that can be mapped from CSV ----------
+
+export const skylogFields = [
+  'flightDate',
+  'tailNumber',
+  'departureAirport',
+  'arrivalAirport',
+  'route',
+  'totalTime',
+  'pic',
+  'sic',
+  'crossCountry',
+  'night',
+  'actualInstrument',
+  'simulatedInstrument',
+  'dualReceived',
+  'dualGiven',
+  'solo',
+  'multiEngine',
+  'turbine',
+  'dayLandings',
+  'nightLandings',
+  'holds',
+  'remarks',
+] as const
+
+export type SkylogField = (typeof skylogFields)[number]
+
+export const skylogFieldLabels: Record<SkylogField, string> = {
+  flightDate: 'Flight Date',
+  tailNumber: 'Tail Number',
+  departureAirport: 'Departure Airport',
+  arrivalAirport: 'Arrival Airport',
+  route: 'Route',
+  totalTime: 'Total Time',
+  pic: 'PIC',
+  sic: 'SIC',
+  crossCountry: 'Cross Country',
+  night: 'Night',
+  actualInstrument: 'Actual Instrument',
+  simulatedInstrument: 'Simulated Instrument',
+  dualReceived: 'Dual Received',
+  dualGiven: 'Dual Given',
+  solo: 'Solo',
+  multiEngine: 'Multi-Engine',
+  turbine: 'Turbine',
+  dayLandings: 'Day Landings',
+  nightLandings: 'Night Landings',
+  holds: 'Holds',
+  remarks: 'Remarks',
+}
+
+// ---------- Column mapping schema ----------
+
+export const columnMappingSchema = z.record(
+  z.string(), // CSV column name
+  z.enum([...skylogFields, '' as const]), // SkyLog field or unmapped
+)
+
+export type ColumnMapping = z.infer<typeof columnMappingSchema>
+
+export const processImportSchema = z.object({
+  batchId: z.string().uuid('Invalid batch ID'),
+  columnMapping: columnMappingSchema,
+})
+
+export const retryImportSchema = z.object({
+  batchId: z.string().uuid('Invalid batch ID'),
+})
+
+// ---------- Auto-detect column mappings for popular logbook apps ----------
+
+type ColumnAliasMap = Record<string, SkylogField>
+
+const normalize = (s: string) =>
+  s.toLowerCase().replace(/[^a-z0-9]/g, '')
+
+const foreflightAliases: ColumnAliasMap = {
+  date: 'flightDate',
+  aircraftid: 'tailNumber',
+  from: 'departureAirport',
+  to: 'arrivalAirport',
+  route: 'route',
+  totaltime: 'totalTime',
+  pic: 'pic',
+  sic: 'sic',
+  crosscountry: 'crossCountry',
+  night: 'night',
+  actualinstrument: 'actualInstrument',
+  simulatedinstrument: 'simulatedInstrument',
+  dualreceived: 'dualReceived',
+  dualrecd: 'dualReceived',
+  dualgiven: 'dualGiven',
+  solo: 'solo',
+  daylandingsfullstop: 'dayLandings',
+  nightlandingsfullstop: 'nightLandings',
+  holds: 'holds',
+  remarks: 'remarks',
+  pilotcomments: 'remarks',
+  multiengine: 'multiEngine',
+  turbine: 'turbine',
+}
+
+const logtenProAliases: ColumnAliasMap = {
+  flightdate: 'flightDate',
+  date: 'flightDate',
+  aircrafttype: 'tailNumber',
+  aircraftid: 'tailNumber',
+  aircraftident: 'tailNumber',
+  departurecode: 'departureAirport',
+  departureplace: 'departureAirport',
+  arrivalcode: 'arrivalAirport',
+  arrivalplace: 'arrivalAirport',
+  route: 'route',
+  totaltime: 'totalTime',
+  totalduration: 'totalTime',
+  pic: 'pic',
+  pilofincommand: 'pic',
+  sic: 'sic',
+  secondincommand: 'sic',
+  crosscountry: 'crossCountry',
+  night: 'night',
+  nighttime: 'night',
+  actualinstrument: 'actualInstrument',
+  simulatedinstrument: 'simulatedInstrument',
+  hoodinstrument: 'simulatedInstrument',
+  dualreceived: 'dualReceived',
+  dualgiven: 'dualGiven',
+  instructor: 'dualGiven',
+  solo: 'solo',
+  daylandings: 'dayLandings',
+  nightlandings: 'nightLandings',
+  holds: 'holds',
+  remarks: 'remarks',
+  flightremarks: 'remarks',
+  multiengine: 'multiEngine',
+  turbine: 'turbine',
+}
+
+const myFlightBookAliases: ColumnAliasMap = {
+  date: 'flightDate',
+  tailnumber: 'tailNumber',
+  tail: 'tailNumber',
+  from: 'departureAirport',
+  to: 'arrivalAirport',
+  route: 'route',
+  totalflighttime: 'totalTime',
+  total: 'totalTime',
+  pic: 'pic',
+  sic: 'sic',
+  crosscountry: 'crossCountry',
+  xc: 'crossCountry',
+  night: 'night',
+  imcsimulated: 'simulatedInstrument',
+  imc: 'actualInstrument',
+  dualreceived: 'dualReceived',
+  cfi: 'dualGiven',
+  solo: 'solo',
+  daylandingsfullstop: 'dayLandings',
+  fulltouchandgolandings: 'dayLandings',
+  nightlandingsfullstop: 'nightLandings',
+  holds: 'holds',
+  comments: 'remarks',
+  multiengine: 'multiEngine',
+  turbine: 'turbine',
+}
+
+const allAliases: ColumnAliasMap = {
+  ...myFlightBookAliases,
+  ...logtenProAliases,
+  ...foreflightAliases,
+}
+
+/**
+ * Given CSV column headers, returns a best-guess mapping to SkyLog fields.
+ * Unrecognized columns are mapped to '' (unmapped).
+ */
+export function autoDetectMapping(csvColumns: string[]): ColumnMapping {
+  const mapping: ColumnMapping = {}
+  const usedFields = new Set<string>()
+
+  for (const col of csvColumns) {
+    const key = normalize(col)
+    const match = allAliases[key]
+    if (match && !usedFields.has(match)) {
+      mapping[col] = match
+      usedFields.add(match)
+    } else {
+      mapping[col] = ''
+    }
+  }
+
+  return mapping
+}
