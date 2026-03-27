@@ -3,18 +3,10 @@
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import {
-  Clock,
-  Plane,
-  Users,
-  MapPin,
-  Moon,
-  Gauge,
-  Cog,
   Plus,
   Wrench,
   Upload,
   ArrowRight,
-  Target,
   ShieldCheck,
   AlertTriangle,
   XCircle,
@@ -29,6 +21,10 @@ import {
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PageTransition } from '@/components/dashboard/page-transition'
+import { AnimatedNumber } from '@/components/dashboard/animated-number'
+import { Sparkline } from '@/components/dashboard/sparkline'
+import { EmptyState } from '@/components/dashboard/empty-state'
 import { getDashboardData, type DashboardData } from './actions'
 
 function formatHours(n: number): string {
@@ -48,35 +44,45 @@ function formatRoute(dep: string | null, arr: string | null): string {
 // ---------------------------------------------------------------------------
 
 const summaryCards = [
-  { key: 'totalTime', label: 'Total Time', icon: Clock },
-  { key: 'pic', label: 'PIC', icon: Plane },
-  { key: 'sic', label: 'SIC', icon: Users },
-  { key: 'crossCountry', label: 'Cross-Country', icon: MapPin },
-  { key: 'night', label: 'Night', icon: Moon },
-  { key: 'instrument', label: 'Instrument', icon: Gauge },
-  { key: 'multiEngine', label: 'Multi-Engine', icon: Cog },
+  { key: 'totalTime', label: 'Total Time', emoji: '⏱️' },
+  { key: 'pic', label: 'PIC', emoji: '✈️' },
+  { key: 'sic', label: 'SIC', emoji: '👥' },
+  { key: 'crossCountry', label: 'Cross-Country', emoji: '🗺️' },
+  { key: 'night', label: 'Night', emoji: '🌙' },
+  { key: 'instrument', label: 'Instrument', emoji: '🧭' },
+  { key: 'multiEngine', label: 'Multi-Engine', emoji: '⚙️' },
 ] as const
 
 function SummaryCards({ totals }: { totals: DashboardData['totals'] }) {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+    <div className="no-scrollbar -mx-4 flex gap-4 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-4 xl:grid-cols-7">
       {summaryCards.map((c) => {
         const value =
           c.key === 'instrument'
             ? totals.actualInstrument + totals.simulatedInstrument
             : totals[c.key]
         return (
-          <Card key={c.key} className="group relative overflow-hidden border-l-2 border-l-[#00b894]/30">
+          <Card
+            key={c.key}
+            className="min-w-[160px] flex-shrink-0 snap-start border-l-[3px] border-l-[#10B981] sm:min-w-0"
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardDescription className="text-xs font-medium uppercase tracking-wider">
+              <CardDescription className="text-[11px] font-medium uppercase tracking-wider">
                 {c.label}
               </CardDescription>
-              <c.icon className="h-4 w-4 text-muted-foreground transition-colors duration-200 group-hover:text-[#00b894]" />
+              <span className="text-base">{c.emoji}</span>
             </CardHeader>
             <CardContent>
-              <p className="text-[32px] font-bold leading-none tabular-nums">
-                {formatHours(value)}
+              <p className="font-mono text-[28px] font-semibold leading-none text-[#1a1a2e]">
+                <AnimatedNumber
+                  value={value}
+                  format={formatHours}
+                />
               </p>
+              <div className="mt-2 flex items-center gap-2">
+                <Sparkline />
+                <span className="text-[11px] text-[#71717a]">&mdash;</span>
+              </div>
             </CardContent>
           </Card>
         )
@@ -87,9 +93,9 @@ function SummaryCards({ totals }: { totals: DashboardData['totals'] }) {
 
 function SummaryCardsSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+    <div className="no-scrollbar -mx-4 flex gap-4 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-4 xl:grid-cols-7">
       {Array.from({ length: 7 }).map((_, i) => (
-        <Card key={i}>
+        <Card key={i} className="min-w-[160px] flex-shrink-0 sm:min-w-0">
           <CardHeader className="pb-2">
             <Skeleton className="h-4 w-20" />
           </CardHeader>
@@ -114,8 +120,13 @@ function RecentFlights({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Recent Flights</CardTitle>
-        <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+        <CardTitle className="text-base">📖 Recent Flights</CardTitle>
+        <Button
+          variant="ghost"
+          size="sm"
+          asChild
+          className="text-muted-foreground hover:text-foreground"
+        >
           <Link href="/flights">
             View all <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
@@ -123,22 +134,20 @@ function RecentFlights({
       </CardHeader>
       <CardContent>
         {flights.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-8">
-            <Plane className="h-12 w-12 text-muted-foreground/30" />
-            <p className="text-center text-sm text-muted-foreground">
-              No flights recorded yet.
-            </p>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/flights/new">Log your first flight</Link>
-            </Button>
-          </div>
+          <EmptyState
+            illustration="logbook"
+            title="No flights recorded yet."
+            subtitle="Record your first flight to begin building your logbook."
+            actionLabel="+ Log Flight"
+            actionHref="/flights/new"
+          />
         ) : (
           <div className="space-y-1">
             {flights.map((f) => (
               <Link
                 key={f.id}
                 href={`/flights/${f.id}`}
-                className="flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-[#f5f5f7]"
+                className="flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-[#f0f0f5]"
               >
                 <div className="flex flex-col gap-0.5">
                   <span className="text-sm font-medium">
@@ -150,7 +159,7 @@ function RecentFlights({
                       ` \u00b7 ${f.aircraft.tailNumber}${f.aircraft.model ? ` (${f.aircraft.model})` : ''}`}
                   </span>
                 </div>
-                <span className="text-sm font-medium tabular-nums">
+                <span className="font-mono text-sm font-medium tabular-nums">
                   {f.totalTime
                     ? `${formatHours(parseFloat(f.totalTime))}h`
                     : '\u2014'}
@@ -171,14 +180,17 @@ function RecentFlights({
 function getCurrencyBadge(result: DashboardData['currency'][number]) {
   if (result.isCurrent === null) {
     return {
-      color: 'bg-muted text-muted-foreground',
+      color:
+        'bg-muted text-muted-foreground',
+      dotColor: 'bg-gray-400',
       label: 'Unknown',
       icon: HelpCircle,
     }
   }
   if (!result.isCurrent) {
     return {
-      color: 'bg-red-500/10 text-red-600',
+      color: 'bg-red-50 text-red-700 border border-red-200',
+      dotColor: 'bg-red-500',
       label: 'Expired',
       icon: XCircle,
     }
@@ -189,25 +201,36 @@ function getCurrencyBadge(result: DashboardData['currency'][number]) {
     )
     if (daysRemaining <= 30) {
       return {
-        color: 'bg-amber-500/10 text-amber-600',
+        color: 'bg-amber-50 text-amber-700 border border-amber-200',
+        dotColor: 'bg-amber-500',
         label: `${daysRemaining}d left`,
         icon: AlertTriangle,
       }
     }
   }
   return {
-    color: 'bg-[#00d4aa]/10 text-[#00916e]',
+    color: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    dotColor: 'bg-emerald-500',
     label: 'Current',
     icon: ShieldCheck,
   }
 }
 
-function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
+function CurrencyPanel({
+  currency,
+}: {
+  currency: DashboardData['currency']
+}) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Currency Status</CardTitle>
-        <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+        <CardTitle className="text-base">🔄 Currency Status</CardTitle>
+        <Button
+          variant="ghost"
+          size="sm"
+          asChild
+          className="text-muted-foreground hover:text-foreground"
+        >
           <Link href="/currency">
             Details <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
@@ -215,12 +238,11 @@ function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
       </CardHeader>
       <CardContent>
         {currency.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-8">
-            <ShieldCheck className="h-12 w-12 text-muted-foreground/30" />
-            <p className="text-center text-sm text-muted-foreground">
-              No currency rules configured yet. Check back after adding flights.
-            </p>
-          </div>
+          <EmptyState
+            illustration="currency"
+            title="No currency rules configured yet."
+            subtitle="Check back after adding flights."
+          />
         ) : (
           <div className="space-y-3">
             {currency.map((c) => {
@@ -237,9 +259,11 @@ function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
                     </span>
                   </div>
                   <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.color}`}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${badge.color}`}
                   >
-                    <badge.icon className="h-3 w-3" />
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${badge.dotColor}`}
+                    />
                     {badge.label}
                   </span>
                 </div>
@@ -265,7 +289,7 @@ function GoalProgressPanel({
     <Card>
       <CardHeader>
         <CardTitle className="text-base">
-          {goalProgress ? goalProgress.goalProfile.name : 'Active Goal'}
+          🎯 {goalProgress ? goalProgress.goalProfile.name : 'Active Goal'}
         </CardTitle>
         {goalProgress?.goalProfile.description && (
           <CardDescription>
@@ -275,32 +299,30 @@ function GoalProgressPanel({
       </CardHeader>
       <CardContent>
         {!goalProgress ? (
-          <div className="flex flex-col items-center gap-3 py-8">
-            <Target className="h-12 w-12 text-muted-foreground/30" />
-            <p className="text-center text-sm text-muted-foreground">
-              No goal assigned yet. Set one to track your progress.
-            </p>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/progress">Pick a goal</Link>
-            </Button>
-          </div>
+          <EmptyState
+            illustration="ready"
+            title="No goal assigned yet."
+            subtitle="Set one to track your progress."
+            actionLabel="Pick a goal"
+            actionHref="/progress"
+          />
         ) : (
           <div className="space-y-4">
             {goalProgress.requirements.map((req) => (
               <div key={req.field} className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span>{req.label}</span>
-                  <span className="tabular-nums text-muted-foreground">
+                  <span className="font-mono tabular-nums text-muted-foreground">
                     {formatHours(req.current)} / {formatHours(req.required)}
                   </span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-[#f0f0f3]">
+                <div className="h-2 overflow-hidden rounded-full bg-gray-100">
                   <div
-                    className="animate-progress-fill h-full rounded-full bg-gradient-to-r from-[#00b894] to-[#00d4aa]"
+                    className="animate-progress-fill h-full rounded-full bg-gradient-to-r from-[#10B981] to-[#059669]"
                     style={{ width: `${Math.min(req.percentage, 100)}%` }}
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="font-mono text-xs text-muted-foreground">
                   {req.percentage >= 100
                     ? 'Complete'
                     : `${req.percentage}% \u2014 ${formatHours(req.remaining)} remaining`}
@@ -387,48 +409,60 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="animate-fade-in space-y-6">
-        <h1 className="font-heading text-[28px] font-semibold">Daily</h1>
-        <DashboardSkeleton />
-      </div>
+      <PageTransition>
+        <div className="space-y-6">
+          <h1 className="font-heading text-2xl font-semibold sm:text-[32px]">
+            🏠 Daily
+          </h1>
+          <DashboardSkeleton />
+        </div>
+      </PageTransition>
     )
   }
 
   if (error || !data) {
     return (
-      <div className="animate-fade-in space-y-6">
-        <h1 className="font-heading text-[28px] font-semibold">Daily</h1>
-        <Card className="border-red-200 bg-red-50/50">
-          <CardContent className="py-10 text-center">
-            <p className="text-red-600">
-              Failed to load dashboard data. Please try refreshing.
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-4"
-              onClick={() => window.location.reload()}
-            >
-              Try again
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <PageTransition>
+        <div className="space-y-6">
+          <h1 className="font-heading text-2xl font-semibold sm:text-[32px]">
+            🏠 Daily
+          </h1>
+          <Card className="border-red-200 bg-red-50/50">
+            <CardContent className="py-10 text-center">
+              <p className="text-red-600">
+                Failed to load dashboard data. Please try refreshing.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={() => window.location.reload()}
+              >
+                Try again
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </PageTransition>
     )
   }
 
   return (
-    <div className="animate-fade-in space-y-6">
-      <h1 className="font-heading text-[28px] font-semibold">Daily</h1>
+    <PageTransition>
+      <div className="space-y-6">
+        <h1 className="font-heading text-2xl font-semibold sm:text-[32px]">
+          🏠 Daily
+        </h1>
 
-      <SummaryCards totals={data.totals} />
+        <SummaryCards totals={data.totals} />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <RecentFlights flights={data.recentFlights} />
-        <CurrencyPanel currency={data.currency} />
-        <GoalProgressPanel goalProgress={data.goalProgress} />
-        <QuickActions />
+        <div className="grid gap-6 lg:grid-cols-2">
+          <RecentFlights flights={data.recentFlights} />
+          <CurrencyPanel currency={data.currency} />
+          <GoalProgressPanel goalProgress={data.goalProgress} />
+          <QuickActions />
+        </div>
       </div>
-    </div>
+    </PageTransition>
   )
 }

@@ -10,7 +10,7 @@ export default function AuthLayout({
     <div className="min-h-screen bg-[#fafafa]">
       <header className="flex items-center justify-center border-b border-border/60 bg-white px-4 py-3">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#00b894]">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#10B981]">
             <Compass className="h-3.5 w-3.5 text-white" />
           </div>
           <span className="font-brand text-lg font-semibold">CrossCheck</span>

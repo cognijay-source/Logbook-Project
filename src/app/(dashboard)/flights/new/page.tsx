@@ -8,6 +8,7 @@ import * as Sentry from '@sentry/nextjs'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { FlightForm } from '@/components/flights/flight-form'
+import { PageTransition } from '@/components/dashboard/page-transition'
 import { getAircraftList } from '../actions'
 
 export default function NewFlightPage() {
@@ -25,6 +26,7 @@ export default function NewFlightPage() {
   })
 
   return (
+    <PageTransition>
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
@@ -33,7 +35,7 @@ export default function NewFlightPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="font-heading text-3xl font-bold">New Flight</h1>
+          <h1 className="font-heading text-2xl font-semibold sm:text-[32px]">📖 New Flight Entry</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             Record a new entry
           </p>
@@ -67,5 +69,6 @@ export default function NewFlightPage() {
         <FlightForm aircraftList={aircraftQuery.data} />
       )}
     </div>
+    </PageTransition>
   )
 }
