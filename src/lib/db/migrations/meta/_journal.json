@@ -36,6 +36,13 @@
       "when": 1774627300000,
       "tag": "0004_financial_depth_part141",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1774627400000,
+      "tag": "0005_notifications",
+      "breakpoints": true
     }
   ]
 }

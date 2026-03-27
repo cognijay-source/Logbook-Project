@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { MobileNav } from '@/components/dashboard/mobile-nav'
+import { NotificationBell } from '@/components/dashboard/notification-bell'
 import { logout } from '@/app/(dashboard)/actions'
 
 export function TopBar() {
@@ -21,6 +22,8 @@ export function TopBar() {
         </span>
       </div>
 
+      <div className="flex items-center gap-1">
+      <NotificationBell />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="rounded-full">
@@ -41,6 +44,7 @@ export function TopBar() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
     </header>
   )
 }
