@@ -3,7 +3,6 @@
 import { useState, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import * as Sentry from '@sentry/nextjs'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CsvUploadZone } from '@/components/imports/csv-upload-zone'
 import { CsvPreviewTable } from '@/components/imports/csv-preview-table'
@@ -13,6 +12,7 @@ import { BatchDetails } from '@/components/imports/batch-details'
 import { AiImportSection } from '@/components/imports/ai-import-section'
 import { uploadCsv, processImportBatch } from './actions'
 import { autoDetectMapping, type ColumnMapping } from '@/lib/validators/import'
+import { motion } from 'framer-motion'
 
 type Step = 'upload' | 'mapping' | 'results' | 'batch-details'
 
@@ -126,65 +126,70 @@ export default function ImportsPage() {
   }, [])
 
   return (
-    <div className="space-y-8">
+    <motion.div
+      className="space-y-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
       <div>
-        <h1 className="font-heading text-3xl font-bold">Imports</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="font-heading text-3xl font-bold text-[var(--text-primary)]">📥 Imports</h1>
+        <p className="mt-2 text-[var(--text-secondary)]">
           Bring in flight records from other logbooks.
         </p>
       </div>
 
       <Tabs defaultValue="csv">
-        <TabsList>
-          <TabsTrigger value="csv">CSV Import</TabsTrigger>
-          <TabsTrigger value="ai">AI Import</TabsTrigger>
+        <TabsList className="rounded-xl">
+          <TabsTrigger value="csv" className="rounded-lg">CSV Import</TabsTrigger>
+          <TabsTrigger value="ai" className="rounded-lg">AI Import</TabsTrigger>
         </TabsList>
 
         <TabsContent value="csv">
           <div className="space-y-6">
             {error && (
-              <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+              <div className="rounded-xl border border-[var(--status-expired)]/20 bg-[var(--status-expired)]/5 p-3 text-sm text-[var(--status-expired)]">
                 {error}
               </div>
             )}
 
             {/* Step: Batch details view */}
             {step === 'batch-details' && viewBatchId && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Import Details</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="card-elevated overflow-hidden">
+                <div className="p-6 pb-4">
+                  <h3 className="font-heading text-base font-semibold text-[var(--text-primary)]">Import Details</h3>
+                </div>
+                <div className="px-6 pb-6">
                   <BatchDetails
                     batchId={viewBatchId}
                     onBack={handleBackFromBatch}
                   />
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* Step: Upload */}
             {step === 'upload' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Upload CSV</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="card-elevated overflow-hidden">
+                <div className="p-6 pb-4">
+                  <h3 className="font-heading text-base font-semibold text-[var(--text-primary)]">Upload CSV</h3>
+                </div>
+                <div className="px-6 pb-6">
                   <CsvUploadZone
                     onFileSelected={handleFileSelected}
                     isLoading={isUploading}
                   />
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* Step: Column Mapping */}
             {step === 'mapping' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Map Columns</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
+              <div className="card-elevated overflow-hidden">
+                <div className="p-6 pb-4">
+                  <h3 className="font-heading text-base font-semibold text-[var(--text-primary)]">Map Columns</h3>
+                </div>
+                <div className="space-y-6 px-6 pb-6">
                   <CsvPreviewTable headers={csvHeaders} rows={preview} />
                   <ColumnMappingStep
                     csvHeaders={csvHeaders}
@@ -194,18 +199,18 @@ export default function ImportsPage() {
                     onImport={handleImport}
                     isProcessing={isProcessing}
                   />
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* Step: Results */}
             {step === 'results' && importResult && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Import Processing</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-muted-foreground text-sm">
+              <div className="card-elevated overflow-hidden">
+                <div className="p-6 pb-4">
+                  <h3 className="font-heading text-base font-semibold text-[var(--text-primary)]">Import Processing</h3>
+                </div>
+                <div className="space-y-4 px-6 pb-6">
+                  <p className="text-sm text-[var(--text-secondary)]">
                     Your import is being processed in the background. You can
                     track its progress in the import history below.
                   </p>
@@ -213,31 +218,31 @@ export default function ImportsPage() {
                   <div className="flex gap-3">
                     <button
                       onClick={handleStartOver}
-                      className="text-primary text-sm underline"
+                      className="text-sm text-[var(--accent-teal)] underline"
                     >
                       Import another file
                     </button>
                     <button
                       onClick={() => handleViewBatch(importResult.batchId)}
-                      className="text-primary text-sm underline"
+                      className="text-sm text-[var(--accent-teal)] underline"
                     >
                       View import details
                     </button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* Import History — always visible unless viewing batch details */}
             {step !== 'batch-details' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Import History</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="card-elevated overflow-hidden">
+                <div className="p-6 pb-4">
+                  <h3 className="font-heading text-base font-semibold text-[var(--text-primary)]">Import History</h3>
+                </div>
+                <div className="px-6 pb-6">
                   <ImportHistory onViewBatch={handleViewBatch} />
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </div>
         </TabsContent>
@@ -246,6 +251,6 @@ export default function ImportsPage() {
           <AiImportSection />
         </TabsContent>
       </Tabs>
-    </div>
+    </motion.div>
   )
 }

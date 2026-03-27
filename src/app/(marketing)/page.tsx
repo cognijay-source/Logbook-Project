@@ -3,20 +3,11 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
-  BookOpen,
-  Target,
-  DollarSign,
-  Award,
-  Compass,
-  LayoutDashboard,
   ArrowRight,
-  Clock,
   Check,
   GraduationCap,
   Plane,
-  Wrench,
-  Briefcase,
-  Users,
+  Target,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
@@ -44,39 +35,13 @@ const staggerContainer = {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden px-6 pt-28 pb-32 sm:pt-36 sm:pb-40 lg:px-8 lg:pt-44 lg:pb-48">
+    <section className="relative overflow-hidden bg-[var(--bg-primary)] px-6 pt-28 pb-32 sm:pt-36 sm:pb-40 lg:px-8 lg:pt-44 lg:pb-48">
       {/* Subtle radial glow */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10"
       >
-        <div className="absolute top-1/3 left-1/2 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#00d4aa]/[0.07] blur-[120px]" />
-        <div className="absolute top-2/3 right-1/3 h-[300px] w-[300px] rounded-full bg-[#00d4aa]/[0.04] blur-[80px]" />
-        {/* Dot grid overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
-          }}
-        />
-      </div>
-
-      {/* Animated compass rings */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 left-1/2 -z-10 -translate-x-1/2 -translate-y-1/2"
-      >
-        <div className="animate-pulse-ring h-[500px] w-[500px] rounded-full border border-white/[0.04]" />
-        <div
-          className="animate-pulse-ring absolute inset-8 rounded-full border border-white/[0.03]"
-          style={{ animationDelay: '0.5s' }}
-        />
-        <div
-          className="animate-pulse-ring absolute inset-16 rounded-full border border-white/[0.02]"
-          style={{ animationDelay: '1s' }}
-        />
+        <div className="absolute top-1/3 left-1/2 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--accent-teal)]/[0.07] blur-[120px]" />
       </div>
 
       <motion.div
@@ -88,26 +53,23 @@ function Hero() {
         <motion.div
           variants={fadeInUp}
           transition={{ duration: 0.5 }}
-          className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-4 py-1.5 text-sm text-[#8a8a9a] backdrop-blur-sm"
+          className="mb-8 inline-flex items-center gap-2 rounded-full border border-[var(--text-primary)]/10 bg-white px-4 py-1.5 font-mono text-sm text-[var(--text-secondary)]"
         >
-          <Clock className="h-3.5 w-3.5 text-[#00d4aa]" />
           <span>The Pilot Operating System</span>
         </motion.div>
 
         <motion.h1
           variants={fadeInUp}
           transition={{ duration: 0.6 }}
-          className="font-heading text-5xl leading-[1.05] font-bold tracking-tight sm:text-6xl lg:text-7xl"
+          className="font-heading text-5xl leading-[1.05] font-bold tracking-tight text-[var(--text-primary)] sm:text-6xl lg:text-7xl"
         >
-          <span className="bg-gradient-to-r from-white to-[#00d4aa] bg-clip-text text-transparent">
-            CrossCheck
-          </span>
+          ✈️ CrossCheck
         </motion.h1>
 
         <motion.p
           variants={fadeInUp}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mt-5 text-xl leading-relaxed font-medium text-[#c0c0cc] sm:text-2xl"
+          className="mt-5 text-xl leading-relaxed font-medium text-[var(--text-primary)] sm:text-2xl"
         >
           See the system clearly. Build mastery deliberately.
         </motion.p>
@@ -115,7 +77,7 @@ function Hero() {
         <motion.p
           variants={fadeInUp}
           transition={{ duration: 0.6, delay: 0.15 }}
-          className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-[#8a8a9a]"
+          className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-[var(--text-secondary)]"
         >
           The pilot operating system for flight records, training progress,
           currency, costs, and career readiness.
@@ -126,23 +88,19 @@ function Hero() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
-          <Button
-            asChild
-            size="lg"
-            className="w-full bg-[#00d4aa] px-8 text-[#0a0a0f] font-semibold shadow-lg shadow-[#00d4aa]/25 transition-all duration-200 hover:bg-[#00e8bb] hover:shadow-xl hover:shadow-[#00d4aa]/30 hover:scale-[1.02] sm:w-auto"
+          <Link
+            href="/signup"
+            className="btn-primary inline-flex w-full items-center justify-center text-base sm:w-auto"
           >
-            <Link href="/signup">
-              Get Started
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button
-            asChild
-            size="lg"
-            className="w-full border border-white/[0.15] bg-transparent px-8 text-white backdrop-blur-sm transition-all duration-200 hover:border-white/[0.3] hover:bg-white/[0.05] sm:w-auto"
+            Get Started
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+          <Link
+            href="#features"
+            className="btn-outline inline-flex w-full items-center justify-center text-base sm:w-auto"
           >
-            <Link href="#features">See Features</Link>
-          </Button>
+            See Features
+          </Link>
         </motion.div>
       </motion.div>
     </section>
@@ -155,7 +113,7 @@ function Hero() {
 
 function Problem() {
   return (
-    <section className="border-t border-white/[0.06] px-6 py-28 sm:py-36 lg:px-8">
+    <section className="bg-white px-6 py-28 sm:py-36 lg:px-8">
       <motion.div
         className="mx-auto max-w-3xl text-center"
         initial="hidden"
@@ -166,14 +124,14 @@ function Problem() {
         <motion.h2
           variants={fadeInUp}
           transition={{ duration: 0.5 }}
-          className="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl"
+          className="font-heading text-3xl font-bold tracking-tight text-[var(--text-primary)] sm:text-4xl"
         >
           Aviation runs on records. Too often, careers run on ambiguity.
         </motion.h2>
         <motion.p
           variants={fadeInUp}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="mt-6 text-lg leading-relaxed text-[#8a8a9a]"
+          className="mt-6 text-lg leading-relaxed text-[var(--text-secondary)]"
         >
           Pilots are expected to track standards, progress, costs, and readiness
           in a system that often lacks clarity. Paper logbooks, scattered
@@ -191,46 +149,46 @@ function Problem() {
 
 const suiteFeatures = [
   {
-    icon: BookOpen,
+    emoji: '📖',
     name: 'CrossCheck Logbook',
     description:
       'Clean, structured, reliable digital flight records. Fast entry. Smart search. Automatic totals.',
   },
   {
-    icon: Clock,
+    emoji: '🔄',
     name: 'CrossCheck Currency',
     description:
       'Track recency requirements. See upcoming lapses. Stay operationally current.',
   },
   {
-    icon: Award,
+    emoji: '🏆',
     name: 'CrossCheck Mastery',
     description:
       'Monitor certificates, ratings, training progression, and milestone development.',
   },
   {
-    icon: Compass,
+    emoji: '🎯',
     name: 'CrossCheck Ready',
     description:
       'Understand actual readiness for certifications, career goals, and hiring thresholds.',
   },
   {
-    icon: DollarSign,
+    emoji: '💰',
     name: 'CrossCheck Costs',
     description:
-      'Track cost per flight, aircraft, training block, and time period. See where the money goes.',
+      'Track cost per flight, aircraft, training block, and time period.',
   },
   {
-    icon: LayoutDashboard,
+    emoji: '📊',
     name: 'CrossCheck Daily',
     description:
-      'Your operational dashboard. Recent activity, progress, currency, and what needs attention next.',
+      'Your operational dashboard. Recent activity, progress, currency, and what needs attention.',
   },
 ]
 
 function FeatureShowcase() {
   return (
-    <section id="features" className="scroll-mt-16 px-6 py-28 sm:py-36 lg:px-8">
+    <section id="features" className="scroll-mt-16 bg-[var(--bg-primary)] px-6 py-28 sm:py-36 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <motion.div
           className="mx-auto mb-16 max-w-2xl text-center"
@@ -242,14 +200,14 @@ function FeatureShowcase() {
           <motion.h2
             variants={fadeInUp}
             transition={{ duration: 0.5 }}
-            className="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl"
+            className="font-heading text-3xl font-bold tracking-tight text-[var(--text-primary)] sm:text-4xl"
           >
             The CrossCheck Suite
           </motion.h2>
           <motion.p
             variants={fadeInUp}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="mt-4 text-lg leading-relaxed text-[#8a8a9a]"
+            className="mt-4 text-lg leading-relaxed text-[var(--text-secondary)]"
           >
             Six integrated modules. One operating system for your flying career.
           </motion.p>
@@ -267,15 +225,15 @@ function FeatureShowcase() {
               key={item.name}
               variants={fadeInUp}
               transition={{ duration: 0.4 }}
-              className="group rounded-2xl border border-white/[0.08] bg-[#12121a] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#00d4aa]/40 hover:shadow-lg hover:shadow-[#00d4aa]/[0.05]"
+              className="card-elevated p-6"
             >
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-[#00d4aa]/[0.08] transition-colors duration-300 group-hover:bg-[#00d4aa]/[0.15]">
-                <item.icon className="h-5 w-5 text-[#8a8a9a] transition-colors duration-300 group-hover:text-[#00d4aa]" />
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-teal)]/10 text-lg">
+                {item.emoji}
               </div>
-              <h3 className="font-heading text-sm font-semibold text-white">
+              <h3 className="font-heading text-sm font-semibold text-[var(--text-primary)]">
                 {item.name}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#8a8a9a]">
+              <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
                 {item.description}
               </p>
             </motion.div>
@@ -292,7 +250,7 @@ function FeatureShowcase() {
 
 function CorePromise() {
   return (
-    <section className="border-t border-white/[0.06] px-6 py-28 sm:py-36 lg:px-8">
+    <section className="bg-white px-6 py-28 sm:py-36 lg:px-8">
       <motion.div
         className="mx-auto max-w-3xl text-center"
         initial="hidden"
@@ -303,14 +261,14 @@ function CorePromise() {
         <motion.h2
           variants={fadeInUp}
           transition={{ duration: 0.5 }}
-          className="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl"
+          className="font-heading text-3xl font-bold tracking-tight text-[var(--text-primary)] sm:text-4xl"
         >
           From logged hours to real readiness.
         </motion.h2>
         <motion.p
           variants={fadeInUp}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="mt-6 text-lg leading-relaxed text-[#8a8a9a]"
+          className="mt-6 text-lg leading-relaxed text-[var(--text-secondary)]"
         >
           CrossCheck turns logged flights into clarity, readiness, and strategic
           visibility. Track every flight. Measure real progress. Understand
@@ -341,26 +299,11 @@ const audiences = [
     label: 'Instrument & Commercial Students',
     detail: 'Managing complex training requirements with clarity.',
   },
-  {
-    icon: Wrench,
-    label: 'Flight Instructors',
-    detail: 'Maintaining currency and records across students and aircraft.',
-  },
-  {
-    icon: Briefcase,
-    label: 'Career-Track Pilots',
-    detail: 'Preparing for hiring minimums with objective evidence.',
-  },
-  {
-    icon: Users,
-    label: 'Professional Pilots',
-    detail: 'Maintaining operational discipline throughout a career.',
-  },
 ]
 
 function Audience() {
   return (
-    <section className="bg-white/[0.02] px-6 py-28 sm:py-36 lg:px-8">
+    <section className="bg-[var(--bg-navy)] px-6 py-28 sm:py-36 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <motion.div
           className="mx-auto mb-16 max-w-2xl text-center"
@@ -390,16 +333,16 @@ function Audience() {
               key={item.label}
               variants={fadeInUp}
               transition={{ duration: 0.4 }}
-              className="group flex items-start gap-4 rounded-xl border border-white/[0.08] bg-[#12121a] p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/[0.15] hover:shadow-md hover:shadow-black/20"
+              className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-white/5 p-6 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#00d4aa]/[0.08]">
-                <item.icon className="h-5 w-5 text-[#00d4aa]" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--accent-teal)]/15">
+                <item.icon className="h-5 w-5 text-[var(--accent-teal)]" />
               </div>
               <div>
                 <h3 className="font-heading text-sm font-semibold text-white">
                   {item.label}
                 </h3>
-                <p className="mt-1 text-sm leading-relaxed text-[#8a8a9a]">
+                <p className="mt-1 text-sm leading-relaxed text-white/60">
                   {item.detail}
                 </p>
               </div>
@@ -470,7 +413,7 @@ function Pricing() {
   return (
     <section
       id="pricing"
-      className="scroll-mt-16 border-t border-white/[0.06] px-6 py-28 sm:py-36 lg:px-8"
+      className="scroll-mt-16 bg-[var(--bg-primary)] px-6 py-28 sm:py-36 lg:px-8"
     >
       <div className="mx-auto max-w-6xl">
         <motion.div
@@ -483,14 +426,14 @@ function Pricing() {
           <motion.h2
             variants={fadeInUp}
             transition={{ duration: 0.5 }}
-            className="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl"
+            className="font-heading text-3xl font-bold tracking-tight text-[var(--text-primary)] sm:text-4xl"
           >
             Pricing
           </motion.h2>
           <motion.p
             variants={fadeInUp}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="mt-4 text-lg leading-relaxed text-[#8a8a9a]"
+            className="mt-4 text-lg leading-relaxed text-[var(--text-secondary)]"
           >
             Start free. Scale as your career demands more visibility.
           </motion.p>
@@ -510,33 +453,33 @@ function Pricing() {
               transition={{ duration: 0.4 }}
               className={`group relative flex flex-col rounded-2xl border p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
                 tier.highlight
-                  ? 'scale-[1.02] border-[#00d4aa]/40 bg-[#12121a] shadow-lg shadow-[#00d4aa]/[0.08] lg:scale-105'
-                  : 'border-white/[0.08] bg-[#12121a]'
+                  ? 'scale-[1.02] border-[var(--accent-teal)]/40 bg-white shadow-lg shadow-[var(--accent-teal)]/10 lg:scale-105'
+                  : 'border-[var(--text-primary)]/6 bg-white'
               }`}
             >
               {tier.highlight && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                  <span className="rounded-full bg-[#00d4aa] px-4 py-1 text-xs font-semibold text-[#0a0a0f] shadow-md shadow-[#00d4aa]/20">
+                  <span className="rounded-full bg-gradient-to-r from-[var(--accent-teal)] to-[var(--accent-teal-hover)] px-4 py-1 text-xs font-semibold text-white shadow-md shadow-[var(--accent-teal)]/20">
                     Most Popular
                   </span>
                 </div>
               )}
-              <h3 className="font-heading text-base font-semibold text-white">
+              <h3 className="font-heading text-base font-semibold text-[var(--text-primary)]">
                 {tier.name}
               </h3>
-              <p className="mt-4 text-3xl font-bold tracking-tight text-white">
+              <p className="mt-4 font-heading text-3xl font-bold tracking-tight text-[var(--text-primary)]">
                 {tier.price}
               </p>
-              <p className="mt-2 text-sm leading-relaxed text-[#8a8a9a]">
+              <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
                 {tier.description}
               </p>
               <ul className="mt-8 flex-1 space-y-3">
                 {tier.features.map((feature) => (
                   <li
                     key={feature}
-                    className="flex items-start gap-3 text-sm text-[#8a8a9a]"
+                    className="flex items-start gap-3 text-sm text-[var(--text-secondary)]"
                   >
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#00d4aa]" />
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent-teal)]" />
                     {feature}
                   </li>
                 ))}
@@ -546,8 +489,8 @@ function Pricing() {
                   asChild
                   className={`w-full ${
                     tier.highlight
-                      ? 'bg-[#00d4aa] text-[#0a0a0f] font-semibold shadow-md shadow-[#00d4aa]/25 hover:bg-[#00e8bb] hover:shadow-lg'
-                      : 'border border-white/[0.15] bg-transparent text-white hover:border-white/[0.3] hover:bg-white/[0.05]'
+                      ? 'btn-primary justify-center py-3'
+                      : 'btn-outline justify-center py-3'
                   }`}
                 >
                   <Link href="/signup">{tier.cta}</Link>
@@ -567,15 +510,7 @@ function Pricing() {
 
 function CTA() {
   return (
-    <section className="relative overflow-hidden px-6 py-28 sm:py-36 lg:px-8">
-      {/* Background glow */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10"
-      >
-        <div className="absolute bottom-0 left-1/2 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-[#00d4aa]/[0.05] blur-[100px]" />
-      </div>
-
+    <section className="bg-[var(--bg-navy)] px-6 py-28 sm:py-36 lg:px-8">
       <motion.div
         className="mx-auto max-w-xl text-center"
         initial="hidden"
@@ -593,7 +528,7 @@ function CTA() {
         <motion.p
           variants={fadeInUp}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="mt-4 text-lg leading-relaxed text-[#8a8a9a]"
+          className="mt-4 text-lg leading-relaxed text-white/70"
         >
           Every career starts with the first entry. Build yours on a foundation
           designed for where you are headed.
@@ -603,21 +538,18 @@ function CTA() {
           transition={{ duration: 0.5, delay: 0.15 }}
           className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
         >
-          <Button
-            asChild
-            size="lg"
-            className="w-full bg-[#00d4aa] px-8 text-[#0a0a0f] font-semibold shadow-lg shadow-[#00d4aa]/25 transition-all duration-200 hover:bg-[#00e8bb] hover:shadow-xl hover:shadow-[#00d4aa]/30 hover:scale-[1.02] sm:w-auto"
+          <Link
+            href="/signup"
+            className="btn-primary inline-flex w-full items-center justify-center text-base sm:w-auto"
           >
-            <Link href="/signup">
-              Get Started
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+            ✈️ Get Started
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
         </motion.div>
         <motion.p
           variants={fadeInUp}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-5 text-sm text-[#6b6b7b]"
+          className="mt-5 text-sm text-white/50"
         >
           Free to start. No credit card required.
         </motion.p>

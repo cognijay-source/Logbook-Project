@@ -4,12 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getProgressData, getAvailableGoals, assignGoal } from './actions'
 import { Button } from '@/components/ui/button'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from '@/components/ui/card'
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -21,6 +15,17 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Target, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
+import { motion } from 'framer-motion'
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+}
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.06 } },
+}
 
 const totalsConfig = [
   { key: 'totalTime', label: 'Total Time' },
@@ -66,7 +71,7 @@ export default function ProgressPage() {
         <Skeleton className="h-8 w-48" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-24" />
+            <Skeleton key={i} className="h-24 rounded-2xl" />
           ))}
         </div>
       </div>
@@ -76,11 +81,11 @@ export default function ProgressPage() {
   if (isError) {
     return (
       <div className="space-y-6">
-        <h1 className="font-heading text-3xl font-bold tracking-tight">
-          Ready
+        <h1 className="font-heading text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+          🎯 Ready
         </h1>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
-          <p className="text-sm text-red-800 dark:text-red-200">
+        <div className="card-elevated border-[var(--status-expired)]/20 bg-[var(--status-expired)]/5 p-6 text-center">
+          <p className="text-sm text-[var(--status-expired)]">
             Could not load progress data.
           </p>
         </div>
@@ -92,13 +97,22 @@ export default function ProgressPage() {
   const progress = data?.progress
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <motion.div
+      className="space-y-8"
+      initial="hidden"
+      animate="visible"
+      variants={stagger}
+    >
+      <motion.div
+        variants={fadeInUp}
+        transition={{ duration: 0.4 }}
+        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      >
         <div>
-          <h1 className="font-heading text-3xl font-bold tracking-tight">
-            Ready
+          <h1 className="font-heading text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+            🎯 Ready
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-[var(--text-secondary)]">
             {progress
               ? `Tracking toward ${progress.goalProfile.name}`
               : 'Select a goal to measure against'}
@@ -106,7 +120,7 @@ export default function ProgressPage() {
         </div>
         <Dialog open={goalDialogOpen} onOpenChange={setGoalDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="rounded-xl">
               <Target className="mr-2 h-4 w-4" />
               {progress ? 'Change Goal' : 'Set Goal'}
             </Button>
@@ -122,15 +136,15 @@ export default function ProgressPage() {
               {availableGoals?.map((goal) => (
                 <button
                   key={goal.id}
-                  className="hover:bg-accent flex flex-col items-start rounded-lg border p-3 text-left transition-colors"
+                  className="flex flex-col items-start rounded-xl border border-[var(--text-primary)]/8 p-3 text-left transition-colors hover:bg-[var(--accent-teal)]/5 hover:border-[var(--accent-teal)]/30"
                   onClick={() =>
                     assignMutation.mutate({ goalProfileId: goal.id })
                   }
                   disabled={assignMutation.isPending}
                 >
-                  <span className="font-medium">{goal.name}</span>
+                  <span className="font-medium text-[var(--text-primary)]">{goal.name}</span>
                   {goal.description && (
-                    <span className="text-muted-foreground text-sm">
+                    <span className="text-sm text-[var(--text-secondary)]">
                       {goal.description}
                     </span>
                   )}
@@ -140,115 +154,103 @@ export default function ProgressPage() {
             <DialogFooter />
           </DialogContent>
         </Dialog>
-      </div>
+      </motion.div>
 
       {/* Goal Progress */}
       {progress && (
-        <section className="space-y-4">
+        <motion.section variants={fadeInUp} transition={{ duration: 0.3 }} className="space-y-4">
           <div className="flex items-center gap-2">
-            <TrendingUp className="text-primary h-5 w-5" />
-            <h2 className="text-lg font-semibold">
+            <TrendingUp className="h-5 w-5 text-[var(--accent-teal)]" />
+            <h2 className="font-heading text-lg font-semibold text-[var(--text-primary)]">
               {progress.goalProfile.name} Requirements
             </h2>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {progress.requirements.map((req) => (
-              <Card key={req.field}>
-                <CardContent className="p-4">
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-medium">{req.label}</span>
-                    <span
-                      className={`text-sm font-semibold ${req.percentage >= 100 ? 'text-green-600 dark:text-green-400' : ''}`}
-                    >
-                      {Math.round(req.percentage)}%
-                    </span>
-                  </div>
-                  <div className="bg-muted mb-1 h-2 w-full rounded-full">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-700 ease-out ${req.percentage >= 100 ? 'bg-gradient-to-r from-green-500 to-emerald-400' : 'bg-gradient-to-r from-sky-500 to-cyan-400'}`}
-                      style={{
-                        width: `${Math.min(100, req.percentage)}%`,
-                      }}
-                    />
-                  </div>
-                  <div className="text-muted-foreground flex justify-between text-xs">
-                    <span>
-                      {req.current.toFixed(1)} / {req.required.toFixed(1)} hrs
-                    </span>
-                    {req.remaining > 0 && (
-                      <span>{req.remaining.toFixed(1)} remaining</span>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <div key={req.field} className="card-elevated p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-medium text-[var(--text-primary)]">{req.label}</span>
+                  <span
+                    className={`font-mono text-sm font-semibold ${req.percentage >= 100 ? 'text-[var(--status-current)]' : 'text-[var(--text-primary)]'}`}
+                  >
+                    {Math.round(req.percentage)}%
+                  </span>
+                </div>
+                <div className="mb-1 h-2 w-full rounded-full bg-[var(--bg-primary)]">
+                  <div
+                    className={`animate-progress-fill h-2 rounded-full transition-all duration-700 ease-out ${req.percentage >= 100 ? 'bg-gradient-to-r from-[var(--status-current)] to-[var(--accent-teal-hover)]' : 'bg-gradient-to-r from-[var(--accent-teal)] to-[var(--accent-teal-hover)]'}`}
+                    style={{
+                      width: `${Math.min(100, req.percentage)}%`,
+                    }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-[var(--text-secondary)]">
+                  <span className="font-mono">
+                    {req.current.toFixed(1)} / {req.required.toFixed(1)} hrs
+                  </span>
+                  {req.remaining > 0 && (
+                    <span className="font-mono">{req.remaining.toFixed(1)} remaining</span>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
-        </section>
+        </motion.section>
       )}
 
       {/* Experience Totals */}
-      <section className="space-y-4">
-        <h2 className="text-lg font-semibold">Experience Totals</h2>
+      <motion.section variants={fadeInUp} transition={{ duration: 0.3 }} className="space-y-4">
+        <h2 className="font-heading text-lg font-semibold text-[var(--text-primary)]">Experience Totals</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {totalsConfig.map(({ key, label }) => {
             const value = totals?.[key] ?? 0
             return (
-              <Card key={key}>
-                <CardContent className="p-4">
-                  <p className="text-muted-foreground text-sm">{label}</p>
-                  <p className="text-2xl font-bold tabular-nums">
-                    {value.toFixed(1)}
-                  </p>
-                </CardContent>
-              </Card>
+              <div key={key} className="card-elevated p-4">
+                <p className="text-sm text-[var(--text-secondary)]">{label}</p>
+                <p className="font-mono text-2xl font-bold tabular-nums text-[var(--text-primary)]">
+                  {value.toFixed(1)}
+                </p>
+              </div>
             )
           })}
         </div>
         {totals && (
           <div className="grid gap-3 sm:grid-cols-3">
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-muted-foreground text-sm">Total Flights</p>
-                <p className="text-2xl font-bold tabular-nums">
-                  {totals.totalFlights}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-muted-foreground text-sm">Day Landings</p>
-                <p className="text-2xl font-bold tabular-nums">
-                  {totals.dayLandings}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-muted-foreground text-sm">Night Landings</p>
-                <p className="text-2xl font-bold tabular-nums">
-                  {totals.nightLandings}
-                </p>
-              </CardContent>
-            </Card>
+            <div className="card-elevated p-4">
+              <p className="text-sm text-[var(--text-secondary)]">Total Flights</p>
+              <p className="font-mono text-2xl font-bold tabular-nums text-[var(--text-primary)]">
+                {totals.totalFlights}
+              </p>
+            </div>
+            <div className="card-elevated p-4">
+              <p className="text-sm text-[var(--text-secondary)]">Day Landings</p>
+              <p className="font-mono text-2xl font-bold tabular-nums text-[var(--text-primary)]">
+                {totals.dayLandings}
+              </p>
+            </div>
+            <div className="card-elevated p-4">
+              <p className="text-sm text-[var(--text-secondary)]">Night Landings</p>
+              <p className="font-mono text-2xl font-bold tabular-nums text-[var(--text-primary)]">
+                {totals.nightLandings}
+              </p>
+            </div>
           </div>
         )}
-      </section>
+      </motion.section>
 
       {/* Empty state when no flights */}
       {totals && totals.totalFlights === 0 && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <Target className="text-muted-foreground/50 mb-4 h-12 w-12" />
-            <CardTitle className="mb-2 text-lg">
-              No flights logged yet
-            </CardTitle>
-            <CardDescription className="max-w-sm">
-              Record your first flight to begin measuring progress toward
-              certification requirements.
-            </CardDescription>
-          </CardContent>
-        </Card>
+        <div className="card-elevated flex flex-col items-center justify-center py-12 text-center">
+          <Target className="mb-4 h-12 w-12 text-[var(--text-secondary)]/40" />
+          <h3 className="font-heading text-lg font-semibold text-[var(--text-primary)]">
+            No flights logged yet
+          </h3>
+          <p className="mt-2 max-w-sm text-sm text-[var(--text-secondary)]">
+            Record your first flight to begin measuring progress toward
+            certification requirements.
+          </p>
+        </div>
       )}
-    </div>
+    </motion.div>
   )
 }

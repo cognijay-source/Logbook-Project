@@ -9,12 +9,6 @@ import {
 } from './actions'
 import { Button } from '@/components/ui/button'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from '@/components/ui/card'
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -30,12 +24,23 @@ import {
   Award,
   Calendar,
   CheckCircle2,
-  Circle,
   Plus,
   RefreshCw,
+  RotateCw,
   Trash2,
 } from 'lucide-react'
 import { useState } from 'react'
+import { motion } from 'framer-motion'
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+}
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.06 } },
+}
 
 export default function JourneyPage() {
   const queryClient = useQueryClient()
@@ -91,7 +96,7 @@ export default function JourneyPage() {
         <Skeleton className="h-8 w-48" />
         <div className="grid gap-4 md:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-32" />
+            <Skeleton key={i} className="h-32 rounded-2xl" />
           ))}
         </div>
       </div>
@@ -101,11 +106,11 @@ export default function JourneyPage() {
   if (isError) {
     return (
       <div className="space-y-6">
-        <h1 className="font-heading text-3xl font-bold tracking-tight">
-          Mastery
+        <h1 className="font-heading text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+          🏆 Mastery
         </h1>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
-          <p className="text-sm text-red-800 dark:text-red-200">
+        <div className="card-elevated border-[var(--status-expired)]/20 bg-[var(--status-expired)]/5 p-6 text-center">
+          <p className="text-sm text-[var(--status-expired)]">
             Could not load milestones.
           </p>
         </div>
@@ -117,13 +122,22 @@ export default function JourneyPage() {
   const pendingCount = evaluation?.pending.length ?? 0
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <motion.div
+      className="space-y-8"
+      initial="hidden"
+      animate="visible"
+      variants={stagger}
+    >
+      <motion.div
+        variants={fadeInUp}
+        transition={{ duration: 0.4 }}
+        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      >
         <div>
-          <h1 className="font-heading text-3xl font-bold tracking-tight">
-            Mastery
+          <h1 className="font-heading text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+            🏆 Mastery
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-[var(--text-secondary)]">
             {achievedCount} {achievedCount === 1 ? 'milestone' : 'milestones'}{' '}
             reached
             {pendingCount > 0 && ` \u00b7 ${pendingCount} ahead`}
@@ -135,6 +149,7 @@ export default function JourneyPage() {
             size="sm"
             onClick={() => refreshMutation.mutate()}
             disabled={refreshMutation.isPending}
+            className="rounded-xl"
           >
             <RefreshCw
               className={`mr-2 h-4 w-4 ${refreshMutation.isPending ? 'animate-spin' : ''}`}
@@ -143,7 +158,7 @@ export default function JourneyPage() {
           </Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm">
+              <Button size="sm" className="rounded-xl bg-[var(--accent-teal)] text-white hover:bg-[var(--accent-teal-hover)]">
                 <Plus className="mr-2 h-4 w-4" />
                 Add Milestone
               </Button>
@@ -159,23 +174,23 @@ export default function JourneyPage() {
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
                     <Label htmlFor="name">Name</Label>
-                    <Input id="name" name="name" required />
+                    <Input id="name" name="name" required className="rounded-xl focus:border-[var(--accent-teal)] focus:ring-[var(--accent-teal)]/20" />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="description">Description</Label>
-                    <Input id="description" name="description" />
+                    <Input id="description" name="description" className="rounded-xl focus:border-[var(--accent-teal)] focus:ring-[var(--accent-teal)]/20" />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="achievedAt">Date</Label>
-                    <Input id="achievedAt" name="achievedAt" type="date" />
+                    <Input id="achievedAt" name="achievedAt" type="date" className="rounded-xl focus:border-[var(--accent-teal)] focus:ring-[var(--accent-teal)]/20" />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="notes">Notes</Label>
-                    <Input id="notes" name="notes" />
+                    <Input id="notes" name="notes" className="rounded-xl focus:border-[var(--accent-teal)] focus:ring-[var(--accent-teal)]/20" />
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button type="submit" disabled={createMutation.isPending}>
+                  <Button type="submit" disabled={createMutation.isPending} className="rounded-xl bg-[var(--accent-teal)] text-white hover:bg-[var(--accent-teal-hover)]">
                     {createMutation.isPending ? 'Saving...' : 'Save'}
                   </Button>
                 </DialogFooter>
@@ -183,26 +198,26 @@ export default function JourneyPage() {
             </DialogContent>
           </Dialog>
         </div>
-      </div>
+      </motion.div>
 
       {/* Achieved Milestones */}
       {achievedCount > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-lg font-semibold">Achieved</h2>
+        <motion.section variants={fadeInUp} transition={{ duration: 0.3 }} className="space-y-4">
+          <h2 className="font-heading text-lg font-semibold text-[var(--text-primary)]">Achieved</h2>
           <div className="relative space-y-3">
-            <div className="absolute top-6 bottom-6 left-[23px] w-px bg-green-200 dark:bg-green-900/50" />
+            <div className="absolute top-6 bottom-6 left-[23px] w-px bg-[var(--accent-teal)]/30" />
             {data?.achieved.map((m) => (
-              <Card key={m.id} className="relative">
-                <CardContent className="flex items-start gap-4 p-4">
-                  <div className="ring-card relative z-10 mt-0.5 rounded-full bg-green-100 p-2 ring-4 dark:bg-green-900/30">
-                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <div key={m.id} className="card-elevated relative p-4">
+                <div className="flex items-start gap-4">
+                  <div className="relative z-10 mt-0.5 rounded-full bg-[var(--accent-teal)]/10 p-2 ring-4 ring-white">
+                    <CheckCircle2 className="h-4 w-4 text-[var(--accent-teal)]" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="font-medium">{m.name}</p>
+                        <p className="font-medium text-[var(--text-primary)]">{m.name}</p>
                         {m.description && (
-                          <p className="text-muted-foreground text-sm">
+                          <p className="text-sm text-[var(--text-secondary)]">
                             {m.description}
                           </p>
                         )}
@@ -214,59 +229,59 @@ export default function JourneyPage() {
                           className="h-8 w-8 shrink-0 p-0"
                           onClick={() => deleteMutation.mutate(m.id)}
                         >
-                          <Trash2 className="text-muted-foreground h-3.5 w-3.5" />
+                          <Trash2 className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
                         </Button>
                       )}
                     </div>
                     {m.achievedAt && (
-                      <p className="text-muted-foreground mt-1 flex items-center gap-1 text-xs">
+                      <p className="mt-1 flex items-center gap-1 text-xs text-[var(--text-secondary)]">
                         <Calendar className="h-3 w-3" />
                         {m.achievedAt}
                       </p>
                     )}
                     {m.notes && (
-                      <p className="text-muted-foreground mt-1 text-xs italic">
+                      <p className="mt-1 text-xs italic text-[var(--text-secondary)]">
                         {m.notes}
                       </p>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
-        </section>
+        </motion.section>
       )}
 
       {/* Pending / Upcoming Milestones */}
       {evaluation && evaluation.pending.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-lg font-semibold">Ahead</h2>
+        <motion.section variants={fadeInUp} transition={{ duration: 0.3 }} className="space-y-4">
+          <h2 className="font-heading text-lg font-semibold text-[var(--text-primary)]">Ahead</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {evaluation.pending.map((m) => (
-              <Card key={m.definition.id} className="border-dashed">
-                <CardContent className="flex items-start gap-4 p-4">
-                  <div className="bg-muted mt-0.5 rounded-full p-2">
-                    <Circle className="text-muted-foreground h-4 w-4" />
+              <div key={m.definition.id} className="card-elevated border-dashed p-4">
+                <div className="flex items-start gap-4">
+                  <div className="mt-0.5 rounded-full bg-[var(--status-info)]/10 p-2">
+                    <RotateCw className="h-4 w-4 text-[var(--status-info)]" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium">{m.definition.name}</p>
+                    <p className="font-medium text-[var(--text-primary)]">{m.definition.name}</p>
                     {m.definition.description && (
-                      <p className="text-muted-foreground text-sm">
+                      <p className="text-sm text-[var(--text-secondary)]">
                         {m.definition.description}
                       </p>
                     )}
                     {m.progress !== undefined && m.progress !== null && (
                       <div className="mt-2">
-                        <div className="text-muted-foreground mb-1 flex justify-between text-xs">
+                        <div className="mb-1 flex justify-between text-xs text-[var(--text-secondary)]">
                           <span>
                             {m.currentValue ?? 0} /{' '}
                             {m.definition.threshold ?? '?'}
                           </span>
                           <span>{Math.round(m.progress)}%</span>
                         </div>
-                        <div className="bg-muted h-1.5 w-full rounded-full">
+                        <div className="h-1.5 w-full rounded-full bg-[var(--bg-primary)]">
                           <div
-                            className="h-1.5 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 transition-all duration-700 ease-out"
+                            className="animate-progress-fill h-1.5 rounded-full bg-gradient-to-r from-[var(--accent-teal)] to-[var(--accent-teal-hover)]"
                             style={{
                               width: `${Math.min(100, m.progress)}%`,
                             }}
@@ -275,27 +290,25 @@ export default function JourneyPage() {
                       </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
-        </section>
+        </motion.section>
       )}
 
       {/* Empty State */}
       {achievedCount === 0 &&
         (!evaluation || evaluation.pending.length === 0) && (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <Award className="text-muted-foreground/50 mb-4 h-12 w-12" />
-              <CardTitle className="mb-2 text-lg">No milestones yet</CardTitle>
-              <CardDescription className="max-w-sm">
-                Milestones appear here as you build flight time and reach career
-                thresholds.
-              </CardDescription>
-            </CardContent>
-          </Card>
+          <div className="card-elevated p-12 text-center">
+            <Award className="mx-auto mb-4 h-12 w-12 text-[var(--text-secondary)]/40" />
+            <h3 className="font-heading text-lg font-semibold text-[var(--text-primary)]">No milestones yet</h3>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">
+              Milestones appear here as you build flight time and reach career
+              thresholds.
+            </p>
+          </div>
         )}
-    </div>
+    </motion.div>
   )
 }

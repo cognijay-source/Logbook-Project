@@ -116,25 +116,25 @@ const ENDORSEMENT_TYPES = [
 
 export default function TrainingPage() {
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in space-y-6">
       <div>
-        <h1 className="font-heading text-3xl font-bold">Training</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="font-heading text-3xl font-bold text-[var(--text-primary)]">📚 Training</h1>
+        <p className="mt-1 text-[var(--text-secondary)]">
           Track training events, certificates, and endorsements
         </p>
       </div>
 
       <Tabs defaultValue="entries">
-        <TabsList>
-          <TabsTrigger value="entries" className="gap-2">
+        <TabsList className="rounded-xl">
+          <TabsTrigger value="entries" className="gap-2 rounded-lg">
             <BookOpen className="h-4 w-4" />
             Training Entries
           </TabsTrigger>
-          <TabsTrigger value="certificates" className="gap-2">
+          <TabsTrigger value="certificates" className="gap-2 rounded-lg">
             <Award className="h-4 w-4" />
             Certificates
           </TabsTrigger>
-          <TabsTrigger value="endorsements" className="gap-2">
+          <TabsTrigger value="endorsements" className="gap-2 rounded-lg">
             <FileCheck className="h-4 w-4" />
             Endorsements
           </TabsTrigger>
@@ -275,7 +275,7 @@ function TrainingEntriesTab() {
     return (
       <div className="space-y-3 pt-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-16 rounded-lg" />
+          <Skeleton key={i} className="h-16 rounded-2xl" />
         ))}
       </div>
     )
@@ -283,7 +283,7 @@ function TrainingEntriesTab() {
 
   if (isError) {
     return (
-      <div className="text-destructive mt-4 rounded-lg border p-4">
+      <div className="mt-4 card-elevated border-[var(--status-expired)]/20 bg-[var(--status-expired)]/5 p-4 text-center text-sm text-[var(--status-expired)]">
         Could not load training entries.
       </div>
     )
@@ -299,7 +299,7 @@ function TrainingEntriesTab() {
       </div>
 
       {data && data.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--text-primary)]/10 py-16">
           <GraduationCap className="text-muted-foreground mb-4 h-12 w-12" />
           <h2 className="text-lg font-semibold">No training entries yet</h2>
           <p className="text-muted-foreground mb-6 text-sm">
@@ -313,7 +313,7 @@ function TrainingEntriesTab() {
       )}
 
       {data && data.length > 0 && (
-        <div className="rounded-lg border">
+        <div className="card-elevated overflow-hidden">
           <div className="text-muted-foreground grid grid-cols-[1fr_100px_1fr_1fr_80px_auto] gap-4 border-b px-4 py-2 text-sm font-medium">
             <span>Date</span>
             <span>Type</span>
@@ -396,7 +396,7 @@ function TrainingEntriesTab() {
                   name="entryType"
                   defaultValue={editing?.entryType ?? ''}
                   required
-                  className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                  className="flex h-9 w-full rounded-xl border border-[var(--text-primary)]/8 bg-white px-3 py-1 text-sm shadow-sm focus:border-[var(--accent-teal)] focus:ring-2 focus:ring-[var(--accent-teal)]/20 focus:outline-none"
                 >
                   <option value="" disabled>
                     Select type
@@ -624,7 +624,7 @@ function CertificatesTab() {
 
   if (isError) {
     return (
-      <div className="text-destructive mt-4 rounded-lg border p-4">
+      <div className="mt-4 card-elevated border-[var(--status-expired)]/20 bg-[var(--status-expired)]/5 p-4 text-center text-sm text-[var(--status-expired)]">
         Could not load certificates.
       </div>
     )
@@ -640,7 +640,7 @@ function CertificatesTab() {
       </div>
 
       {data && data.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--text-primary)]/10 py-16">
           <Award className="text-muted-foreground mb-4 h-12 w-12" />
           <h2 className="text-lg font-semibold">No certificates yet</h2>
           <p className="text-muted-foreground mb-6 text-sm">
@@ -747,7 +747,7 @@ function CertificatesTab() {
                 name="certificateType"
                 defaultValue={editing?.certificateType ?? ''}
                 required
-                className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                className="flex h-9 w-full rounded-xl border border-[var(--text-primary)]/8 bg-white px-3 py-1 text-sm shadow-sm focus:border-[var(--accent-teal)] focus:ring-2 focus:ring-[var(--accent-teal)]/20 focus:outline-none"
               >
                 <option value="" disabled>
                   Select type
@@ -964,7 +964,7 @@ function EndorsementsTab() {
     return (
       <div className="space-y-3 pt-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-16 rounded-lg" />
+          <Skeleton key={i} className="h-16 rounded-2xl" />
         ))}
       </div>
     )
@@ -972,7 +972,7 @@ function EndorsementsTab() {
 
   if (isError) {
     return (
-      <div className="text-destructive mt-4 rounded-lg border p-4">
+      <div className="mt-4 card-elevated border-[var(--status-expired)]/20 bg-[var(--status-expired)]/5 p-4 text-center text-sm text-[var(--status-expired)]">
         Could not load endorsements.
       </div>
     )
@@ -988,7 +988,7 @@ function EndorsementsTab() {
       </div>
 
       {data && data.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--text-primary)]/10 py-16">
           <FileCheck className="text-muted-foreground mb-4 h-12 w-12" />
           <h2 className="text-lg font-semibold">No endorsements yet</h2>
           <p className="text-muted-foreground mb-6 text-sm">
@@ -1002,7 +1002,7 @@ function EndorsementsTab() {
       )}
 
       {data && data.length > 0 && (
-        <div className="rounded-lg border">
+        <div className="card-elevated overflow-hidden">
           <div className="text-muted-foreground grid grid-cols-[1fr_120px_1fr_1fr_1fr_auto] gap-4 border-b px-4 py-2 text-sm font-medium">
             <span>Date</span>
             <span>Type</span>
@@ -1077,7 +1077,7 @@ function EndorsementsTab() {
                   name="endorsementType"
                   defaultValue={editing?.endorsementType ?? ''}
                   required
-                  className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                  className="flex h-9 w-full rounded-xl border border-[var(--text-primary)]/8 bg-white px-3 py-1 text-sm shadow-sm focus:border-[var(--accent-teal)] focus:ring-2 focus:ring-[var(--accent-teal)]/20 focus:outline-none"
                 >
                   <option value="" disabled>
                     Select type

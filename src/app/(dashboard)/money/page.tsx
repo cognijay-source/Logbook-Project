@@ -20,6 +20,7 @@ import { EntryCard } from '@/components/money/entry-card'
 import { FinancialEntryForm } from '@/components/money/financial-entry-form'
 import type { FinancialEntryCreate } from '@/lib/validators/financial'
 import { useToast } from '@/hooks/use-toast'
+import { motion } from 'framer-motion'
 import {
   getFinancialEntries,
   createFinancialEntry,
@@ -181,15 +182,20 @@ export default function MoneyPage() {
   const isSubmitting = createMutation.isPending || updateMutation.isPending
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-3xl font-bold">Costs</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="font-heading text-3xl font-bold text-[var(--text-primary)]">💰 Costs</h1>
+          <p className="mt-1 text-[var(--text-secondary)]">
             Expenses, income, and financial position.
           </p>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>
+        <Button onClick={() => setDialogOpen(true)} className="rounded-xl bg-[var(--accent-teal)] text-white hover:bg-[var(--accent-teal-hover)]">
           <Plus className="mr-2 h-4 w-4" />
           Record Entry
         </Button>
@@ -211,10 +217,10 @@ export default function MoneyPage() {
               setPeriod(option.value)
               setPage(1)
             }}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`rounded-xl px-3 py-1.5 text-sm font-medium transition-colors ${
               period === option.value
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                ? 'bg-[var(--accent-teal)] text-white'
+                : 'bg-white text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] border border-[var(--text-primary)]/8'
             }`}
           >
             {option.label}
@@ -235,18 +241,18 @@ export default function MoneyPage() {
         {entriesQuery.isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-20 w-full rounded-xl" />
+              <Skeleton key={i} className="h-20 w-full rounded-2xl" />
             ))}
           </div>
         ) : entriesQuery.isError ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
-            <p className="text-sm text-red-800 dark:text-red-200">
+          <div className="card-elevated border-[var(--status-expired)]/20 bg-[var(--status-expired)]/5 p-6 text-center">
+            <p className="text-sm text-[var(--status-expired)]">
               Could not load entries.
             </p>
             <Button
               variant="outline"
               size="sm"
-              className="mt-3"
+              className="mt-3 rounded-xl"
               onClick={() => entriesQuery.refetch()}
             >
               Retry
@@ -268,16 +274,16 @@ export default function MoneyPage() {
             />
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16">
-            <p className="text-muted-foreground text-lg font-medium">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--text-primary)]/10 py-16">
+            <p className="text-lg font-medium text-[var(--text-secondary)]">
               No entries yet
             </p>
-            <p className="text-muted-foreground mt-1 text-sm">
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               Record your first expense or income entry.
             </p>
             <Button
               variant="outline"
-              className="mt-4"
+              className="mt-4 rounded-xl"
               onClick={() => setDialogOpen(true)}
             >
               <Plus className="mr-2 h-4 w-4" />
@@ -329,6 +335,6 @@ export default function MoneyPage() {
           />
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   )
 }

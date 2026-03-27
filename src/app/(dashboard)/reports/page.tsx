@@ -3,15 +3,9 @@
 import { useState } from 'react'
 import { FileText, Download, Eye, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { motion } from 'framer-motion'
 import {
   getReportData,
   generatePdf,
@@ -113,23 +107,28 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
       <div>
-        <h1 className="font-heading text-3xl font-bold">Reports</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="font-heading text-3xl font-bold text-[var(--text-primary)]">📊 Reports</h1>
+        <p className="mt-1 text-[var(--text-secondary)]">
           Generate professional PDF reports from your flight data
         </p>
       </div>
 
       {/* Controls */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Report Settings</CardTitle>
-          <CardDescription>
+      <div className="card-elevated overflow-hidden">
+        <div className="p-6 pb-4">
+          <h3 className="font-heading text-base font-semibold text-[var(--text-primary)]">Report Settings</h3>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
             Choose a report type and date range to generate your report
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="px-6 pb-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2">
               <Label htmlFor="report-type">Report Type</Label>
@@ -140,7 +139,7 @@ export default function ReportsPage() {
                   setReportType(e.target.value as ReportType)
                   setPreviewData(null)
                 }}
-                className="border-input bg-background focus:border-ring focus:ring-ring/20 flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm transition-colors duration-200 focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-xl border border-[var(--text-primary)]/8 bg-white px-3 py-2 text-sm shadow-sm transition-colors duration-200 focus:border-[var(--accent-teal)] focus:ring-2 focus:ring-[var(--accent-teal)]/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {reportTypes.map((rt) => (
                   <option key={rt.value} value={rt.value}>
@@ -160,6 +159,7 @@ export default function ReportsPage() {
                   setStartDate(e.target.value)
                   setPreviewData(null)
                 }}
+                className="rounded-xl focus:border-[var(--accent-teal)] focus:ring-[var(--accent-teal)]/20"
               />
             </div>
 
@@ -173,58 +173,56 @@ export default function ReportsPage() {
                   setEndDate(e.target.value)
                   setPreviewData(null)
                 }}
+                className="rounded-xl focus:border-[var(--accent-teal)] focus:ring-[var(--accent-teal)]/20"
               />
             </div>
 
             <div className="flex items-end gap-2">
-              <Button onClick={handlePreview} disabled={loading}>
+              <Button onClick={handlePreview} disabled={loading} className="rounded-xl bg-[var(--accent-teal)] text-white hover:bg-[var(--accent-teal-hover)]">
                 {loading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Eye className="mr-2 h-4 w-4" />
                 )}
-                Generate Preview
+                Preview
               </Button>
               <Button
                 variant="outline"
                 onClick={handleDownload}
                 disabled={downloading}
+                className="rounded-xl"
               >
                 {downloading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Download className="mr-2 h-4 w-4" />
                 )}
-                Download PDF
+                PDF
               </Button>
             </div>
           </div>
 
-          <p className="text-muted-foreground mt-3 text-sm">
+          <p className="mt-3 text-sm text-[var(--text-secondary)]">
             {reportTypes.find((rt) => rt.value === reportType)?.description}
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Error */}
       {error && (
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <p className="text-destructive text-sm">{error}</p>
-          </CardContent>
-        </Card>
+        <div className="card-elevated border-[var(--status-expired)]/20 bg-[var(--status-expired)]/5 p-6">
+          <p className="text-sm text-[var(--status-expired)]">{error}</p>
+        </div>
       )}
 
       {/* Preview */}
       {previewData && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Report Preview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="card-elevated overflow-hidden">
+          <div className="flex items-center gap-2 p-6 pb-4">
+            <FileText className="h-5 w-5 text-[var(--accent-teal)]" />
+            <h3 className="font-heading text-base font-semibold text-[var(--text-primary)]">Report Preview</h3>
+          </div>
+          <div className="px-6 pb-6">
             {previewData.type === 'flight-summary' && (
               <FlightSummaryPreview data={previewData} />
             )}
@@ -237,10 +235,10 @@ export default function ReportsPage() {
             {previewData.type === 'custom-range' && (
               <CustomRangePreview data={previewData} />
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
-    </div>
+    </motion.div>
   )
 }
 
@@ -253,18 +251,18 @@ function FlightSummaryPreview({
 }) {
   return (
     <div className="space-y-6">
-      <div className="text-muted-foreground text-sm">
+      <div className="text-sm text-[var(--text-secondary)]">
         {data.startDate} to {data.endDate} &middot; {data.flightCount} flights
       </div>
 
       <div>
-        <h3 className="mb-2 text-lg font-semibold">Time Totals</h3>
+        <h3 className="font-heading mb-2 text-lg font-semibold text-[var(--text-primary)]">Time Totals</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b">
-                <th className="py-2 text-left font-medium">Category</th>
-                <th className="py-2 text-right font-medium">Hours</th>
+              <tr className="border-b border-[var(--text-primary)]/6">
+                <th className="py-2 text-left font-medium text-[var(--text-primary)]">Category</th>
+                <th className="py-2 text-right font-medium text-[var(--text-primary)]">Hours</th>
               </tr>
             </thead>
             <tbody>
@@ -280,9 +278,9 @@ function FlightSummaryPreview({
                 ['Multi-Engine', data.totals.multiEngine],
                 ['Single-Engine', data.totals.singleEngine],
               ].map(([label, value]) => (
-                <tr key={label as string} className="border-b">
-                  <td className="py-2">{label as string}</td>
-                  <td className="py-2 text-right">{fmt(value as number)}</td>
+                <tr key={label as string} className="border-b border-[var(--text-primary)]/6 transition-colors hover:bg-[var(--bg-primary)]">
+                  <td className="py-2 text-[var(--text-primary)]">{label as string}</td>
+                  <td className="py-2 text-right font-mono text-[var(--text-primary)]">{fmt(value as number)}</td>
                 </tr>
               ))}
             </tbody>
@@ -292,20 +290,20 @@ function FlightSummaryPreview({
 
       {data.aircraftFlown.length > 0 && (
         <div>
-          <h3 className="mb-2 text-lg font-semibold">Aircraft Flown</h3>
+          <h3 className="font-heading mb-2 text-lg font-semibold text-[var(--text-primary)]">Aircraft Flown</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b">
-                  <th className="py-2 text-left font-medium">Tail Number</th>
-                  <th className="py-2 text-right font-medium">Hours</th>
+                <tr className="border-b border-[var(--text-primary)]/6">
+                  <th className="py-2 text-left font-medium text-[var(--text-primary)]">Tail Number</th>
+                  <th className="py-2 text-right font-medium text-[var(--text-primary)]">Hours</th>
                 </tr>
               </thead>
               <tbody>
                 {data.aircraftFlown.map((a) => (
-                  <tr key={a.tailNumber} className="border-b">
-                    <td className="py-2">{a.tailNumber}</td>
-                    <td className="py-2 text-right">{fmt(a.hours)}</td>
+                  <tr key={a.tailNumber} className="border-b border-[var(--text-primary)]/6 transition-colors hover:bg-[var(--bg-primary)]">
+                    <td className="py-2 text-[var(--text-primary)]">{a.tailNumber}</td>
+                    <td className="py-2 text-right font-mono text-[var(--text-primary)]">{fmt(a.hours)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -316,8 +314,8 @@ function FlightSummaryPreview({
 
       {data.airportsVisited.length > 0 && (
         <div>
-          <h3 className="mb-2 text-lg font-semibold">Airports Visited</h3>
-          <p className="text-muted-foreground text-sm">
+          <h3 className="font-heading mb-2 text-lg font-semibold text-[var(--text-primary)]">Airports Visited</h3>
+          <p className="text-sm text-[var(--text-secondary)]">
             {data.airportsVisited.join(', ')}
           </p>
         </div>
@@ -339,19 +337,19 @@ function EightSevenTenPreview({
 
   return (
     <div className="space-y-6">
-      <div className="text-muted-foreground text-sm">
+      <div className="text-sm text-[var(--text-secondary)]">
         {data.startDate} to {data.endDate}
       </div>
 
       {sections.map((section) => (
         <div key={section.label}>
-          <h3 className="mb-2 text-lg font-semibold">{section.label}</h3>
+          <h3 className="font-heading mb-2 text-lg font-semibold text-[var(--text-primary)]">{section.label}</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b">
-                  <th className="py-2 text-left font-medium">Category</th>
-                  <th className="py-2 text-right font-medium">Hours / Count</th>
+                <tr className="border-b border-[var(--text-primary)]/6">
+                  <th className="py-2 text-left font-medium text-[var(--text-primary)]">Category</th>
+                  <th className="py-2 text-right font-medium text-[var(--text-primary)]">Hours / Count</th>
                 </tr>
               </thead>
               <tbody>
@@ -369,9 +367,9 @@ function EightSevenTenPreview({
                   ['Day Landings', String(section.totals.dayLandings)],
                   ['Night Landings', String(section.totals.nightLandings)],
                 ].map(([label, value]) => (
-                  <tr key={label} className="border-b">
-                    <td className="py-2">{label}</td>
-                    <td className="py-2 text-right">{value}</td>
+                  <tr key={label} className="border-b border-[var(--text-primary)]/6 transition-colors hover:bg-[var(--bg-primary)]">
+                    <td className="py-2 text-[var(--text-primary)]">{label}</td>
+                    <td className="py-2 text-right font-mono text-[var(--text-primary)]">{value}</td>
                   </tr>
                 ))}
               </tbody>
@@ -391,22 +389,22 @@ function InsurancePreview({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="mb-2 text-lg font-semibold">
+        <h3 className="font-heading mb-2 text-lg font-semibold text-[var(--text-primary)]">
           Total Time by Aircraft Make/Model
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b">
-                <th className="py-2 text-left font-medium">Make/Model</th>
-                <th className="py-2 text-right font-medium">Total Hours</th>
+              <tr className="border-b border-[var(--text-primary)]/6">
+                <th className="py-2 text-left font-medium text-[var(--text-primary)]">Make/Model</th>
+                <th className="py-2 text-right font-medium text-[var(--text-primary)]">Total Hours</th>
               </tr>
             </thead>
             <tbody>
               {data.byMakeModel.map((r) => (
-                <tr key={r.makeModel} className="border-b">
-                  <td className="py-2">{r.makeModel}</td>
-                  <td className="py-2 text-right">{fmt(r.hours)}</td>
+                <tr key={r.makeModel} className="border-b border-[var(--text-primary)]/6 transition-colors hover:bg-[var(--bg-primary)]">
+                  <td className="py-2 text-[var(--text-primary)]">{r.makeModel}</td>
+                  <td className="py-2 text-right font-mono text-[var(--text-primary)]">{fmt(r.hours)}</td>
                 </tr>
               ))}
             </tbody>
@@ -415,26 +413,26 @@ function InsurancePreview({
       </div>
 
       <div>
-        <h3 className="mb-2 text-lg font-semibold">Recent Activity</h3>
+        <h3 className="font-heading mb-2 text-lg font-semibold text-[var(--text-primary)]">Recent Activity</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b">
-                <th className="py-2 text-left font-medium">Period</th>
-                <th className="py-2 text-right font-medium">Total Hours</th>
-                <th className="py-2 text-right font-medium">Night</th>
-                <th className="py-2 text-right font-medium">Instrument</th>
-                <th className="py-2 text-right font-medium">Landings</th>
+              <tr className="border-b border-[var(--text-primary)]/6">
+                <th className="py-2 text-left font-medium text-[var(--text-primary)]">Period</th>
+                <th className="py-2 text-right font-medium text-[var(--text-primary)]">Total Hours</th>
+                <th className="py-2 text-right font-medium text-[var(--text-primary)]">Night</th>
+                <th className="py-2 text-right font-medium text-[var(--text-primary)]">Instrument</th>
+                <th className="py-2 text-right font-medium text-[var(--text-primary)]">Landings</th>
               </tr>
             </thead>
             <tbody>
               {data.periods.map((p) => (
-                <tr key={p.label} className="border-b">
-                  <td className="py-2">{p.label}</td>
-                  <td className="py-2 text-right">{fmt(p.totalTime)}</td>
-                  <td className="py-2 text-right">{fmt(p.nightTime)}</td>
-                  <td className="py-2 text-right">{fmt(p.instrumentTime)}</td>
-                  <td className="py-2 text-right">{p.landings}</td>
+                <tr key={p.label} className="border-b border-[var(--text-primary)]/6 transition-colors hover:bg-[var(--bg-primary)]">
+                  <td className="py-2 text-[var(--text-primary)]">{p.label}</td>
+                  <td className="py-2 text-right font-mono text-[var(--text-primary)]">{fmt(p.totalTime)}</td>
+                  <td className="py-2 text-right font-mono text-[var(--text-primary)]">{fmt(p.nightTime)}</td>
+                  <td className="py-2 text-right font-mono text-[var(--text-primary)]">{fmt(p.instrumentTime)}</td>
+                  <td className="py-2 text-right font-mono text-[var(--text-primary)]">{p.landings}</td>
                 </tr>
               ))}
             </tbody>
@@ -452,7 +450,7 @@ function CustomRangePreview({
 }) {
   return (
     <div className="space-y-4">
-      <div className="text-muted-foreground text-sm">
+      <div className="text-sm text-[var(--text-secondary)]">
         {data.startDate} to {data.endDate} &middot; {data.flights.length}{' '}
         flights &middot; {fmt(data.totalTime)} total hours
       </div>
@@ -460,26 +458,26 @@ function CustomRangePreview({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b">
-              <th className="py-2 text-left font-medium">Date</th>
-              <th className="py-2 text-left font-medium">From</th>
-              <th className="py-2 text-left font-medium">To</th>
-              <th className="py-2 text-left font-medium">Aircraft</th>
-              <th className="py-2 text-right font-medium">Total</th>
-              <th className="py-2 text-right font-medium">PIC</th>
-              <th className="py-2 text-left font-medium">Remarks</th>
+            <tr className="border-b border-[var(--text-primary)]/6">
+              <th className="py-2 text-left font-medium text-[var(--text-primary)]">Date</th>
+              <th className="py-2 text-left font-medium text-[var(--text-primary)]">From</th>
+              <th className="py-2 text-left font-medium text-[var(--text-primary)]">To</th>
+              <th className="py-2 text-left font-medium text-[var(--text-primary)]">Aircraft</th>
+              <th className="py-2 text-right font-medium text-[var(--text-primary)]">Total</th>
+              <th className="py-2 text-right font-medium text-[var(--text-primary)]">PIC</th>
+              <th className="py-2 text-left font-medium text-[var(--text-primary)]">Remarks</th>
             </tr>
           </thead>
           <tbody>
             {data.flights.map((f, i) => (
-              <tr key={i} className="border-b">
-                <td className="py-2">{f.date}</td>
-                <td className="py-2">{f.departure}</td>
-                <td className="py-2">{f.arrival}</td>
-                <td className="py-2">{f.aircraft}</td>
-                <td className="py-2 text-right">{fmt(f.totalTime)}</td>
-                <td className="py-2 text-right">{fmt(f.pic)}</td>
-                <td className="max-w-[200px] truncate py-2">{f.remarks}</td>
+              <tr key={i} className="border-b border-[var(--text-primary)]/6 transition-colors hover:bg-[var(--bg-primary)]">
+                <td className="py-2 text-[var(--text-primary)]">{f.date}</td>
+                <td className="py-2 text-[var(--text-primary)]">{f.departure}</td>
+                <td className="py-2 text-[var(--text-primary)]">{f.arrival}</td>
+                <td className="py-2 text-[var(--text-primary)]">{f.aircraft}</td>
+                <td className="py-2 text-right font-mono text-[var(--text-primary)]">{fmt(f.totalTime)}</td>
+                <td className="py-2 text-right font-mono text-[var(--text-primary)]">{fmt(f.pic)}</td>
+                <td className="max-w-[200px] truncate py-2 text-[var(--text-secondary)]">{f.remarks}</td>
               </tr>
             ))}
           </tbody>

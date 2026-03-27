@@ -20,16 +20,20 @@ import {
   XCircle,
   HelpCircle,
 } from 'lucide-react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { motion } from 'framer-motion'
 import { getDashboardData, type DashboardData } from './actions'
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+}
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.06 } },
+}
 
 function formatHours(n: number): string {
   if (n === 0) return '\u2014'
@@ -48,40 +52,45 @@ function formatRoute(dep: string | null, arr: string | null): string {
 // ---------------------------------------------------------------------------
 
 const summaryCards = [
-  { key: 'totalTime', label: 'Total Time', icon: Clock },
-  { key: 'pic', label: 'PIC', icon: Plane },
-  { key: 'sic', label: 'SIC', icon: Users },
-  { key: 'crossCountry', label: 'Cross-Country', icon: MapPin },
-  { key: 'night', label: 'Night', icon: Moon },
-  { key: 'instrument', label: 'Instrument', icon: Gauge },
-  { key: 'multiEngine', label: 'Multi-Engine', icon: Cog },
+  { key: 'totalTime', label: 'Total Time', icon: Clock, emoji: '⏱️' },
+  { key: 'pic', label: 'PIC', icon: Plane, emoji: '✈️' },
+  { key: 'sic', label: 'SIC', icon: Users, emoji: '👥' },
+  { key: 'crossCountry', label: 'Cross-Country', icon: MapPin, emoji: '🗺️' },
+  { key: 'night', label: 'Night', icon: Moon, emoji: '🌙' },
+  { key: 'instrument', label: 'Instrument', icon: Gauge, emoji: '🧭' },
+  { key: 'multiEngine', label: 'Multi-Engine', icon: Cog, emoji: '⚙️' },
 ] as const
 
 function SummaryCards({ totals }: { totals: DashboardData['totals'] }) {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+    <motion.div
+      className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7"
+      initial="hidden"
+      animate="visible"
+      variants={stagger}
+    >
       {summaryCards.map((c) => {
         const value =
           c.key === 'instrument'
             ? totals.actualInstrument + totals.simulatedInstrument
             : totals[c.key]
         return (
-          <Card key={c.key} className="group relative overflow-hidden border-l-2 border-l-[#00b894]/30">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardDescription className="text-xs font-medium uppercase tracking-wider">
-                {c.label}
-              </CardDescription>
-              <c.icon className="h-4 w-4 text-muted-foreground transition-colors duration-200 group-hover:text-[#00b894]" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-[32px] font-bold leading-none tabular-nums">
+          <motion.div key={c.key} variants={fadeInUp} transition={{ duration: 0.3 }}>
+            <div className="card-elevated group p-4">
+              <div className="flex items-center justify-between pb-2">
+                <span className="text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">
+                  {c.label}
+                </span>
+                <span className="text-base">{c.emoji}</span>
+              </div>
+              <p className="font-mono text-[32px] font-bold leading-none tabular-nums text-[var(--text-primary)]">
                 {formatHours(value)}
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </motion.div>
         )
       })}
-    </div>
+    </motion.div>
   )
 }
 
@@ -89,14 +98,10 @@ function SummaryCardsSkeleton() {
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
       {Array.from({ length: 7 }).map((_, i) => (
-        <Card key={i}>
-          <CardHeader className="pb-2">
-            <Skeleton className="h-4 w-20" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-8 w-16" />
-          </CardContent>
-        </Card>
+        <div key={i} className="card-elevated p-4">
+          <Skeleton className="mb-2 h-4 w-20" />
+          <Skeleton className="h-8 w-16" />
+        </div>
       ))}
     </div>
   )
@@ -112,20 +117,20 @@ function RecentFlights({
   flights: DashboardData['recentFlights']
 }) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Recent Flights</CardTitle>
-        <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+    <div className="card-elevated overflow-hidden">
+      <div className="flex items-center justify-between p-6 pb-4">
+        <h3 className="font-heading text-base font-semibold text-[var(--text-primary)]">Recent Flights</h3>
+        <Button variant="ghost" size="sm" asChild className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
           <Link href="/flights">
             View all <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
         </Button>
-      </CardHeader>
-      <CardContent>
+      </div>
+      <div className="px-6 pb-6">
         {flights.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-8">
-            <Plane className="h-12 w-12 text-muted-foreground/30" />
-            <p className="text-center text-sm text-muted-foreground">
+            <Plane className="h-12 w-12 text-[var(--text-secondary)]/30" />
+            <p className="text-center text-sm text-[var(--text-secondary)]">
               No flights recorded yet.
             </p>
             <Button variant="outline" size="sm" asChild>
@@ -138,19 +143,22 @@ function RecentFlights({
               <Link
                 key={f.id}
                 href={`/flights/${f.id}`}
-                className="flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors duration-150 hover:bg-[#f5f5f7]"
+                className="flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors duration-150 hover:bg-[var(--accent-teal)]/5"
               >
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium">
-                    {formatRoute(f.departureAirport, f.arrivalAirport)}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {f.flightDate}
-                    {f.aircraft &&
-                      ` \u00b7 ${f.aircraft.tailNumber}${f.aircraft.model ? ` (${f.aircraft.model})` : ''}`}
-                  </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm">✈️</span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm font-medium text-[var(--text-primary)]">
+                      {formatRoute(f.departureAirport, f.arrivalAirport)}
+                    </span>
+                    <span className="text-xs text-[var(--text-secondary)]">
+                      {f.flightDate}
+                      {f.aircraft &&
+                        ` \u00b7 ${f.aircraft.tailNumber}${f.aircraft.model ? ` (${f.aircraft.model})` : ''}`}
+                    </span>
+                  </div>
                 </div>
-                <span className="text-sm font-medium tabular-nums">
+                <span className="font-mono text-sm font-medium tabular-nums text-[var(--text-primary)]">
                   {f.totalTime
                     ? `${formatHours(parseFloat(f.totalTime))}h`
                     : '\u2014'}
@@ -159,8 +167,8 @@ function RecentFlights({
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
 
@@ -171,14 +179,14 @@ function RecentFlights({
 function getCurrencyBadge(result: DashboardData['currency'][number]) {
   if (result.isCurrent === null) {
     return {
-      color: 'bg-muted text-muted-foreground',
+      color: 'bg-gray-100 text-gray-600',
       label: 'Unknown',
       icon: HelpCircle,
     }
   }
   if (!result.isCurrent) {
     return {
-      color: 'bg-red-500/10 text-red-600',
+      color: 'bg-[var(--status-expired)]/10 text-[var(--status-expired)]',
       label: 'Expired',
       icon: XCircle,
     }
@@ -189,14 +197,14 @@ function getCurrencyBadge(result: DashboardData['currency'][number]) {
     )
     if (daysRemaining <= 30) {
       return {
-        color: 'bg-amber-500/10 text-amber-600',
+        color: 'bg-[var(--status-warning)]/10 text-[var(--status-warning)]',
         label: `${daysRemaining}d left`,
         icon: AlertTriangle,
       }
     }
   }
   return {
-    color: 'bg-[#00d4aa]/10 text-[#00916e]',
+    color: 'bg-[var(--status-current)]/10 text-[var(--status-current)]',
     label: 'Current',
     icon: ShieldCheck,
   }
@@ -204,20 +212,20 @@ function getCurrencyBadge(result: DashboardData['currency'][number]) {
 
 function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Currency Status</CardTitle>
-        <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+    <div className="card-elevated overflow-hidden">
+      <div className="flex items-center justify-between p-6 pb-4">
+        <h3 className="font-heading text-base font-semibold text-[var(--text-primary)]">Currency Status</h3>
+        <Button variant="ghost" size="sm" asChild className="text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
           <Link href="/currency">
             Details <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
         </Button>
-      </CardHeader>
-      <CardContent>
+      </div>
+      <div className="px-6 pb-6">
         {currency.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-8">
-            <ShieldCheck className="h-12 w-12 text-muted-foreground/30" />
-            <p className="text-center text-sm text-muted-foreground">
+            <ShieldCheck className="h-12 w-12 text-[var(--text-secondary)]/30" />
+            <p className="text-center text-sm text-[var(--text-secondary)]">
               No currency rules configured yet. Check back after adding flights.
             </p>
           </div>
@@ -228,11 +236,11 @@ function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
               return (
                 <div
                   key={c.rule.id}
-                  className="flex items-center justify-between"
+                  className="flex items-center justify-between rounded-xl bg-[var(--bg-primary)] px-3 py-2.5"
                 >
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-medium">{c.rule.name}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm font-medium text-[var(--text-primary)]">{c.rule.name}</span>
+                    <span className="text-xs text-[var(--text-secondary)]">
                       {c.details}
                     </span>
                   </div>
@@ -247,8 +255,8 @@ function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
             })}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
 
@@ -262,22 +270,22 @@ function GoalProgressPanel({
   goalProgress: DashboardData['goalProgress']
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">
+    <div className="card-elevated overflow-hidden">
+      <div className="p-6 pb-4">
+        <h3 className="font-heading text-base font-semibold text-[var(--text-primary)]">
           {goalProgress ? goalProgress.goalProfile.name : 'Active Goal'}
-        </CardTitle>
+        </h3>
         {goalProgress?.goalProfile.description && (
-          <CardDescription>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
             {goalProgress.goalProfile.description}
-          </CardDescription>
+          </p>
         )}
-      </CardHeader>
-      <CardContent>
+      </div>
+      <div className="px-6 pb-6">
         {!goalProgress ? (
           <div className="flex flex-col items-center gap-3 py-8">
-            <Target className="h-12 w-12 text-muted-foreground/30" />
-            <p className="text-center text-sm text-muted-foreground">
+            <Target className="h-12 w-12 text-[var(--text-secondary)]/30" />
+            <p className="text-center text-sm text-[var(--text-secondary)]">
               No goal assigned yet. Set one to track your progress.
             </p>
             <Button variant="outline" size="sm" asChild>
@@ -289,18 +297,18 @@ function GoalProgressPanel({
             {goalProgress.requirements.map((req) => (
               <div key={req.field} className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
-                  <span>{req.label}</span>
-                  <span className="tabular-nums text-muted-foreground">
+                  <span className="text-[var(--text-primary)]">{req.label}</span>
+                  <span className="font-mono tabular-nums text-[var(--text-secondary)]">
                     {formatHours(req.current)} / {formatHours(req.required)}
                   </span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-[#f0f0f3]">
+                <div className="h-2 overflow-hidden rounded-full bg-[var(--bg-primary)]">
                   <div
-                    className="animate-progress-fill h-full rounded-full bg-gradient-to-r from-[#00b894] to-[#00d4aa]"
+                    className="animate-progress-fill h-full rounded-full bg-gradient-to-r from-[var(--accent-teal)] to-[var(--accent-teal-hover)]"
                     style={{ width: `${Math.min(req.percentage, 100)}%` }}
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[var(--text-secondary)]">
                   {req.percentage >= 100
                     ? 'Complete'
                     : `${req.percentage}% \u2014 ${formatHours(req.remaining)} remaining`}
@@ -309,8 +317,8 @@ function GoalProgressPanel({
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
 
@@ -320,31 +328,34 @@ function GoalProgressPanel({
 
 function QuickActions() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Quick Actions</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-wrap gap-3">
-        <Button asChild>
-          <Link href="/flights/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Log a Flight
-          </Link>
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href="/aircraft">
-            <Wrench className="mr-2 h-4 w-4" />
-            Add Aircraft
-          </Link>
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href="/imports">
-            <Upload className="mr-2 h-4 w-4" />
-            Import Flights
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
+    <div className="card-elevated overflow-hidden">
+      <div className="p-6 pb-4">
+        <h3 className="font-heading text-base font-semibold text-[var(--text-primary)]">Quick Actions</h3>
+      </div>
+      <div className="flex flex-wrap gap-3 px-6 pb-6">
+        <Link
+          href="/flights/new"
+          className="btn-primary inline-flex items-center text-sm"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Log a Flight
+        </Link>
+        <Link
+          href="/aircraft"
+          className="btn-outline inline-flex items-center text-sm"
+        >
+          <Wrench className="mr-2 h-4 w-4" />
+          Add Aircraft
+        </Link>
+        <Link
+          href="/imports"
+          className="btn-outline inline-flex items-center text-sm"
+        >
+          <Upload className="mr-2 h-4 w-4" />
+          Import Flights
+        </Link>
+      </div>
+    </div>
   )
 }
 
@@ -358,16 +369,14 @@ function DashboardSkeleton() {
       <SummaryCardsSkeleton />
       <div className="grid gap-6 lg:grid-cols-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader>
-              <Skeleton className="h-5 w-32" />
-            </CardHeader>
-            <CardContent className="space-y-3">
+          <div key={i} className="card-elevated p-6">
+            <Skeleton className="mb-4 h-5 w-32" />
+            <div className="space-y-3">
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-4 w-1/2" />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
     </div>
@@ -387,8 +396,10 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="animate-fade-in space-y-6">
-        <h1 className="font-heading text-[28px] font-semibold">Daily</h1>
+      <div className="space-y-6">
+        <h1 className="font-heading text-3xl font-semibold text-[var(--text-primary)]">
+          Welcome back, Pilot ✈️
+        </h1>
         <DashboardSkeleton />
       </div>
     )
@@ -396,11 +407,13 @@ export default function DashboardPage() {
 
   if (error || !data) {
     return (
-      <div className="animate-fade-in space-y-6">
-        <h1 className="font-heading text-[28px] font-semibold">Daily</h1>
-        <Card className="border-red-200 bg-red-50/50">
-          <CardContent className="py-10 text-center">
-            <p className="text-red-600">
+      <div className="space-y-6">
+        <h1 className="font-heading text-3xl font-semibold text-[var(--text-primary)]">
+          Welcome back, Pilot ✈️
+        </h1>
+        <div className="card-elevated border-[var(--status-expired)]/20 bg-[var(--status-expired)]/5">
+          <div className="py-10 text-center">
+            <p className="text-[var(--status-expired)]">
               Failed to load dashboard data. Please try refreshing.
             </p>
             <Button
@@ -411,24 +424,43 @@ export default function DashboardPage() {
             >
               Try again
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="animate-fade-in space-y-6">
-      <h1 className="font-heading text-[28px] font-semibold">Daily</h1>
+    <motion.div
+      className="space-y-6"
+      initial="hidden"
+      animate="visible"
+      variants={stagger}
+    >
+      <motion.h1
+        variants={fadeInUp}
+        transition={{ duration: 0.4 }}
+        className="font-heading text-3xl font-semibold text-[var(--text-primary)]"
+      >
+        Welcome back, Pilot ✈️
+      </motion.h1>
 
       <SummaryCards totals={data.totals} />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <RecentFlights flights={data.recentFlights} />
-        <CurrencyPanel currency={data.currency} />
-        <GoalProgressPanel goalProgress={data.goalProgress} />
-        <QuickActions />
+        <motion.div variants={fadeInUp} transition={{ duration: 0.3 }}>
+          <RecentFlights flights={data.recentFlights} />
+        </motion.div>
+        <motion.div variants={fadeInUp} transition={{ duration: 0.3 }}>
+          <CurrencyPanel currency={data.currency} />
+        </motion.div>
+        <motion.div variants={fadeInUp} transition={{ duration: 0.3 }}>
+          <GoalProgressPanel goalProgress={data.goalProgress} />
+        </motion.div>
+        <motion.div variants={fadeInUp} transition={{ duration: 0.3 }}>
+          <QuickActions />
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   )
 }

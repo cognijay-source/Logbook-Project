@@ -1,6 +1,5 @@
 import { SidebarNav } from '@/components/dashboard/sidebar-nav'
 import { TopBar } from '@/components/dashboard/top-bar'
-import { Compass } from 'lucide-react'
 
 export default function DashboardLayout({
   children,
@@ -9,12 +8,10 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="flex min-h-screen">
-      <aside className="hidden w-64 flex-col border-r border-white/[0.06] bg-[#111118] md:flex">
-        <div className="flex items-center gap-2.5 px-6 py-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#00d4aa] shadow-md shadow-[#00d4aa]/20">
-            <Compass className="h-4 w-4 text-[#111118]" />
-          </div>
-          <h2 className="font-brand text-lg font-semibold text-white">
+      <aside className="hidden w-64 flex-col border-r border-white/10 bg-[var(--bg-navy)] md:flex">
+        <div className="flex items-center gap-2 px-6 py-5">
+          <span className="text-xl">✈️</span>
+          <h2 className="font-heading text-lg font-semibold text-white">
             CrossCheck
           </h2>
         </div>
@@ -25,7 +22,7 @@ export default function DashboardLayout({
 
       <div className="flex flex-1 flex-col">
         <TopBar />
-        <main className="flex-1 bg-[#fafafa] p-6">{children}</main>
+        <main className="flex-1 bg-[var(--bg-primary)] p-6 md:p-8">{children}</main>
       </div>
     </div>
   )
