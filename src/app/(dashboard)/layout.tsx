@@ -2,6 +2,7 @@ import { SidebarNav } from '@/components/dashboard/sidebar-nav'
 import { TopBar } from '@/components/dashboard/top-bar'
 import { MobileTabBar } from '@/components/dashboard/mobile-tab-bar'
 import { MobileFAB } from '@/components/dashboard/mobile-fab'
+import { PageWrapper } from '@/components/dashboard/page-wrapper'
 import { Compass } from 'lucide-react'
 
 export default function DashboardLayout({
@@ -28,7 +29,7 @@ export default function DashboardLayout({
       <div className="flex flex-1 flex-col">
         <TopBar />
         <main className="flex-1 bg-[#fafafa] p-4 pb-24 md:p-6 md:pb-6">
-          {children}
+          <PageWrapper>{children}</PageWrapper>
         </main>
       </div>
 
