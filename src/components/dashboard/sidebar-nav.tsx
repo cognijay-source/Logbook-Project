@@ -39,7 +39,7 @@ export function SidebarNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="grid gap-0.5">
+    <nav className="grid gap-1">
       {navItems.map((item) => {
         const isActive =
           pathname === item.href || pathname.startsWith(item.href + '/')
@@ -48,21 +48,18 @@ export function SidebarNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
+              'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
               isActive
-                ? 'bg-white/[0.08] text-white'
-                : 'text-[#8a8a9a] hover:bg-white/[0.04] hover:text-white',
+                ? 'bg-[#10B981]/15 text-white shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                : 'text-white/50 hover:bg-white/[0.05] hover:text-white/80',
             )}
           >
-            {isActive && (
-              <div className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[#00d4aa]" />
-            )}
             <item.icon
               className={cn(
                 'h-4 w-4 transition-colors duration-200',
                 isActive
-                  ? 'text-[#00d4aa]'
-                  : 'text-[#6b6b7b] group-hover:text-[#8a8a9a]',
+                  ? 'text-[#10B981]'
+                  : 'text-white/40 group-hover:text-white/60',
               )}
             />
             {item.label}

@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { Plus, Search, Plane } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import * as Sentry from '@sentry/nextjs'
 
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { PaginationControls } from '@/components/ui/pagination-controls'
 import { FlightTable } from '@/components/flights/flight-table'
 import { FlightCard } from '@/components/flights/flight-card'
+import { PageTransition } from '@/components/dashboard/page-transition'
+import { EmptyState } from '@/components/dashboard/empty-state'
 import { getFlights, getAircraftList } from './actions'
 
 export default function FlightsPage() {
@@ -65,11 +67,12 @@ export default function FlightsPage() {
   const aircraftOptions = aircraftQuery.data ?? []
 
   return (
+    <PageTransition>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-3xl font-bold">Logbook</h1>
+          <h1 className="font-heading text-2xl font-semibold sm:text-[32px]">📖 Logbook</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             {flightsQuery.isSuccess
               ? `${total} ${total === 1 ? 'entry' : 'entries'}`
@@ -141,25 +144,17 @@ export default function FlightsPage() {
 
       {/* Empty state */}
       {flightsQuery.isSuccess && flights.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16">
-          <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
-            <Plane className="text-muted-foreground h-6 w-6" />
-          </div>
-          <h3 className="mt-4 text-lg font-semibold">No flights found</h3>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {search || aircraftId !== 'all' || status !== 'all'
+        <EmptyState
+          illustration="logbook"
+          title="No flights found"
+          subtitle={
+            search || aircraftId !== 'all' || status !== 'all'
               ? 'Adjust your filters to find matching entries.'
-              : 'Record your first flight to begin building your logbook.'}
-          </p>
-          {!search && aircraftId === 'all' && status === 'all' && (
-            <Button asChild className="mt-4">
-              <Link href="/flights/new">
-                <Plus className="mr-2 h-4 w-4" />
-                Log Flight
-              </Link>
-            </Button>
-          )}
-        </div>
+              : 'Record your first flight to begin building your logbook.'
+          }
+          actionLabel={!search && aircraftId === 'all' && status === 'all' ? 'Log Flight' : undefined}
+          actionHref={!search && aircraftId === 'all' && status === 'all' ? '/flights/new' : undefined}
+        />
       )}
 
       {/* Flight list */}
@@ -184,6 +179,7 @@ export default function FlightsPage() {
         </>
       )}
     </div>
+    </PageTransition>
   )
 }
 

@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ProfileForm } from '@/components/settings/profile-form'
 import { PreferencesForm } from '@/components/settings/preferences-form'
 import { AccountSection } from '@/components/settings/account-section'
+import { PageTransition } from '@/components/dashboard/page-transition'
 import {
   getProfile,
   updateProfile,
@@ -24,8 +25,9 @@ export default function SettingsPage() {
   })
 
   return (
+    <PageTransition>
     <div>
-      <h1 className="font-heading text-3xl font-bold">Settings</h1>
+      <h1 className="font-heading text-2xl font-semibold sm:text-[32px]">⚙️ Settings</h1>
       <p className="text-muted-foreground mt-2">
         Manage your account, profile, and preferences.
       </p>
@@ -66,5 +68,6 @@ export default function SettingsPage() {
         </div>
       )}
     </div>
+    </PageTransition>
   )
 }

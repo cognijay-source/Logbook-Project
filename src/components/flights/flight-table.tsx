@@ -14,13 +14,16 @@ import type { FlightRow } from '@/app/(dashboard)/flights/actions'
 function StatusBadge({ status }: { status: string }) {
   const styles =
     status === 'final'
-      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+      : 'bg-amber-50 text-amber-700 border border-amber-200'
+
+  const dotColor = status === 'final' ? 'bg-emerald-500' : 'bg-amber-500'
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${styles}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${styles}`}
     >
+      <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
       {status}
     </span>
   )
@@ -30,22 +33,35 @@ export function FlightTable({ flights }: { flights: FlightRow[] }) {
   return (
     <Table>
       <TableHeader>
-        <TableRow>
-          <TableHead>Date</TableHead>
-          <TableHead>Route</TableHead>
-          <TableHead>Aircraft</TableHead>
-          <TableHead className="text-right">Total Time</TableHead>
-          <TableHead>Status</TableHead>
+        <TableRow className="border-b-0">
+          <TableHead className="text-[11px] uppercase tracking-wide text-[#71717a]">
+            Date
+          </TableHead>
+          <TableHead className="text-[11px] uppercase tracking-wide text-[#71717a]">
+            Route
+          </TableHead>
+          <TableHead className="text-[11px] uppercase tracking-wide text-[#71717a]">
+            Aircraft
+          </TableHead>
+          <TableHead className="text-right text-[11px] uppercase tracking-wide text-[#71717a]">
+            Total Time
+          </TableHead>
+          <TableHead className="text-[11px] uppercase tracking-wide text-[#71717a]">
+            Status
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {flights.map((flight) => {
           const route = [flight.departureAirport, flight.arrivalAirport]
             .filter(Boolean)
-            .join(' → ')
+            .join(' \u2192 ')
 
           return (
-            <TableRow key={flight.id} className="cursor-pointer">
+            <TableRow
+              key={flight.id}
+              className="group h-14 cursor-pointer transition-colors duration-150 hover:bg-[#f0f0f5]"
+            >
               <TableCell>
                 <Link
                   href={`/flights/${flight.id}`}
@@ -56,7 +72,7 @@ export function FlightTable({ flights }: { flights: FlightRow[] }) {
               </TableCell>
               <TableCell>
                 <Link href={`/flights/${flight.id}`} className="block">
-                  {route || '—'}
+                  {route || '\u2014'}
                 </Link>
               </TableCell>
               <TableCell>
@@ -64,12 +80,15 @@ export function FlightTable({ flights }: { flights: FlightRow[] }) {
                   href={`/flights/${flight.id}`}
                   className="block whitespace-nowrap"
                 >
-                  {flight.aircraft?.tailNumber ?? '—'}
+                  {flight.aircraft?.tailNumber ?? '\u2014'}
                 </Link>
               </TableCell>
               <TableCell className="text-right">
-                <Link href={`/flights/${flight.id}`} className="block">
-                  {flight.totalTime ? `${flight.totalTime}` : '—'}
+                <Link
+                  href={`/flights/${flight.id}`}
+                  className="block font-mono tabular-nums"
+                >
+                  {flight.totalTime ? `${flight.totalTime}` : '\u2014'}
                 </Link>
               </TableCell>
               <TableCell>

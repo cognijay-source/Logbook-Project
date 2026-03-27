@@ -45,6 +45,7 @@ import { EntryCard } from '@/components/money/entry-card'
 import { FinancialEntryForm } from '@/components/money/financial-entry-form'
 import type { FinancialEntryCreate } from '@/lib/validators/financial'
 import { useToast } from '@/hooks/use-toast'
+import { PageTransition } from '@/components/dashboard/page-transition'
 import {
   getFinancialEntries,
   createFinancialEntry,
@@ -291,10 +292,11 @@ export default function MoneyPage() {
   }
 
   return (
+    <PageTransition>
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-3xl font-bold">Costs</h1>
+          <h1 className="font-heading text-2xl font-semibold sm:text-[32px]">💰 Costs</h1>
           <p className="text-muted-foreground mt-1">
             Expenses, income, and financial position.
           </p>
@@ -728,5 +730,6 @@ export default function MoneyPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </PageTransition>
   )
 }

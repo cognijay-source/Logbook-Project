@@ -19,6 +19,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PageTransition } from '@/components/dashboard/page-transition'
 import { Target, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 
@@ -84,8 +85,8 @@ export default function ProgressPage() {
   if (isError) {
     return (
       <div className="space-y-6">
-        <h1 className="font-heading text-3xl font-bold tracking-tight">
-          Ready
+        <h1 className="font-heading text-2xl font-semibold sm:text-[32px]">
+          🎯 Ready
         </h1>
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
           <p className="text-sm text-red-800 dark:text-red-200">
@@ -100,11 +101,12 @@ export default function ProgressPage() {
   const progress = data?.progress
 
   return (
+    <PageTransition>
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-3xl font-bold tracking-tight">
-            Ready
+          <h1 className="font-heading text-2xl font-semibold sm:text-[32px]">
+            🎯 Ready
           </h1>
           <p className="text-muted-foreground">
             {progress
@@ -173,7 +175,7 @@ export default function ProgressPage() {
                   </div>
                   <div className="bg-muted mb-1 h-2 w-full rounded-full">
                     <div
-                      className={`h-2 rounded-full transition-all duration-700 ease-out ${req.percentage >= 100 ? 'bg-gradient-to-r from-green-500 to-emerald-400' : 'bg-gradient-to-r from-sky-500 to-cyan-400'}`}
+                      className={`h-2 rounded-full transition-all duration-700 ease-out ${req.percentage >= 100 ? 'bg-gradient-to-r from-[#10B981] to-[#059669]' : 'bg-gradient-to-r from-sky-500 to-cyan-400'}`}
                       style={{
                         width: `${Math.min(100, req.percentage)}%`,
                       }}
@@ -258,5 +260,6 @@ export default function ProgressPage() {
         </Card>
       )}
     </div>
+    </PageTransition>
   )
 }
