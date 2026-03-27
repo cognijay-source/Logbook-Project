@@ -107,6 +107,7 @@ const OPERATION_TYPES = [
   'Part 91',
   'Part 135',
   'Part 121',
+  'Part 141',
   'Training',
   'Personal',
 ]

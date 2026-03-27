@@ -15,6 +15,7 @@ import {
   GraduationCap,
   FileText,
   BarChart3,
+  TrendingUp,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -28,6 +29,7 @@ const navItems = [
   { label: 'Documents', href: '/documents', icon: FileText },
   { label: 'Imports', href: '/imports', icon: Upload },
   { label: 'Reports', href: '/reports', icon: BarChart3 },
+  { label: 'Analytics', href: '/analytics', icon: TrendingUp },
   { label: 'Aircraft', href: '/aircraft', icon: Wrench },
   { label: 'Training', href: '/training', icon: GraduationCap },
   { label: 'Settings', href: '/settings', icon: Settings },

@@ -55,6 +55,7 @@ export default function SettingsPage() {
           <PreferencesForm
             timeFormat={data.profile.timeFormat ?? 'decimal'}
             timezone={data.profile.timezone ?? 'UTC'}
+            trainingEnvironment={data.profile.trainingEnvironment ?? 'part_61'}
             action={updatePreferences}
           />
 

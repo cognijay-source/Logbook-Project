@@ -29,6 +29,13 @@
       "when": 1774627200000,
       "tag": "0003_add_training_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1774627300000,
+      "tag": "0004_financial_depth_part141",
+      "breakpoints": true
     }
   ]
 }

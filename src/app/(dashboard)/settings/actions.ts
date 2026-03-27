@@ -125,6 +125,7 @@ export async function updatePreferences(formData: FormData) {
     const raw = {
       timeFormat: formData.get('timeFormat') as string,
       timezone: formData.get('timezone') as string,
+      trainingEnvironment: formData.get('trainingEnvironment') as string,
     }
 
     const parsed = preferencesSchema.safeParse(raw)
@@ -140,6 +141,7 @@ export async function updatePreferences(formData: FormData) {
       .set({
         timeFormat: values.timeFormat,
         timezone: values.timezone,
+        trainingEnvironment: values.trainingEnvironment ?? 'part_61',
         updatedAt: new Date(),
       })
       .where(eq(schema.profiles.id, profile.id))

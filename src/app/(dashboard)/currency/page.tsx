@@ -151,6 +151,11 @@ export default function CurrencyPage() {
         </Button>
       </div>
 
+      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+        <strong>Part 141 note:</strong> Part 141 currency requirements are managed by your training provider.
+        CrossCheck tracks Part 61 requirements. Part 141 curriculum tracking coming soon.
+      </div>
+
       {currencyQuery.isLoading ? (
         <div className="grid gap-4 md:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (

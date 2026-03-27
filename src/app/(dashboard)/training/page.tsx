@@ -138,6 +138,10 @@ export default function TrainingPage() {
             <FileCheck className="h-4 w-4" />
             Endorsements
           </TabsTrigger>
+          <TabsTrigger value="part141" className="gap-2">
+            <GraduationCap className="h-4 w-4" />
+            Part 141
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="entries">
@@ -148,6 +152,20 @@ export default function TrainingPage() {
         </TabsContent>
         <TabsContent value="endorsements">
           <EndorsementsTab />
+        </TabsContent>
+        <TabsContent value="part141">
+          <Card>
+            <CardHeader>
+              <CardTitle>Part 141 Progress</CardTitle>
+              <CardDescription>Structured training program tracking</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+              <GraduationCap className="text-muted-foreground/50 mb-4 h-12 w-12" />
+              <p className="text-muted-foreground max-w-sm">
+                Part 141 curriculum tracking, stage checks, and TCO requirements are coming in a future update.
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

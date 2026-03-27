@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast'
 type PreferencesFormProps = {
   timeFormat: string
   timezone: string
+  trainingEnvironment?: string
   action: (formData: FormData) => Promise<{ data: unknown; error: unknown }>
 }
 
@@ -50,6 +51,7 @@ const COMMON_TIMEZONES = [
 export function PreferencesForm({
   timeFormat,
   timezone,
+  trainingEnvironment = 'part_61',
   action,
 }: PreferencesFormProps) {
   const formRef = useRef<HTMLFormElement>(null)
@@ -133,6 +135,27 @@ export function PreferencesForm({
               </select>
               {errors.timezone && (
                 <p className="text-destructive text-sm">{errors.timezone[0]}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="trainingEnvironment">Training Environment</Label>
+              <select
+                id="trainingEnvironment"
+                name="trainingEnvironment"
+                defaultValue={trainingEnvironment}
+                className={selectClass}
+              >
+                <option value="part_61">Part 61</option>
+                <option value="part_141">Part 141</option>
+                <option value="both">Both (Part 61 + Part 141)</option>
+              </select>
+              {errors.trainingEnvironment && (
+                <p className="text-destructive text-sm">
+                  {errors.trainingEnvironment[0]}
+                </p>
               )}
             </div>
           </div>
