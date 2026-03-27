@@ -57,12 +57,7 @@ export function MobileNav() {
                   {isActive && (
                     <div className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[#00d4aa]" />
                   )}
-                  <item.icon
-                    className={cn(
-                      'h-4 w-4',
-                      isActive ? 'text-[#00d4aa]' : 'text-[#6b6b7b]',
-                    )}
-                  />
+                  <span className="text-base leading-none">{item.emoji}</span>
                   {item.label}
                 </Link>
               </SheetClose>

@@ -2,35 +2,22 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  LayoutDashboard,
-  Plane,
-  Wrench,
-  Map,
-  Target,
-  DollarSign,
-  Upload,
-  Settings,
-  ShieldCheck,
-  GraduationCap,
-  FileText,
-  BarChart3,
-} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { label: 'Daily', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Logbook', href: '/flights', icon: Plane },
-  { label: 'Currency', href: '/currency', icon: ShieldCheck },
-  { label: 'Mastery', href: '/journey', icon: Map },
-  { label: 'Ready', href: '/progress', icon: Target },
-  { label: 'Costs', href: '/money', icon: DollarSign },
-  { label: 'Documents', href: '/documents', icon: FileText },
-  { label: 'Imports', href: '/imports', icon: Upload },
-  { label: 'Reports', href: '/reports', icon: BarChart3 },
-  { label: 'Aircraft', href: '/aircraft', icon: Wrench },
-  { label: 'Training', href: '/training', icon: GraduationCap },
-  { label: 'Settings', href: '/settings', icon: Settings },
+  { label: 'Daily', href: '/dashboard', emoji: '🏠' },
+  { label: 'Logbook', href: '/flights', emoji: '📖' },
+  { label: 'Currency', href: '/currency', emoji: '🔄' },
+  { label: 'Mastery', href: '/journey', emoji: '🏆' },
+  { label: 'Ready', href: '/progress', emoji: '🎯' },
+  { label: 'Costs', href: '/money', emoji: '💰' },
+  { label: 'Documents', href: '/documents', emoji: '📁' },
+  { label: 'Imports', href: '/imports', emoji: '📥' },
+  { label: 'Reports', href: '/reports', emoji: '📊' },
+  { label: 'Analytics', href: '/analytics', emoji: '📈' },
+  { label: 'Aircraft', href: '/aircraft', emoji: '✈️' },
+  { label: 'Training', href: '/training', emoji: '📚' },
+  { label: 'Settings', href: '/settings', emoji: '⚙️' },
 ]
 
 export function SidebarNav() {
@@ -55,14 +42,7 @@ export function SidebarNav() {
             {isActive && (
               <div className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[#00d4aa]" />
             )}
-            <item.icon
-              className={cn(
-                'h-4 w-4 transition-colors duration-200',
-                isActive
-                  ? 'text-[#00d4aa]'
-                  : 'text-[#6b6b7b] group-hover:text-[#8a8a9a]',
-              )}
-            />
+            <span className="text-base leading-none">{item.emoji}</span>
             {item.label}
           </Link>
         )
