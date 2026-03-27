@@ -43,12 +43,20 @@ export default function ProgressPage() {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['progress'],
-    queryFn: getProgressData,
+    queryFn: async () => {
+      const result = await getProgressData()
+      if (result.error) throw new Error(result.error)
+      return result.data!
+    },
   })
 
   const { data: availableGoals } = useQuery({
     queryKey: ['available-goals'],
-    queryFn: getAvailableGoals,
+    queryFn: async () => {
+      const result = await getAvailableGoals()
+      if (result.error) throw new Error(result.error)
+      return result.data!
+    },
     enabled: goalDialogOpen,
   })
 

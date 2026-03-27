@@ -99,12 +99,20 @@ export default function CurrencyPage() {
 
   const currencyQuery = useQuery({
     queryKey: ['currency-status'],
-    queryFn: () => getCurrencyStatus(),
+    queryFn: async () => {
+      const result = await getCurrencyStatus()
+      if (result.error) throw new Error(result.error)
+      return result.data!
+    },
     staleTime: 5 * 60 * 1000,
   })
 
   const refreshMutation = useMutation({
-    mutationFn: () => refreshCurrency(),
+    mutationFn: async () => {
+      const result = await refreshCurrency()
+      if (result.error) throw new Error(result.error)
+      return result.data!
+    },
     onSuccess: (data) => {
       queryClient.setQueryData(['currency-status'], data)
       toast({

@@ -43,12 +43,20 @@ export default function JourneyPage() {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['milestones'],
-    queryFn: getMilestoneTimeline,
+    queryFn: async () => {
+      const result = await getMilestoneTimeline()
+      if (result.error) throw new Error(result.error)
+      return result.data!
+    },
   })
 
   const { data: evaluation } = useQuery({
     queryKey: ['milestone-evaluation'],
-    queryFn: runMilestoneEvaluation,
+    queryFn: async () => {
+      const result = await runMilestoneEvaluation()
+      if (result.error) throw new Error(result.error)
+      return result.data!
+    },
   })
 
   const refreshMutation = useMutation({

@@ -30,6 +30,7 @@ export async function getFinancialEntries(params?: GetEntriesParams): Promise<{
   total: number
   page: number
   pageSize: number
+  error: string | null
 }> {
   try {
     const profile = await getOrCreateProfile()
@@ -77,10 +78,19 @@ export async function getFinancialEntries(params?: GetEntriesParams): Promise<{
 
     const total = Number(countResult[0]?.count) || 0
 
-    return { data: entries, total, page, pageSize }
+    return { data: entries, total, page, pageSize, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    throw error
+    return {
+      data: [],
+      total: 0,
+      page: params?.page ?? 1,
+      pageSize: params?.pageSize ?? 50,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to load financial entries',
+    }
   }
 }
 
