@@ -15,6 +15,10 @@ import {
 } from '@/lib/services/goal-progress'
 import type { CurrencyResult } from '@/lib/services/currency-evaluator'
 import { evaluateCurrency } from '@/lib/services/currency-evaluator'
+import {
+  evaluateMedical,
+  type MedicalInfo,
+} from '@/lib/services/medical-calculator'
 
 export type RecentFlight = {
   id: string
@@ -30,13 +34,14 @@ export type DashboardData = {
   recentFlights: RecentFlight[]
   currency: CurrencyResult[]
   goalProgress: GoalProgress | null
+  medical: MedicalInfo | null
 }
 
 export async function getDashboardData(): Promise<DashboardData> {
   try {
     const profile = await getOrCreateProfile()
 
-    const [totals, recentFlightsRaw, currency, goalProgress] =
+    const [totals, recentFlightsRaw, currency, goalProgress, pilotProfile] =
       await Promise.all([
         getFlightTotals(profile.id),
         db
@@ -64,6 +69,11 @@ export async function getDashboardData(): Promise<DashboardData> {
           .limit(5),
         evaluateCurrency(profile.id),
         getGoalProgress(profile.id),
+        db
+          .select()
+          .from(schema.pilotProfiles)
+          .where(eq(schema.pilotProfiles.profileId, profile.id))
+          .limit(1),
       ])
 
     const recentFlights: RecentFlight[] = recentFlightsRaw.map((f) => ({
@@ -77,7 +87,18 @@ export async function getDashboardData(): Promise<DashboardData> {
         : null,
     }))
 
-    return { totals, recentFlights, currency, goalProgress }
+    // Evaluate medical status
+    const pp = pilotProfile[0] ?? null
+    const medical = pp
+      ? evaluateMedical(
+          pp.medicalClass,
+          pp.medicalIssueDate,
+          pp.medicalExpiry?.toISOString().split('T')[0] ?? null,
+          pp.dateOfBirth,
+        )
+      : null
+
+    return { totals, recentFlights, currency, goalProgress, medical }
   } catch (error) {
     Sentry.captureException(error)
     throw error

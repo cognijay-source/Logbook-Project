@@ -3,7 +3,13 @@
 import * as React from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as Sentry from '@sentry/nextjs'
-import { RefreshCw, Shield, ShieldAlert, ShieldCheck } from 'lucide-react'
+import {
+  RefreshCw,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  Stethoscope,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -15,6 +21,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
 import type { CurrencyResult } from '@/lib/services/currency-evaluator'
+import type { MedicalInfo } from '@/lib/services/medical-calculator'
 import { getCurrencyStatus, refreshCurrency } from './actions'
 
 function StatusBadge({ status }: { status: CurrencyResult['status'] }) {
@@ -93,6 +100,76 @@ function CurrencyCard({ item }: { item: CurrencyResult }) {
   )
 }
 
+function MedicalCertificateCard({ medical }: { medical: MedicalInfo }) {
+  const statusColor =
+    medical.status === 'current'
+      ? 'text-green-800 bg-green-100 dark:bg-green-900/30 dark:text-green-400'
+      : medical.status === 'expiring'
+        ? 'text-yellow-800 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400'
+        : medical.status === 'expired'
+          ? 'text-red-800 bg-red-100 dark:bg-red-900/30 dark:text-red-400'
+          : medical.status === 'basicmed'
+            ? 'text-blue-800 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400'
+            : 'text-gray-800 bg-gray-100 dark:bg-gray-900/30 dark:text-gray-400'
+
+  const statusLabel =
+    medical.status === 'current'
+      ? 'Current'
+      : medical.status === 'expiring'
+        ? 'Expiring Soon'
+        : medical.status === 'expired'
+          ? 'Expired'
+          : medical.status === 'basicmed'
+            ? 'BasicMed'
+            : 'None'
+
+  const classLabel =
+    medical.medicalClass === '1st'
+      ? 'First Class'
+      : medical.medicalClass === '2nd'
+        ? 'Second Class'
+        : medical.medicalClass === '3rd'
+          ? 'Third Class'
+          : medical.medicalClass === 'basicmed'
+            ? 'BasicMed'
+            : 'None'
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="space-y-1">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Stethoscope className="h-4 w-4" />
+              Medical Certificate
+            </CardTitle>
+            <CardDescription>{classLabel}</CardDescription>
+          </div>
+          <span
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor}`}
+          >
+            {statusLabel}
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <p className="text-sm">{medical.message}</p>
+        {medical.issueDate && (
+          <p className="text-muted-foreground text-sm">
+            Issued: {medical.issueDate}
+          </p>
+        )}
+        {medical.expiryDate && (
+          <p className="text-sm">
+            <span className="text-muted-foreground">Expires:</span>{' '}
+            <span className="font-medium">{medical.expiryDate}</span>
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 export default function CurrencyPage() {
   const queryClient = useQueryClient()
   const { toast } = useToast()
@@ -121,6 +198,9 @@ export default function CurrencyPage() {
       })
     },
   })
+
+  const currencyItems = currencyQuery.data?.currency ?? []
+  const medical = currencyQuery.data?.medical ?? null
 
   return (
     <div className="space-y-6">
@@ -163,20 +243,25 @@ export default function CurrencyPage() {
             Retry
           </Button>
         </div>
-      ) : currencyQuery.data && currencyQuery.data.length > 0 ? (
+      ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {currencyQuery.data.map((item) => (
+          {medical &&
+            medical.status !== 'none' && (
+              <MedicalCertificateCard medical={medical} />
+            )}
+          {currencyItems.map((item) => (
             <CurrencyCard key={item.rule.id} item={item} />
           ))}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16">
-          <p className="text-muted-foreground text-lg font-medium">
-            No currency rules found
-          </p>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Currency rules need to be seeded in the database.
-          </p>
+          {currencyItems.length === 0 && !medical && (
+            <div className="col-span-2 flex flex-col items-center justify-center rounded-xl border border-dashed py-16">
+              <p className="text-muted-foreground text-lg font-medium">
+                No currency rules found
+              </p>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Currency rules need to be seeded in the database.
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

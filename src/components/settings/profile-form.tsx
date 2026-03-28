@@ -25,9 +25,11 @@ type ProfileData = {
 }
 
 type PilotProfileData = {
+  dateOfBirth?: string | null
   certificateLevel?: string | null
   certificateNumber?: string | null
   medicalClass?: string | null
+  medicalIssueDate?: string | null
   medicalExpiry?: Date | null
   homeAirport?: string | null
   careerPhase?: string | null
@@ -129,6 +131,21 @@ export function ProfileForm({
             <h3 className="mb-3 text-sm font-medium">Pilot Information</h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
+                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Input
+                  id="dateOfBirth"
+                  name="dateOfBirth"
+                  type="date"
+                  defaultValue={pilotProfile?.dateOfBirth ?? ''}
+                />
+                {errors.dateOfBirth && (
+                  <p className="text-destructive text-sm">
+                    {errors.dateOfBirth[0]}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="certificateLevel">Certificate Level</Label>
                 <select
                   id="certificateLevel"
@@ -188,6 +205,21 @@ export function ProfileForm({
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="medicalIssueDate">Medical Issue Date</Label>
+                <Input
+                  id="medicalIssueDate"
+                  name="medicalIssueDate"
+                  type="date"
+                  defaultValue={pilotProfile?.medicalIssueDate ?? ''}
+                />
+                {errors.medicalIssueDate && (
+                  <p className="text-destructive text-sm">
+                    {errors.medicalIssueDate[0]}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="medicalExpiry">Medical Expiry Date</Label>
                 <Input
                   id="medicalExpiry"
@@ -195,6 +227,10 @@ export function ProfileForm({
                   type="date"
                   defaultValue={formatDate(pilotProfile?.medicalExpiry)}
                 />
+                <p className="text-muted-foreground text-xs">
+                  Auto-calculated from class, issue date, and DOB. Override only
+                  for Special Issuance medicals.
+                </p>
                 {errors.medicalExpiry && (
                   <p className="text-destructive text-sm">
                     {errors.medicalExpiry[0]}

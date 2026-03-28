@@ -349,6 +349,54 @@ function QuickActions() {
 }
 
 // ---------------------------------------------------------------------------
+// Medical Warning
+// ---------------------------------------------------------------------------
+
+function MedicalWarning({
+  medical,
+}: {
+  medical: NonNullable<DashboardData['medical']>
+}) {
+  const isExpired = medical.status === 'expired'
+  const isBasicMed = medical.status === 'basicmed'
+
+  return (
+    <Card
+      className={
+        isExpired
+          ? 'border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950'
+          : isBasicMed
+            ? 'border-blue-300 bg-blue-50 dark:border-blue-900 dark:bg-blue-950'
+            : 'border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950'
+      }
+    >
+      <CardContent className="flex items-start gap-3 pt-6">
+        <AlertTriangle
+          className={`h-5 w-5 shrink-0 ${
+            isExpired
+              ? 'text-red-600'
+              : isBasicMed
+                ? 'text-blue-600'
+                : 'text-amber-600'
+          }`}
+        />
+        <p
+          className={`text-sm ${
+            isExpired
+              ? 'text-red-800 dark:text-red-200'
+              : isBasicMed
+                ? 'text-blue-800 dark:text-blue-200'
+                : 'text-amber-800 dark:text-amber-200'
+          }`}
+        >
+          {medical.message}
+        </p>
+      </CardContent>
+    </Card>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Loading skeleton
 // ---------------------------------------------------------------------------
 
@@ -422,6 +470,14 @@ export default function DashboardPage() {
       <h1 className="font-heading text-[28px] font-semibold">Daily</h1>
 
       <SummaryCards totals={data.totals} />
+
+      {/* Medical Warning */}
+      {data.medical &&
+        (data.medical.status === 'expired' ||
+          data.medical.status === 'expiring' ||
+          data.medical.status === 'basicmed') && (
+          <MedicalWarning medical={data.medical} />
+        )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <RecentFlights flights={data.recentFlights} />

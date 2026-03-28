@@ -12,6 +12,8 @@ import {
   preferencesSchema,
   changePasswordSchema,
 } from '@/lib/validators/settings'
+import { calculateMedicalExpiry } from '@/lib/services/medical-calculator'
+import type { MedicalClass } from '@/lib/services/medical-calculator'
 
 export async function getProfile() {
   try {
@@ -42,9 +44,11 @@ export async function updateProfile(formData: FormData) {
 
     const raw = {
       displayName: formData.get('displayName') as string,
+      dateOfBirth: formData.get('dateOfBirth') as string,
       certificateLevel: formData.get('certificateLevel') as string,
       certificateNumber: formData.get('certificateNumber') as string,
       medicalClass: formData.get('medicalClass') as string,
+      medicalIssueDate: formData.get('medicalIssueDate') as string,
       medicalExpiry: formData.get('medicalExpiry') as string,
       homeAirport: formData.get('homeAirport') as string,
       careerPhase: formData.get('careerPhase') as string,
@@ -67,39 +71,60 @@ export async function updateProfile(formData: FormData) {
       })
       .where(eq(schema.profiles.id, profile.id))
 
-    // Upsert pilot profile
-    const medicalExpiry = values.medicalExpiry
+    // Auto-calculate medical expiry if we have class, issue date, and DOB
+    let medicalExpiry: Date | null = values.medicalExpiry
       ? new Date(values.medicalExpiry)
       : null
 
+    const classMap: Record<string, MedicalClass> = {
+      First: '1st',
+      Second: '2nd',
+      Third: '3rd',
+    }
+    const normalizedClass = values.medicalClass
+      ? classMap[values.medicalClass]
+      : null
+
+    if (
+      normalizedClass &&
+      values.medicalIssueDate &&
+      values.dateOfBirth &&
+      !values.medicalExpiry
+    ) {
+      medicalExpiry = calculateMedicalExpiry(
+        normalizedClass,
+        new Date(values.medicalIssueDate),
+        new Date(values.dateOfBirth),
+      )
+    }
+
+    // Upsert pilot profile
     const existing = await db
       .select()
       .from(schema.pilotProfiles)
       .where(eq(schema.pilotProfiles.profileId, profile.id))
       .limit(1)
 
+    const pilotData = {
+      dateOfBirth: values.dateOfBirth ?? null,
+      certificateLevel: values.certificateLevel ?? null,
+      certificateNumber: values.certificateNumber ?? null,
+      medicalClass: values.medicalClass ?? null,
+      medicalIssueDate: values.medicalIssueDate ?? null,
+      medicalExpiry,
+      homeAirport: values.homeAirport ?? null,
+      careerPhase: values.careerPhase ?? null,
+    }
+
     if (existing.length > 0) {
       await db
         .update(schema.pilotProfiles)
-        .set({
-          certificateLevel: values.certificateLevel ?? null,
-          certificateNumber: values.certificateNumber ?? null,
-          medicalClass: values.medicalClass ?? null,
-          medicalExpiry,
-          homeAirport: values.homeAirport ?? null,
-          careerPhase: values.careerPhase ?? null,
-          updatedAt: new Date(),
-        })
+        .set({ ...pilotData, updatedAt: new Date() })
         .where(eq(schema.pilotProfiles.profileId, profile.id))
     } else {
       await db.insert(schema.pilotProfiles).values({
         profileId: profile.id,
-        certificateLevel: values.certificateLevel ?? null,
-        certificateNumber: values.certificateNumber ?? null,
-        medicalClass: values.medicalClass ?? null,
-        medicalExpiry,
-        homeAirport: values.homeAirport ?? null,
-        careerPhase: values.careerPhase ?? null,
+        ...pilotData,
       })
     }
 

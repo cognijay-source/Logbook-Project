@@ -14,7 +14,13 @@ const CERTIFICATE_LEVELS = [
   'ATP',
 ] as const
 
-const MEDICAL_CLASSES = ['First', 'Second', 'Third', 'BasicMed'] as const
+const MEDICAL_CLASSES = [
+  'First',
+  'Second',
+  'Third',
+  'BasicMed',
+  'None',
+] as const
 
 const CAREER_PHASES = [
   'Student',
@@ -31,9 +37,11 @@ const TIME_FORMATS = ['decimal', 'hhmm'] as const
 
 export const profileUpdateSchema = z.object({
   displayName: optionalString,
+  dateOfBirth: optionalString,
   certificateLevel: optionalString.pipe(z.enum(CERTIFICATE_LEVELS).optional()),
   certificateNumber: optionalString,
   medicalClass: optionalString.pipe(z.enum(MEDICAL_CLASSES).optional()),
+  medicalIssueDate: optionalString,
   medicalExpiry: optionalString,
   homeAirport: optionalString.pipe(
     z
