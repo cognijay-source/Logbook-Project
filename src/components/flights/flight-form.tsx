@@ -39,6 +39,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  checkFlightWarnings,
+  checkAirportCode,
+  type FlightWarning,
+  type AirportHint,
+} from '@/lib/utils/flight-warnings'
 
 // ---------- Form schema ----------
 
@@ -161,6 +167,47 @@ const CREW_ROLES = [
   'Other',
 ]
 
+// ---------- Warning Display ----------
+
+function FieldWarning({ warnings, field }: { warnings: FlightWarning[]; field: string }) {
+  const fieldWarnings = warnings.filter((w) => w.field === field)
+  if (fieldWarnings.length === 0) return null
+  return (
+    <>
+      {fieldWarnings.map((w, i) => (
+        <p
+          key={i}
+          className={cn(
+            'mt-1 text-xs',
+            w.severity === 'warning' ? 'text-amber-600' : 'text-amber-500',
+          )}
+        >
+          {w.severity === 'warning' ? '\u26a0\ufe0f' : '\u26a0\ufe0f'} {w.message}
+        </p>
+      ))}
+    </>
+  )
+}
+
+function AirportHintDisplay({ code }: { code: string }) {
+  const hint = checkAirportCode(code)
+  if (!hint) return null
+  return (
+    <p
+      className={cn(
+        'mt-1 text-xs',
+        hint.type === 'iata_suggestion'
+          ? 'text-blue-600'
+          : hint.type === 'not_found'
+            ? 'text-amber-600'
+            : 'text-green-600',
+      )}
+    >
+      {hint.type === 'iata_suggestion' ? '\ud83d\udca1' : '\u26a0\ufe0f'} {hint.message}
+    </p>
+  )
+}
+
 // ---------- Component ----------
 
 export function FlightForm({
@@ -280,6 +327,10 @@ export function FlightForm({
     name: 'approaches',
   })
   const crewField = useFieldArray({ control: form.control, name: 'crew' })
+
+  // Compute fat-finger warnings
+  const watchedValues = form.watch()
+  const warnings = checkFlightWarnings(watchedValues as Record<string, unknown>)
 
   // Apply template values when template changes
   useEffect(() => {
@@ -642,6 +693,7 @@ export function FlightForm({
                       />
                     </FormControl>
                     <FormMessage />
+                    <AirportHintDisplay code={field.value} />
                   </FormItem>
                 )}
               />
@@ -659,6 +711,7 @@ export function FlightForm({
                       />
                     </FormControl>
                     <FormMessage />
+                    <AirportHintDisplay code={field.value} />
                   </FormItem>
                 )}
               />
@@ -724,6 +777,7 @@ export function FlightForm({
                         />
                       </FormControl>
                       <FormMessage />
+                      <FieldWarning warnings={warnings} field={name} />
                     </FormItem>
                   )}
                 />
@@ -764,6 +818,7 @@ export function FlightForm({
                         />
                       </FormControl>
                       <FormMessage />
+                      <FieldWarning warnings={warnings} field={name} />
                     </FormItem>
                   )}
                 />
