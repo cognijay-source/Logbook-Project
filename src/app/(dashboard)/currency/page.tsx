@@ -3,7 +3,13 @@
 import * as React from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as Sentry from '@sentry/nextjs'
-import { RefreshCw, Shield, ShieldAlert, ShieldCheck } from 'lucide-react'
+import {
+  AlertTriangle,
+  RefreshCw,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -44,6 +50,8 @@ function StatusBadge({ status }: { status: CurrencyResult['status'] }) {
 }
 
 function CurrencyCard({ item }: { item: CurrencyResult }) {
+  const isInstrument = item.rule.code === 'instrument'
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -80,6 +88,17 @@ function CurrencyCard({ item }: { item: CurrencyResult }) {
             </div>
           )}
         </div>
+
+        {isInstrument && (
+          <p className="text-muted-foreground text-xs italic">
+            Instrument currency per &sect; 61.57(c) also requires intercepting
+            and tracking courses through navigational electronic systems.
+            CrossCheck assumes this is accomplished when instrument approaches
+            are logged. If you have performed approaches without
+            intercepting/tracking (e.g., visual approaches only), your
+            instrument currency may not be valid.
+          </p>
+        )}
 
         <p className="text-muted-foreground text-xs">
           Last evaluated:{' '}
@@ -124,6 +143,16 @@ export default function CurrencyPage() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+        <p>
+          CrossCheck currency status is advisory only, based on the flight data
+          you have entered. The pilot in command is solely responsible for
+          verifying their own currency and compliance with all applicable
+          regulations before acting as PIC.
+        </p>
+      </div>
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-heading text-3xl font-bold">Currency</h1>
@@ -165,8 +194,8 @@ export default function CurrencyPage() {
         </div>
       ) : currencyQuery.data && currencyQuery.data.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2">
-          {currencyQuery.data.map((item) => (
-            <CurrencyCard key={item.rule.id} item={item} />
+          {currencyQuery.data.map((item, idx) => (
+            <CurrencyCard key={`${item.rule.id}-${idx}`} item={item} />
           ))}
         </div>
       ) : (

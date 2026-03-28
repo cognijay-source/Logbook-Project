@@ -19,7 +19,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Target, TrendingUp } from 'lucide-react'
+import { Info, Target, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 
 const totalsConfig = [
@@ -93,6 +93,17 @@ export default function ProgressPage() {
 
   return (
     <div className="space-y-8">
+      <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200">
+        <Info className="mt-0.5 h-4 w-4 shrink-0" />
+        <p>
+          Progress indicators reflect aggregate flight time totals based on your
+          logged entries. Meeting minimum hour requirements does not constitute
+          eligibility for a practical test. Verify all aeronautical experience
+          requirements — including specific flight requirements — with your
+          instructor and designated examiner.
+        </p>
+      </div>
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-heading text-3xl font-bold tracking-tight">

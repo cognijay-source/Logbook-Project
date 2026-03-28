@@ -77,6 +77,7 @@ const formSchema = z.object({
 
   dayLandings: z.string().optional(),
   nightLandings: z.string().optional(),
+  nightLandingsFullStop: z.string().optional(),
   holds: z.string().optional(),
 
   operationType: z.string().optional(),
@@ -185,6 +186,9 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
           turbine: initialData.turbine ?? '',
           dayLandings: String(initialData.dayLandings ?? ''),
           nightLandings: String(initialData.nightLandings ?? ''),
+          nightLandingsFullStop: String(
+            initialData.nightLandingsFullStop ?? '',
+          ),
           holds: String(initialData.holds ?? ''),
           operationType: initialData.operationType ?? '',
           roleType: initialData.roleType ?? '',
@@ -240,6 +244,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
           turbine: '',
           dayLandings: '',
           nightLandings: '',
+          nightLandingsFullStop: '',
           holds: '',
           operationType: '',
           roleType: '',
@@ -284,6 +289,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
         turbine: values.turbine,
         dayLandings: values.dayLandings,
         nightLandings: values.nightLandings,
+        nightLandingsFullStop: values.nightLandingsFullStop,
         holds: values.holds,
         operationType: values.operationType,
         roleType: values.roleType,
@@ -510,12 +516,13 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
           <CardHeader>
             <CardTitle>Landings & Holds</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-4">
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               {(
                 [
                   ['dayLandings', 'Day Landings'],
-                  ['nightLandings', 'Night Landings'],
+                  ['nightLandings', 'Night Landings (Total)'],
+                  ['nightLandingsFullStop', 'Night Landings Full-Stop'],
                   ['holds', 'Holds'],
                 ] as const
               ).map(([name, label]) => (
@@ -542,6 +549,10 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
                 />
               ))}
             </div>
+            <p className="text-muted-foreground text-xs">
+              Full-stop landings at night are required for passenger currency
+              per &sect; 61.57(b). Touch-and-go landings do not count.
+            </p>
           </CardContent>
         </Card>
 
