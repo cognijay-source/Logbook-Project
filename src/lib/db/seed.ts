@@ -205,6 +205,15 @@ const milestones = [
     threshold: 100,
     sortOrder: 34,
   },
+  {
+    code: 'complex_endorsement',
+    name: 'Complex Endorsement',
+    description: 'Received complex aircraft endorsement',
+    category: 'event',
+    evaluationType: 'manual',
+    field: 'complex_endorsement',
+    sortOrder: 8,
+  },
 ]
 
 const currencyRules = [

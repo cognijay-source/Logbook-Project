@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, useFieldArray } from 'react-hook-form'
+import { useQueryClient } from '@tanstack/react-query'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ChevronDown, ChevronRight, Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, Trash2, Zap } from 'lucide-react'
 import * as Sentry from '@sentry/nextjs'
 
 import { Button } from '@/components/ui/button'
@@ -21,11 +22,14 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { useToast } from '@/hooks/use-toast'
+import { useFlightDefaults } from '@/hooks/use-flight-defaults'
+import { AirportCombobox } from '@/components/flights/airport-combobox'
+import { AircraftCombobox } from '@/components/flights/aircraft-combobox'
+import type { AircraftOption } from '@/components/flights/aircraft-combobox'
 import {
   createFlight,
   updateFlight,
   type FlightDetail,
-  type AircraftOption,
 } from '@/app/(dashboard)/flights/actions'
 
 // ---------- Form schema ----------
@@ -77,6 +81,7 @@ const formSchema = z.object({
 
   dayLandings: z.string().optional(),
   nightLandings: z.string().optional(),
+  nightLandingsFullStop: z.string().optional(),
   holds: z.string().optional(),
 
   operationType: z.string().optional(),
@@ -107,6 +112,7 @@ const OPERATION_TYPES = [
   'Part 91',
   'Part 135',
   'Part 121',
+  'Part 141',
   'Training',
   'Personal',
 ]
@@ -150,10 +156,14 @@ const CREW_ROLES = [
 
 // ---------- Component ----------
 
-export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
+export function FlightForm({ initialData, aircraftList: initialAircraftList }: FlightFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { toast } = useToast()
+  const { getDefaults, saveDefaults } = useFlightDefaults()
   const [saving, setSaving] = useState(false)
+  const [quickEntry, setQuickEntry] = useState(false)
+  const [aircraftList, setAircraftList] = useState(initialAircraftList)
   const [legsOpen, setLegsOpen] = useState((initialData?.legs?.length ?? 0) > 0)
   const [approachesOpen, setApproachesOpen] = useState(
     (initialData?.approaches?.length ?? 0) > 0,
@@ -161,6 +171,9 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
   const [crewOpen, setCrewOpen] = useState((initialData?.crew?.length ?? 0) > 0)
 
   const isEdit = !!initialData
+
+  // Load smart defaults for new flights
+  const defaults = !isEdit ? getDefaults() : undefined
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -185,6 +198,9 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
           turbine: initialData.turbine ?? '',
           dayLandings: String(initialData.dayLandings ?? ''),
           nightLandings: String(initialData.nightLandings ?? ''),
+          nightLandingsFullStop: String(
+            initialData.nightLandingsFullStop ?? '',
+          ),
           holds: String(initialData.holds ?? ''),
           operationType: initialData.operationType ?? '',
           roleType: initialData.roleType ?? '',
@@ -222,8 +238,8 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
         }
       : {
           flightDate: new Date().toISOString().slice(0, 10),
-          aircraftId: '',
-          departureAirport: '',
+          aircraftId: defaults?.aircraftId ?? '',
+          departureAirport: defaults?.departureAirport ?? '',
           arrivalAirport: '',
           route: '',
           totalTime: '',
@@ -240,9 +256,10 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
           turbine: '',
           dayLandings: '',
           nightLandings: '',
+          nightLandingsFullStop: '',
           holds: '',
-          operationType: '',
-          roleType: '',
+          operationType: defaults?.operationType ?? '',
+          roleType: defaults?.roleType ?? '',
           remarks: '',
           tags: '',
           isSoloFlight: false,
@@ -284,6 +301,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
         turbine: values.turbine,
         dayLandings: values.dayLandings,
         nightLandings: values.nightLandings,
+        nightLandingsFullStop: values.nightLandingsFullStop,
         holds: values.holds,
         operationType: values.operationType,
         roleType: values.roleType,
@@ -325,6 +343,14 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
         router.push('/flights')
         router.refresh()
       } else {
+        // Save smart defaults for next flight
+        saveDefaults({
+          aircraftId: values.aircraftId || undefined,
+          departureAirport: values.departureAirport || undefined,
+          operationType: values.operationType || undefined,
+          roleType: values.roleType || undefined,
+        })
+
         const result = await createFlight(payload)
         if (result.error) {
           toast({
@@ -357,6 +383,22 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
         onSubmit={form.handleSubmit((v) => onSubmit(v, v.status))}
         className="space-y-6"
       >
+        {/* ---- Quick Entry Toggle ---- */}
+        {!isEdit && (
+          <div className="flex items-center justify-end">
+            <Button
+              type="button"
+              variant={quickEntry ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setQuickEntry(!quickEntry)}
+              className={quickEntry ? 'bg-[#10B981] hover:bg-[#059669]' : ''}
+            >
+              <Zap className="mr-1.5 h-3.5 w-3.5" />
+              {quickEntry ? 'Quick Entry On' : 'Quick Entry'}
+            </Button>
+          </div>
+        )}
+
         {/* ---- Flight Info ---- */}
         <Card>
           <CardHeader>
@@ -384,18 +426,15 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
                   <FormItem>
                     <FormLabel>Aircraft</FormLabel>
                     <FormControl>
-                      <select
-                        className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
-                        {...field}
-                      >
-                        <option value="">Select aircraft</option>
-                        {aircraftList.map((ac) => (
-                          <option key={ac.id} value={ac.id}>
-                            {ac.tailNumber}
-                            {ac.model ? ` - ${ac.model}` : ''}
-                          </option>
-                        ))}
-                      </select>
+                      <AircraftCombobox
+                        value={field.value ?? ''}
+                        onChange={field.onChange}
+                        aircraftList={aircraftList}
+                        onAircraftCreated={(ac) => {
+                          setAircraftList((prev) => [...prev, ac])
+                          queryClient.invalidateQueries({ queryKey: ['aircraft'] })
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -408,10 +447,10 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
                   <FormItem>
                     <FormLabel>Departure</FormLabel>
                     <FormControl>
-                      <Input
+                      <AirportCombobox
+                        value={field.value ?? ''}
+                        onChange={field.onChange}
                         placeholder="ICAO/IATA"
-                        {...field}
-                        className="uppercase"
                       />
                     </FormControl>
                     <FormMessage />
@@ -425,8 +464,27 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
                   <FormItem>
                     <FormLabel>Arrival</FormLabel>
                     <FormControl>
-                      <Input
+                      <AirportCombobox
+                        value={field.value ?? ''}
+                        onChange={field.onChange}
                         placeholder="ICAO/IATA"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            {!quickEntry && (
+              <FormField
+                control={form.control}
+                name="route"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Route</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g. KORD V7 JOT V9 KSTL"
                         {...field}
                         className="uppercase"
                       />
@@ -435,24 +493,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
                   </FormItem>
                 )}
               />
-            </div>
-            <FormField
-              control={form.control}
-              name="route"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Route</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g. KORD V7 JOT V9 KSTL"
-                      {...field}
-                      className="uppercase"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            )}
           </CardContent>
         </Card>
 
@@ -464,20 +505,27 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
           <CardContent>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {(
-                [
-                  ['totalTime', 'Total Time'],
-                  ['pic', 'PIC'],
-                  ['sic', 'SIC'],
-                  ['crossCountry', 'Cross Country'],
-                  ['night', 'Night'],
-                  ['actualInstrument', 'Actual Inst.'],
-                  ['simulatedInstrument', 'Sim. Inst.'],
-                  ['dualReceived', 'Dual Received'],
-                  ['dualGiven', 'Dual Given'],
-                  ['solo', 'Solo'],
-                  ['multiEngine', 'Multi-Engine'],
-                  ['turbine', 'Turbine'],
-                ] as const
+                quickEntry
+                  ? ([
+                      ['totalTime', 'Total Time'],
+                      ['pic', 'PIC'],
+                      ['crossCountry', 'Cross Country'],
+                      ['night', 'Night'],
+                    ] as const)
+                  : ([
+                      ['totalTime', 'Total Time'],
+                      ['pic', 'PIC'],
+                      ['sic', 'SIC'],
+                      ['crossCountry', 'Cross Country'],
+                      ['night', 'Night'],
+                      ['actualInstrument', 'Actual Inst.'],
+                      ['simulatedInstrument', 'Sim. Inst.'],
+                      ['dualReceived', 'Dual Received'],
+                      ['dualGiven', 'Dual Given'],
+                      ['solo', 'Solo'],
+                      ['multiEngine', 'Multi-Engine'],
+                      ['turbine', 'Turbine'],
+                    ] as const)
               ).map(([name, label]) => (
                 <FormField
                   key={name}
@@ -510,12 +558,13 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
           <CardHeader>
             <CardTitle>Landings & Holds</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-4">
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               {(
                 [
                   ['dayLandings', 'Day Landings'],
-                  ['nightLandings', 'Night Landings'],
+                  ['nightLandings', 'Night Landings (Total)'],
+                  ['nightLandingsFullStop', 'Night Landings Full-Stop'],
                   ['holds', 'Holds'],
                 ] as const
               ).map(([name, label]) => (
@@ -542,11 +591,15 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
                 />
               ))}
             </div>
+            <p className="text-muted-foreground text-xs">
+              Full-stop landings at night are required for passenger currency
+              per &sect; 61.57(b). Touch-and-go landings do not count.
+            </p>
           </CardContent>
         </Card>
 
         {/* ---- Operation ---- */}
-        <Card>
+        {!quickEntry && <Card>
           <CardHeader>
             <CardTitle>Operation</CardTitle>
           </CardHeader>
@@ -600,8 +653,9 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
               />
             </div>
           </CardContent>
-        </Card>
+        </Card>}
 
+        {!quickEntry && <>
         {/* ---- Remarks & Meta ---- */}
         <Card>
           <CardHeader>
@@ -724,10 +778,10 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
                         <FormItem>
                           <FormLabel>From</FormLabel>
                           <FormControl>
-                            <Input
+                            <AirportCombobox
+                              value={field.value ?? ''}
+                              onChange={field.onChange}
                               placeholder="ICAO"
-                              {...field}
-                              className="uppercase"
                             />
                           </FormControl>
                         </FormItem>
@@ -740,10 +794,10 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
                         <FormItem>
                           <FormLabel>To</FormLabel>
                           <FormControl>
-                            <Input
+                            <AirportCombobox
+                              value={field.value ?? ''}
+                              onChange={field.onChange}
                               placeholder="ICAO"
-                              {...field}
-                              className="uppercase"
                             />
                           </FormControl>
                         </FormItem>
@@ -900,10 +954,10 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
                         <FormItem>
                           <FormLabel>Airport</FormLabel>
                           <FormControl>
-                            <Input
+                            <AirportCombobox
+                              value={field.value ?? ''}
+                              onChange={field.onChange}
                               placeholder="ICAO"
-                              {...field}
-                              className="uppercase"
                             />
                           </FormControl>
                         </FormItem>
@@ -1099,6 +1153,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
             </CardContent>
           )}
         </Card>
+        </>}
 
         {/* ---- Action Buttons ---- */}
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">

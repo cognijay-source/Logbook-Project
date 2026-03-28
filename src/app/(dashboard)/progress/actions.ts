@@ -26,10 +26,16 @@ export async function getProgressData() {
       getGoalProgress(profile.id),
     ])
 
-    return { totals, progress }
+    return { data: { totals, progress }, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    throw error
+    return {
+      data: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to load progress data',
+    }
   }
 }
 
@@ -40,10 +46,16 @@ export async function getAvailableGoals() {
       .from(goalProfiles)
       .orderBy(goalProfiles.sortOrder)
 
-    return goals
+    return { data: goals, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    throw error
+    return {
+      data: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to load available goals',
+    }
   }
 }
 
@@ -94,6 +106,10 @@ export async function assignGoal(data: unknown) {
       })
       .returning()
 
+    if (!assignment) {
+      return { data: null, error: 'Failed to create goal assignment' }
+    }
+
     await createAuditEvent({
       profileId: profile.id,
       entityType: 'user_goal_assignment',
@@ -102,10 +118,14 @@ export async function assignGoal(data: unknown) {
       changes: validated,
     })
 
-    return { success: true, assignment }
+    return { data: assignment, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    return { success: false, error: 'Failed to assign goal' }
+    return {
+      data: null,
+      error:
+        error instanceof Error ? error.message : 'Failed to assign goal',
+    }
   }
 }
 

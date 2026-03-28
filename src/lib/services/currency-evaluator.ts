@@ -30,7 +30,10 @@ interface FlightData {
     flightDate: string
     dayLandings: number | null
     nightLandings: number | null
+    nightLandingsFullStop: number | null
     holds: number | null
+    aircraftCategory: string | null
+    aircraftClass: string | null
   }[]
   approachCount6m: number
   approachCount12m: number
@@ -62,15 +65,22 @@ async function prefetchFlightData(
     profCheckResult,
     lastInstrumentEventResult,
   ] = await Promise.all([
-    // All flights in last 90 days with landings
+    // All flights in last 90 days with landings, joined to aircraft for category/class
     db
       .select({
         flightDate: schema.flights.flightDate,
         dayLandings: schema.flights.dayLandings,
         nightLandings: schema.flights.nightLandings,
+        nightLandingsFullStop: schema.flights.nightLandingsFullStop,
         holds: schema.flights.holds,
+        aircraftCategory: schema.aircraft.category,
+        aircraftClass: schema.aircraft.aircraftClass,
       })
       .from(schema.flights)
+      .leftJoin(
+        schema.aircraft,
+        eq(schema.flights.aircraftId, schema.aircraft.id),
+      )
       .where(
         and(
           eq(schema.flights.profileId, profileId),
@@ -221,6 +231,35 @@ async function prefetchFlightData(
   }
 }
 
+const CATEGORY_CLASS_LABELS: Record<string, string> = {
+  'airplane|single-engine land': 'ASEL',
+  'airplane|multi-engine land': 'AMEL',
+  'airplane|single-engine sea': 'ASES',
+  'airplane|multi-engine sea': 'AMES',
+  'rotorcraft|helicopter': 'Rotorcraft/Helicopter',
+  'rotorcraft|gyroplane': 'Rotorcraft/Gyroplane',
+  'glider|glider': 'Glider',
+}
+
+function formatCategoryClass(catClass: string): string {
+  return CATEGORY_CLASS_LABELS[catClass] ?? catClass.replace('|', ' / ')
+}
+
+function groupByCategoryClass(
+  flights: FlightData['landingFlights'],
+): Map<string, FlightData['landingFlights']> {
+  const groups = new Map<string, FlightData['landingFlights']>()
+  for (const f of flights) {
+    const cat = f.aircraftCategory ?? 'airplane'
+    const cls = f.aircraftClass ?? 'single-engine land'
+    const key = `${cat}|${cls}`
+    const list = groups.get(key) ?? []
+    list.push(f)
+    groups.set(key, list)
+  }
+  return groups
+}
+
 export async function evaluateCurrency(
   profileId: string,
 ): Promise<CurrencyResult[]> {
@@ -242,24 +281,46 @@ export async function evaluateCurrency(
 
     const results: CurrencyResult[] = []
 
-    for (const rule of rules) {
-      let result: CurrencyResult
+    // Group landing flights by category+class for per-type currency (§ 61.57(a)/(b))
+    const categoryClassGroups = groupByCategoryClass(
+      flightData.landingFlights,
+    )
 
+    for (const rule of rules) {
       switch (rule.code) {
         case 'passenger_day':
-          result = evaluatePassengerDay(rule, flightData, now)
+          // Evaluate per category/class per § 61.57(a)
+          for (const [catClass, flights] of categoryClassGroups) {
+            results.push(
+              evaluatePassengerDay(rule, flights, now, catClass),
+            )
+          }
+          // If no flights at all, show one generic expired result
+          if (categoryClassGroups.size === 0) {
+            results.push(evaluatePassengerDay(rule, [], now, null))
+          }
           break
         case 'passenger_night':
-          result = evaluatePassengerNight(rule, flightData, now)
+          // Evaluate per category/class per § 61.57(b)
+          for (const [catClass, flights] of categoryClassGroups) {
+            results.push(
+              evaluatePassengerNight(rule, flights, now, catClass),
+            )
+          }
+          if (categoryClassGroups.size === 0) {
+            results.push(evaluatePassengerNight(rule, [], now, null))
+          }
           break
         case 'instrument':
-          result = evaluateInstrument(rule, flightData, now, sixMonthCutoff)
+          results.push(
+            evaluateInstrument(rule, flightData, now, sixMonthCutoff),
+          )
           break
         case 'flight_review':
-          result = evaluateFlightReview(rule, flightData, now)
+          results.push(evaluateFlightReview(rule, flightData, now))
           break
         default:
-          result = {
+          results.push({
             rule,
             status: 'expired',
             isCurrent: null,
@@ -267,11 +328,9 @@ export async function evaluateCurrency(
             details: `No evaluator implemented for rule: ${rule.code}`,
             needed: null,
             evaluatedAt: now.toISOString(),
-          }
+          })
           break
       }
-
-      results.push(result)
     }
 
     return results
@@ -288,11 +347,13 @@ export async function evaluateCurrency(
  */
 function evaluatePassengerDay(
   rule: typeof schema.currencyRuleDefinitions.$inferSelect,
-  flightData: FlightData,
+  flights: FlightData['landingFlights'],
   now: Date,
+  catClass: string | null,
 ): CurrencyResult {
   const requiredCount = rule.requiredCount ?? 3
-  const flights = flightData.landingFlights
+  const label = catClass ? formatCategoryClass(catClass) : ''
+  const suffix = label ? ` (${label})` : ''
 
   const total = flights.reduce((sum, f) => sum + (f.dayLandings ?? 0), 0)
   const isCurrent = total >= requiredCount
@@ -303,14 +364,17 @@ function evaluatePassengerDay(
 
   const status = computeStatus(isCurrent, expiresAt, now)
   const deficit = requiredCount - total
-  const needed = deficit > 0 ? `Need ${deficit} more day landing(s)` : null
+  const needed = deficit > 0 ? `Need ${deficit} more day landing(s)${suffix}` : null
 
   return {
-    rule,
+    rule: {
+      ...rule,
+      name: label ? `${rule.name} — ${label}` : rule.name,
+    },
     status,
     isCurrent,
     expiresAt,
-    details: `${total} day landing(s) in last 90 days (${requiredCount} required)`,
+    details: `${total} day landing(s) in last 90 days${suffix} (${requiredCount} required)`,
     needed,
     evaluatedAt: now.toISOString(),
   }
@@ -322,29 +386,46 @@ function evaluatePassengerDay(
  */
 function evaluatePassengerNight(
   rule: typeof schema.currencyRuleDefinitions.$inferSelect,
-  flightData: FlightData,
+  flights: FlightData['landingFlights'],
   now: Date,
+  catClass: string | null,
 ): CurrencyResult {
   const requiredCount = rule.requiredCount ?? 3
-  const flights = flightData.landingFlights
+  const label = catClass ? formatCategoryClass(catClass) : ''
+  const suffix = label ? ` (${label})` : ''
 
-  const total = flights.reduce((sum, f) => sum + (f.nightLandings ?? 0), 0)
+  // § 61.57(b) requires full-stop landings at night — touch-and-go do not count
+  const total = flights.reduce(
+    (sum, f) => sum + (f.nightLandingsFullStop ?? 0),
+    0,
+  )
   const isCurrent = total >= requiredCount
 
   const expiresAt = isCurrent
-    ? findNthLandingExpiry(flights, 'nightLandings', requiredCount, 90)
+    ? findNthLandingExpiry(
+        flights,
+        'nightLandingsFullStop',
+        requiredCount,
+        90,
+      )
     : null
 
   const status = computeStatus(isCurrent, expiresAt, now)
   const deficit = requiredCount - total
-  const needed = deficit > 0 ? `Need ${deficit} more night landing(s)` : null
+  const needed =
+    deficit > 0
+      ? `Need ${deficit} more night full-stop landing(s)${suffix}`
+      : null
 
   return {
-    rule,
+    rule: {
+      ...rule,
+      name: label ? `${rule.name} — ${label}` : rule.name,
+    },
     status,
     isCurrent,
     expiresAt,
-    details: `${total} night landing(s) in last 90 days (${requiredCount} required)`,
+    details: `${total} night full-stop landing(s) in last 90 days${suffix} (${requiredCount} required)`,
     needed,
     evaluatedAt: now.toISOString(),
   }
@@ -528,8 +609,9 @@ function findNthLandingExpiry(
     flightDate: string
     dayLandings?: number | null
     nightLandings?: number | null
+    nightLandingsFullStop?: number | null
   }[],
-  field: 'dayLandings' | 'nightLandings',
+  field: 'dayLandings' | 'nightLandings' | 'nightLandingsFullStop',
   requiredCount: number,
   periodDays: number,
 ): string | null {

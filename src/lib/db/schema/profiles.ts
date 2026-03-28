@@ -8,6 +8,7 @@ export const profiles = pgTable('profiles', {
   avatarUrl: text('avatar_url'),
   timezone: text('timezone').default('UTC'),
   timeFormat: text('time_format').default('decimal'),
+  trainingEnvironment: text('training_environment').default('part_61'), // 'part_61' | 'part_141' | 'both'
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),

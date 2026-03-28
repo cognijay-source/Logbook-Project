@@ -7,6 +7,7 @@ import * as schema from '@/lib/db/schema'
 import { getOrCreateProfile } from '@/lib/services/profile'
 import { createAuditEvent } from '@/lib/services/audit'
 import { flightCreateSchema, flightUpdateSchema } from '@/lib/validators/flight'
+import { aircraftCreateSchema } from '@/lib/validators/aircraft'
 import { flightLegSchema } from '@/lib/validators/flight-leg'
 import { flightApproachSchema } from '@/lib/validators/flight-approach'
 import { flightCrewSchema } from '@/lib/validators/flight-crew'
@@ -280,6 +281,7 @@ export async function createFlight(
         turbine: toStr(flightData.turbine),
         dayLandings: flightData.dayLandings ?? 0,
         nightLandings: flightData.nightLandings ?? 0,
+        nightLandingsFullStop: flightData.nightLandingsFullStop ?? 0,
         holds: flightData.holds ?? 0,
         operationType: flightData.operationType,
         roleType: flightData.roleType,
@@ -423,6 +425,7 @@ export async function updateFlight(
         turbine: toStr(flightData.turbine),
         dayLandings: flightData.dayLandings,
         nightLandings: flightData.nightLandings,
+        nightLandingsFullStop: flightData.nightLandingsFullStop,
         holds: flightData.holds,
         operationType: flightData.operationType,
         roleType: flightData.roleType,
@@ -548,5 +551,50 @@ export async function deleteFlight(
   } catch (error) {
     Sentry.captureException(error)
     return { success: false, error: 'Failed to delete flight' }
+  }
+}
+
+// ---------- Quick Create Aircraft (inline from flight form) ----------
+
+export async function quickCreateAircraft(
+  formData: FormData,
+): Promise<{ data: AircraftOption | null; error: string | null }> {
+  try {
+    const profile = await getOrCreateProfile()
+
+    const raw = {
+      tailNumber: formData.get('tailNumber') as string,
+      manufacturer: formData.get('manufacturer') as string,
+      model: formData.get('model') as string,
+    }
+
+    const validated = aircraftCreateSchema.parse(raw)
+
+    const [aircraft] = await db
+      .insert(schema.aircraft)
+      .values({
+        ...validated,
+        profileId: profile.id,
+      })
+      .returning({
+        id: schema.aircraft.id,
+        tailNumber: schema.aircraft.tailNumber,
+        model: schema.aircraft.model,
+      })
+
+    await createAuditEvent({
+      profileId: profile.id,
+      entityType: 'aircraft',
+      entityId: aircraft.id,
+      action: 'create',
+    })
+
+    return { data: aircraft, error: null }
+  } catch (error) {
+    Sentry.captureException(error)
+    if (error instanceof z.ZodError) {
+      return { data: null, error: error.errors[0]?.message ?? 'Validation failed' }
+    }
+    return { data: null, error: 'Failed to create aircraft' }
   }
 }

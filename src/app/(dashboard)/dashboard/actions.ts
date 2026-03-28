@@ -32,7 +32,10 @@ export type DashboardData = {
   goalProgress: GoalProgress | null
 }
 
-export async function getDashboardData(): Promise<DashboardData> {
+export async function getDashboardData(): Promise<{
+  data: DashboardData | null
+  error: string | null
+}> {
   try {
     const profile = await getOrCreateProfile()
 
@@ -77,9 +80,18 @@ export async function getDashboardData(): Promise<DashboardData> {
         : null,
     }))
 
-    return { totals, recentFlights, currency, goalProgress }
+    return {
+      data: { totals, recentFlights, currency, goalProgress },
+      error: null,
+    }
   } catch (error) {
     Sentry.captureException(error)
-    throw error
+    return {
+      data: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to load dashboard data',
+    }
   }
 }
