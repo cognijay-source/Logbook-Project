@@ -60,6 +60,11 @@ const flightBase = z.object({
   nightLandings: optionalInt,
   holds: optionalInt,
 
+  // Personnel
+  instructorName: optionalString,
+  instructorCertNumber: optionalString,
+  safetyPilotName: optionalString,
+
   // Classification
   operationType: optionalString,
   roleType: optionalString,

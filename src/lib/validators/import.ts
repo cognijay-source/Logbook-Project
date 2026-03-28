@@ -60,6 +60,11 @@ export const importRowSchema = z.object({
   nightLandings: optionalInt,
   holds: optionalInt,
 
+  // Personnel
+  instructorName: optionalString,
+  instructorCertNumber: optionalString,
+  safetyPilotName: optionalString,
+
   // Classification
   operationType: optionalString,
   roleType: optionalString,
@@ -100,6 +105,8 @@ export const crosscheckFields = [
   'dayLandings',
   'nightLandings',
   'holds',
+  'instructorName',
+  'safetyPilotName',
   'remarks',
 ] as const
 
@@ -126,6 +133,8 @@ export const crosscheckFieldLabels: Record<CrosscheckField, string> = {
   dayLandings: 'Day Landings',
   nightLandings: 'Night Landings',
   holds: 'Holds',
+  instructorName: 'Instructor Name',
+  safetyPilotName: 'Safety Pilot',
   remarks: 'Remarks',
 }
 
@@ -177,6 +186,11 @@ const foreflightAliases: ColumnAliasMap = {
   pilotcomments: 'remarks',
   multiengine: 'multiEngine',
   turbine: 'turbine',
+  instructor: 'instructorName',
+  instructorcomments: 'instructorName',
+  instructorname: 'instructorName',
+  safetypilot: 'safetyPilotName',
+  safetypilotname: 'safetyPilotName',
 }
 
 const logtenProAliases: ColumnAliasMap = {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -79,6 +79,10 @@ const formSchema = z.object({
   nightLandings: z.string().optional(),
   holds: z.string().optional(),
 
+  instructorName: z.string().optional(),
+  instructorCertNumber: z.string().optional(),
+  safetyPilotName: z.string().optional(),
+
   operationType: z.string().optional(),
   roleType: z.string().optional(),
   remarks: z.string().optional(),
@@ -148,6 +152,124 @@ const CREW_ROLES = [
   'Other',
 ]
 
+// ---------- localStorage keys for smart defaults ----------
+
+const LS_INSTRUCTOR_NAME = 'crosscheck_last_instructor_name'
+const LS_INSTRUCTOR_CERT = 'crosscheck_last_instructor_cert'
+
+// ---------- Personnel Section ----------
+
+function PersonnelSection({
+  form,
+  isEdit,
+}: {
+  form: ReturnType<typeof useForm<FormValues>>
+  isEdit: boolean
+}) {
+  const dualReceived = form.watch('dualReceived')
+  const dualGiven = form.watch('dualGiven')
+  const simulatedInstrument = form.watch('simulatedInstrument')
+
+  const hasDual =
+    (dualReceived && parseFloat(dualReceived) > 0) ||
+    (dualGiven && parseFloat(dualGiven) > 0)
+  const hasSimInstrument =
+    simulatedInstrument && parseFloat(simulatedInstrument) > 0
+
+  // Pre-fill from localStorage when dual received is entered on new flights
+  useEffect(() => {
+    if (isEdit) return
+    if (dualReceived && parseFloat(dualReceived) > 0) {
+      const currentName = form.getValues('instructorName')
+      if (!currentName) {
+        const savedName =
+          typeof window !== 'undefined'
+            ? localStorage.getItem(LS_INSTRUCTOR_NAME)
+            : null
+        const savedCert =
+          typeof window !== 'undefined'
+            ? localStorage.getItem(LS_INSTRUCTOR_CERT)
+            : null
+        if (savedName) form.setValue('instructorName', savedName)
+        if (savedCert) form.setValue('instructorCertNumber', savedCert)
+      }
+    }
+  }, [dualReceived, isEdit, form])
+
+  if (!hasDual && !hasSimInstrument) return null
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Personnel</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {hasDual && (
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Instructor</Label>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="instructorName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Instructor Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Full name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="instructorCertNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Instructor Certificate Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Certificate #" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <p className="text-muted-foreground text-xs">
+              Required per &sect; 61.51(h) when receiving or giving flight
+              instruction.
+            </p>
+          </div>
+        )}
+        {hasSimInstrument && (
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Safety Pilot</Label>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="safetyPilotName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Safety Pilot Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Full name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <p className="text-muted-foreground text-xs">
+              Required per &sect; 91.109(c) when logging simulated instrument
+              time.
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 // ---------- Component ----------
 
 export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
@@ -186,6 +308,9 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
           dayLandings: String(initialData.dayLandings ?? ''),
           nightLandings: String(initialData.nightLandings ?? ''),
           holds: String(initialData.holds ?? ''),
+          instructorName: initialData.instructorName ?? '',
+          instructorCertNumber: initialData.instructorCertNumber ?? '',
+          safetyPilotName: initialData.safetyPilotName ?? '',
           operationType: initialData.operationType ?? '',
           roleType: initialData.roleType ?? '',
           remarks: initialData.remarks ?? '',
@@ -241,6 +366,9 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
           dayLandings: '',
           nightLandings: '',
           holds: '',
+          instructorName: '',
+          instructorCertNumber: '',
+          safetyPilotName: '',
           operationType: '',
           roleType: '',
           remarks: '',
@@ -285,6 +413,9 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
         dayLandings: values.dayLandings,
         nightLandings: values.nightLandings,
         holds: values.holds,
+        instructorName: values.instructorName,
+        instructorCertNumber: values.instructorCertNumber,
+        safetyPilotName: values.safetyPilotName,
         operationType: values.operationType,
         roleType: values.roleType,
         remarks: values.remarks,
@@ -309,6 +440,14 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
         legs: legsPayload,
         approaches: values.approaches,
         crew: values.crew,
+      }
+
+      // Save instructor info to localStorage for smart defaults
+      if (values.instructorName && typeof window !== 'undefined') {
+        localStorage.setItem(LS_INSTRUCTOR_NAME, values.instructorName)
+        if (values.instructorCertNumber) {
+          localStorage.setItem(LS_INSTRUCTOR_CERT, values.instructorCertNumber)
+        }
       }
 
       if (isEdit && initialData) {
@@ -601,6 +740,9 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
             </div>
           </CardContent>
         </Card>
+
+        {/* ---- Personnel (conditional) ---- */}
+        <PersonnelSection form={form} isEdit={isEdit} />
 
         {/* ---- Remarks & Meta ---- */}
         <Card>

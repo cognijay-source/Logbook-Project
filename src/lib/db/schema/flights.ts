@@ -61,6 +61,11 @@ export const flights = pgTable(
     status: text('status').default('draft').notNull(),
     isSoloFlight: boolean('is_solo_flight').default(false),
     isCheckride: boolean('is_checkride').default(false),
+    // Personnel
+    instructorName: text('instructor_name'),
+    instructorCertNumber: text('instructor_cert_number'),
+    safetyPilotName: text('safety_pilot_name'),
+
     sourceType: text('source_type').default('manual'),
     importBatchId: uuid('import_batch_id'),
 

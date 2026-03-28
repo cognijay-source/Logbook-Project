@@ -1,4 +1,11 @@
-import { pgTable, uuid, text, timestamp, boolean } from 'drizzle-orm/pg-core'
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  boolean,
+  date,
+} from 'drizzle-orm/pg-core'
 
 export const profiles = pgTable('profiles', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -24,7 +31,9 @@ export const pilotProfiles = pgTable('pilot_profiles', {
     .references(() => profiles.id, { onDelete: 'cascade' }),
   certificateLevel: text('certificate_level'),
   certificateNumber: text('certificate_number'),
+  dateOfBirth: date('date_of_birth'),
   medicalClass: text('medical_class'),
+  medicalIssueDate: date('medical_issue_date'),
   medicalExpiry: timestamp('medical_expiry', { withTimezone: true }),
   flightReviewDate: timestamp('flight_review_date', { withTimezone: true }),
   homeAirport: text('home_airport'),
