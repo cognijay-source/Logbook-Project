@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
+import { OnboardingWizard } from '@/components/onboarding-wizard'
+import { checkOnboardingStatus } from '@/app/(dashboard)/onboarding-actions'
 import {
   Clock,
   Plane,
@@ -385,6 +387,12 @@ export default function DashboardPage() {
     staleTime: 5 * 60 * 1000,
   })
 
+  const onboarding = useQuery({
+    queryKey: ['onboarding-status'],
+    queryFn: () => checkOnboardingStatus(),
+    staleTime: Infinity,
+  })
+
   if (isLoading) {
     return (
       <div className="animate-fade-in space-y-6">
@@ -415,6 +423,10 @@ export default function DashboardPage() {
         </Card>
       </div>
     )
+  }
+
+  if (onboarding.data?.showWizard) {
+    return <OnboardingWizard />
   }
 
   return (
