@@ -20,6 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { Sun } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import {
   createFlight,
@@ -151,6 +152,84 @@ const CREW_ROLES = [
   'Observer',
   'Other',
 ]
+
+// ---------- Sun Times Card ----------
+
+type SunTimesData = {
+  sunrise: string
+  sunset: string
+  civilTwilightEnd: string
+  nightCurrencyBegin: string
+}
+
+function SunTimesCard({
+  form,
+}: {
+  form: ReturnType<typeof useForm<FormValues>>
+}) {
+  const [sunTimes, setSunTimes] = useState<SunTimesData | null>(null)
+  const [lastFetched, setLastFetched] = useState('')
+
+  const flightDate = form.watch('flightDate')
+  const departureAirport = form.watch('departureAirport')
+
+  const fetchSunTimes = useCallback(async () => {
+    if (!flightDate || !departureAirport || departureAirport.length < 3) {
+      setSunTimes(null)
+      return
+    }
+
+    const key = `${departureAirport}-${flightDate}`
+    if (key === lastFetched) return
+    setLastFetched(key)
+
+    try {
+      const res = await fetch(
+        `/api/sun-times?airport=${encodeURIComponent(departureAirport)}&date=${encodeURIComponent(flightDate)}`,
+      )
+      if (!res.ok) {
+        setSunTimes(null)
+        return
+      }
+      const json = await res.json()
+      if (json.data) {
+        setSunTimes(json.data)
+      } else {
+        setSunTimes(null)
+      }
+    } catch {
+      setSunTimes(null)
+    }
+  }, [flightDate, departureAirport, lastFetched])
+
+  useEffect(() => {
+    fetchSunTimes()
+  }, [fetchSunTimes])
+
+  if (!sunTimes) return null
+
+  const fmt = (iso: string) =>
+    new Date(iso).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZoneName: 'short',
+    })
+
+  return (
+    <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900 dark:bg-amber-950">
+      <div className="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
+        <Sun className="h-4 w-4" />
+        Sun times for {departureAirport?.toUpperCase()} on {flightDate}
+      </div>
+      <div className="mt-1.5 grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-amber-700 dark:text-amber-300">
+        <div>Sunset: {fmt(sunTimes.sunset)}</div>
+        <div>Civil twilight ends: {fmt(sunTimes.civilTwilightEnd)}</div>
+        <div>Night logging begins: {fmt(sunTimes.civilTwilightEnd)}</div>
+        <div>Night currency begins: {fmt(sunTimes.nightCurrencyBegin)}</div>
+      </div>
+    </div>
+  )
+}
 
 // ---------- localStorage keys for smart defaults ----------
 
@@ -594,6 +673,9 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
             />
           </CardContent>
         </Card>
+
+        {/* ---- Sun Times Info ---- */}
+        <SunTimesCard form={form} />
 
         {/* ---- Flight Times ---- */}
         <Card>
