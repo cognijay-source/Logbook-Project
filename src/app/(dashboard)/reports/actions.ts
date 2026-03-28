@@ -41,6 +41,8 @@ export interface FlightSummaryData {
     pic: number
     sic: number
     dualReceived: number
+    dualGiven: number
+    solo: number
     crossCountry: number
     night: number
     actualInstrument: number
@@ -59,6 +61,9 @@ export interface EightSevenTenData {
   endDate: string
   asel: CategoryTotals
   amel: CategoryTotals
+  ases: CategoryTotals | null
+  ames: CategoryTotals | null
+  rotorcraft: CategoryTotals | null
   allAircraft: CategoryTotals
 }
 
@@ -70,6 +75,8 @@ interface CategoryTotals {
   night: number
   actualInstrument: number
   simulatedInstrument: number
+  dualReceived: number
+  solo: number
   dayLandings: number
   nightLandings: number
 }
@@ -77,6 +84,13 @@ interface CategoryTotals {
 export interface InsuranceData {
   type: 'insurance'
   byMakeModel: { makeModel: string; hours: number }[]
+  makeModelRecency: {
+    makeModel: string
+    totalAll: number
+    last90Days: number
+    last6Months: number
+    last12Months: number
+  }[]
   periods: {
     label: string
     totalTime: number
@@ -142,6 +156,8 @@ async function fetchFlightsInRange(
       actualInstrument: schema.flights.actualInstrument,
       simulatedInstrument: schema.flights.simulatedInstrument,
       multiEngine: schema.flights.multiEngine,
+      dualGiven: schema.flights.dualGiven,
+      solo: schema.flights.solo,
       dayLandings: schema.flights.dayLandings,
       nightLandings: schema.flights.nightLandings,
       remarks: schema.flights.remarks,
@@ -149,6 +165,8 @@ async function fetchFlightsInRange(
       tailNumber: schema.aircraft.tailNumber,
       manufacturer: schema.aircraft.manufacturer,
       model: schema.aircraft.model,
+      category: schema.aircraft.category,
+      aircraftClass: schema.aircraft.aircraftClass,
       isMultiEngine: schema.aircraft.isMultiEngine,
     })
     .from(schema.flights)
@@ -159,6 +177,7 @@ async function fetchFlightsInRange(
     .where(
       and(
         eq(schema.flights.profileId, profileId),
+        eq(schema.flights.status, 'final'),
         gte(schema.flights.flightDate, startDate),
         lte(schema.flights.flightDate, endDate),
       ),
@@ -178,6 +197,8 @@ function buildCategoryTotals(rows: FlightRow[]): CategoryTotals {
       night: acc.night + num(r.night),
       actualInstrument: acc.actualInstrument + num(r.actualInstrument),
       simulatedInstrument: acc.simulatedInstrument + num(r.simulatedInstrument),
+      dualReceived: acc.dualReceived + num(r.dualReceived),
+      solo: acc.solo + num(r.solo),
       dayLandings: acc.dayLandings + (r.dayLandings ?? 0),
       nightLandings: acc.nightLandings + (r.nightLandings ?? 0),
     }),
@@ -189,6 +210,8 @@ function buildCategoryTotals(rows: FlightRow[]): CategoryTotals {
       night: 0,
       actualInstrument: 0,
       simulatedInstrument: 0,
+      dualReceived: 0,
+      solo: 0,
       dayLandings: 0,
       nightLandings: 0,
     },
@@ -221,6 +244,8 @@ export async function getReportData(
         pic: 0,
         sic: 0,
         dualReceived: 0,
+        dualGiven: 0,
+        solo: 0,
         crossCountry: 0,
         night: 0,
         actualInstrument: 0,
@@ -237,18 +262,29 @@ export async function getReportData(
         totals.pic += num(r.pic)
         totals.sic += num(r.sic)
         totals.dualReceived += num(r.dualReceived)
+        totals.dualGiven += num(r.dualGiven)
+        totals.solo += num(r.solo)
         totals.crossCountry += num(r.crossCountry)
         totals.night += num(r.night)
         totals.actualInstrument += num(r.actualInstrument)
         totals.simulatedInstrument += num(r.simulatedInstrument)
         totals.multiEngine += num(r.multiEngine)
 
-        const tt = num(r.totalTime)
-        const me = num(r.multiEngine)
-        totals.singleEngine += tt - me
+        // Single-engine = airplane totalTime minus airplane multiEngine
+        // Only count flights in airplane category to avoid counting rotorcraft/glider
+        const isAirplane =
+          !r.category ||
+          r.category.toLowerCase().startsWith('airplane') ||
+          r.category === 'ASEL' ||
+          r.category === 'AMEL' ||
+          r.category === 'ASES' ||
+          r.category === 'AMES'
+        if (isAirplane) {
+          totals.singleEngine += num(r.totalTime) - num(r.multiEngine)
+        }
 
         const tail = r.tailNumber ?? 'Unknown'
-        aircraftMap.set(tail, (aircraftMap.get(tail) ?? 0) + tt)
+        aircraftMap.set(tail, (aircraftMap.get(tail) ?? 0) + num(r.totalTime))
 
         if (r.departureAirport) airports.add(r.departureAirport.toUpperCase())
         if (r.arrivalAirport) airports.add(r.arrivalAirport.toUpperCase())
@@ -271,8 +307,40 @@ export async function getReportData(
     if (type === '8710-time') {
       const rows = await fetchFlightsInRange(profile.id, startDate, endDate)
 
-      const aselRows = rows.filter((r) => !r.isMultiEngine)
-      const amelRows = rows.filter((r) => r.isMultiEngine)
+      // Classify rows by aircraft category/class
+      const isAirplane = (r: FlightRow) => {
+        const cat = r.category?.toLowerCase() ?? ''
+        return (
+          !r.category ||
+          cat.startsWith('airplane') ||
+          ['asel', 'amel', 'ases', 'ames'].includes(cat)
+        )
+      }
+      const isSea = (r: FlightRow) => {
+        const cls = r.aircraftClass?.toLowerCase() ?? ''
+        const cat = r.category?.toLowerCase() ?? ''
+        return (
+          cls.includes('sea') || cat === 'ases' || cat === 'ames'
+        )
+      }
+      const isRotorcraft = (r: FlightRow) => {
+        const cat = r.category?.toLowerCase() ?? ''
+        return cat.startsWith('rotorcraft') || cat === 'helicopter'
+      }
+
+      const aselRows = rows.filter(
+        (r) => isAirplane(r) && !r.isMultiEngine && !isSea(r),
+      )
+      const amelRows = rows.filter(
+        (r) => isAirplane(r) && r.isMultiEngine && !isSea(r),
+      )
+      const asesRows = rows.filter(
+        (r) => isAirplane(r) && !r.isMultiEngine && isSea(r),
+      )
+      const amesRows = rows.filter(
+        (r) => isAirplane(r) && r.isMultiEngine && isSea(r),
+      )
+      const rotorcraftRows = rows.filter((r) => isRotorcraft(r))
 
       const data: EightSevenTenData = {
         type: '8710-time',
@@ -280,6 +348,12 @@ export async function getReportData(
         endDate,
         asel: buildCategoryTotals(aselRows),
         amel: buildCategoryTotals(amelRows),
+        ases: asesRows.length > 0 ? buildCategoryTotals(asesRows) : null,
+        ames: amesRows.length > 0 ? buildCategoryTotals(amesRows) : null,
+        rotorcraft:
+          rotorcraftRows.length > 0
+            ? buildCategoryTotals(rotorcraftRows)
+            : null,
         allAircraft: buildCategoryTotals(rows),
       }
       return { data, error: null }
@@ -297,7 +371,12 @@ export async function getReportData(
           schema.aircraft,
           eq(schema.flights.aircraftId, schema.aircraft.id),
         )
-        .where(eq(schema.flights.profileId, profile.id))
+        .where(
+          and(
+            eq(schema.flights.profileId, profile.id),
+            eq(schema.flights.status, 'final'),
+          ),
+        )
         .groupBy(schema.aircraft.manufacturer, schema.aircraft.model)
 
       const byMakeModel = allFlights
@@ -306,6 +385,51 @@ export async function getReportData(
           hours: num(r.totalTime),
         }))
         .sort((a, b) => b.hours - a.hours)
+
+      // Make/Model recency — recent activity per aircraft type
+      const now90 = new Date()
+      now90.setDate(now90.getDate() - 90)
+      const now6m = new Date()
+      now6m.setMonth(now6m.getMonth() - 6)
+      const now12m = new Date()
+      now12m.setFullYear(now12m.getFullYear() - 1)
+      const cutoff90 = now90.toISOString().split('T')[0]
+      const cutoff6m = now6m.toISOString().split('T')[0]
+      const cutoff12m = now12m.toISOString().split('T')[0]
+      const todayStr = new Date().toISOString().split('T')[0]
+
+      const allFlightsForRecency = await fetchFlightsInRange(
+        profile.id,
+        '1900-01-01',
+        todayStr,
+      )
+
+      const recencyMap = new Map<
+        string,
+        { totalAll: number; last90Days: number; last6Months: number; last12Months: number }
+      >()
+      for (const f of allFlightsForRecency) {
+        const mm =
+          f.manufacturer && f.model
+            ? `${f.manufacturer} ${f.model}`
+            : 'Unknown'
+        const entry = recencyMap.get(mm) ?? {
+          totalAll: 0,
+          last90Days: 0,
+          last6Months: 0,
+          last12Months: 0,
+        }
+        const tt = num(f.totalTime)
+        entry.totalAll += tt
+        if (f.flightDate >= cutoff90) entry.last90Days += tt
+        if (f.flightDate >= cutoff6m) entry.last6Months += tt
+        if (f.flightDate >= cutoff12m) entry.last12Months += tt
+        recencyMap.set(mm, entry)
+      }
+
+      const makeModelRecency = Array.from(recencyMap.entries())
+        .map(([makeModel, data]) => ({ makeModel, ...data }))
+        .sort((a, b) => b.totalAll - a.totalAll)
 
       // Period calculations
       const now = new Date()
@@ -349,6 +473,7 @@ export async function getReportData(
       const data: InsuranceData = {
         type: 'insurance',
         byMakeModel,
+        makeModelRecency,
         periods,
       }
       return { data, error: null }
@@ -462,6 +587,8 @@ export async function generatePdf(
           ['PIC', fmt(reportData.totals.pic)],
           ['SIC', fmt(reportData.totals.sic)],
           ['Dual Received', fmt(reportData.totals.dualReceived)],
+          ['Dual Given', fmt(reportData.totals.dualGiven)],
+          ['Solo', fmt(reportData.totals.solo)],
           ['Cross-Country', fmt(reportData.totals.crossCountry)],
           ['Night', fmt(reportData.totals.night)],
           ['Instrument (Actual)', fmt(reportData.totals.actualInstrument)],
@@ -524,8 +651,29 @@ export async function generatePdf(
       const sections: { label: string; data: CategoryTotals }[] = [
         { label: 'Airplane Single-Engine Land (ASEL)', data: reportData.asel },
         { label: 'Airplane Multi-Engine Land (AMEL)', data: reportData.amel },
-        { label: 'Total All Aircraft', data: reportData.allAircraft },
       ]
+      if (reportData.ases) {
+        sections.push({
+          label: 'Airplane Single-Engine Sea (ASES)',
+          data: reportData.ases,
+        })
+      }
+      if (reportData.ames) {
+        sections.push({
+          label: 'Airplane Multi-Engine Sea (AMES)',
+          data: reportData.ames,
+        })
+      }
+      if (reportData.rotorcraft) {
+        sections.push({
+          label: 'Rotorcraft Helicopter',
+          data: reportData.rotorcraft,
+        })
+      }
+      sections.push({
+        label: 'Total All Aircraft',
+        data: reportData.allAircraft,
+      })
 
       for (const section of sections) {
         doc.setFontSize(13)
@@ -540,10 +688,15 @@ export async function generatePdf(
             ['Total Time', fmt(section.data.totalTime)],
             ['PIC', fmt(section.data.pic)],
             ['SIC', fmt(section.data.sic)],
+            ['Instruction Received', fmt(section.data.dualReceived)],
+            ['Solo', fmt(section.data.solo)],
             ['Cross-Country', fmt(section.data.crossCountry)],
             ['Night', fmt(section.data.night)],
             ['Instrument (Actual)', fmt(section.data.actualInstrument)],
-            ['Instrument (Simulated)', fmt(section.data.simulatedInstrument)],
+            [
+              'Instrument — Simulated (Hood/ATD)',
+              fmt(section.data.simulatedInstrument),
+            ],
             ['Day Landings', String(section.data.dayLandings)],
             ['Night Landings', String(section.data.nightLandings)],
           ],
@@ -580,6 +733,40 @@ export async function generatePdf(
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cursorY = (doc as any).lastAutoTable.finalY + 10
+
+      // Make/Model Recency
+      if (reportData.makeModelRecency.length > 0) {
+        doc.setFontSize(13)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Make/Model Experience — Recent Activity', 14, cursorY)
+        cursorY += 4
+
+        autoTable(doc, {
+          startY: cursorY,
+          head: [
+            [
+              'Make/Model',
+              'Total Time (All)',
+              'Last 90 Days',
+              'Last 6 Months',
+              'Last 12 Months',
+            ],
+          ],
+          body: reportData.makeModelRecency.map((r) => [
+            r.makeModel,
+            fmt(r.totalAll),
+            fmt(r.last90Days),
+            fmt(r.last6Months),
+            fmt(r.last12Months),
+          ]),
+          theme: 'grid',
+          headStyles: { fillColor: [41, 65, 122] },
+          styles: { fontSize: 10 },
+        })
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        cursorY = (doc as any).lastAutoTable.finalY + 10
+      }
 
       doc.setFontSize(13)
       doc.setFont('helvetica', 'bold')
@@ -634,18 +821,43 @@ export async function generatePdf(
       })
     }
 
-    // ---------- Footer with page numbers ----------
+    // ---------- Footer with page numbers and disclaimers ----------
     const pageCount = doc.getNumberOfPages()
+    const pageHeight = doc.internal.pageSize.getHeight()
+
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i)
       doc.setFontSize(8)
       doc.setFont('helvetica', 'normal')
+      doc.setTextColor(128, 128, 128)
+
+      // Reference-only disclaimer on every page
+      doc.text(
+        'Generated by CrossCheck for personal reference. Not official FAA documentation.',
+        pageWidth / 2,
+        pageHeight - 16,
+        { align: 'center' },
+      )
+
+      // 8710 reports get the additional specific disclaimer
+      if (type === '8710-time') {
+        doc.setFontSize(7)
+        doc.text(
+          'This document is NOT FAA Form 8710-1 and should not be submitted to the FAA. Verify all totals against your official logbook records.',
+          pageWidth / 2,
+          pageHeight - 12,
+          { align: 'center' },
+        )
+      }
+
       doc.text(
         `Page ${i} of ${pageCount}`,
         pageWidth / 2,
-        doc.internal.pageSize.getHeight() - 10,
+        pageHeight - 7,
         { align: 'center' },
       )
+
+      doc.setTextColor(0, 0, 0)
     }
 
     // Return as number array (serializable over server action boundary)

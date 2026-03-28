@@ -2,13 +2,20 @@
 
 import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db'
-import { goalProfiles, userGoalAssignments } from '@/lib/db/schema'
+import {
+  goalProfiles,
+  goalChecklistProgress,
+  userGoalAssignments,
+} from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { getOrCreateProfile } from '@/lib/services/profile'
 import { getFlightTotals } from '@/lib/services/flight-totals'
 import { getGoalProgress } from '@/lib/services/goal-progress'
 import { createAuditEvent } from '@/lib/services/audit'
-import { goalAssignmentSchema } from '@/lib/validators/goal'
+import {
+  goalAssignmentSchema,
+  goalChecklistToggleSchema,
+} from '@/lib/validators/goal'
 
 export async function getProgressData() {
   try {
@@ -19,10 +26,16 @@ export async function getProgressData() {
       getGoalProgress(profile.id),
     ])
 
-    return { totals, progress }
+    return { data: { totals, progress }, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    throw error
+    return {
+      data: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to load progress data',
+    }
   }
 }
 
@@ -33,10 +46,16 @@ export async function getAvailableGoals() {
       .from(goalProfiles)
       .orderBy(goalProfiles.sortOrder)
 
-    return goals
+    return { data: goals, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    throw error
+    return {
+      data: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to load available goals',
+    }
   }
 }
 
@@ -87,6 +106,10 @@ export async function assignGoal(data: unknown) {
       })
       .returning()
 
+    if (!assignment) {
+      return { data: null, error: 'Failed to create goal assignment' }
+    }
+
     await createAuditEvent({
       profileId: profile.id,
       entityType: 'user_goal_assignment',
@@ -95,9 +118,62 @@ export async function assignGoal(data: unknown) {
       changes: validated,
     })
 
-    return { success: true, assignment }
+    return { data: assignment, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    return { success: false, error: 'Failed to assign goal' }
+    return {
+      data: null,
+      error:
+        error instanceof Error ? error.message : 'Failed to assign goal',
+    }
+  }
+}
+
+export async function toggleChecklistItem(
+  data: unknown,
+): Promise<{ data: boolean | null; error: string | null }> {
+  try {
+    const profile = await getOrCreateProfile()
+    const validated = goalChecklistToggleSchema.parse(data)
+
+    const now = new Date()
+    const todayStr = now.toISOString().split('T')[0]
+
+    await db
+      .insert(goalChecklistProgress)
+      .values({
+        profileId: profile.id,
+        requirementId: validated.requirementId,
+        completed: validated.completed,
+        completedDate: validated.completed
+          ? (validated.completedDate ?? todayStr)
+          : null,
+        notes: validated.notes ?? null,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [goalChecklistProgress.profileId, goalChecklistProgress.requirementId],
+        set: {
+          completed: validated.completed,
+          completedDate: validated.completed
+            ? (validated.completedDate ?? todayStr)
+            : null,
+          notes: validated.notes ?? null,
+          updatedAt: now,
+        },
+      })
+
+    await createAuditEvent({
+      profileId: profile.id,
+      entityType: 'goal_checklist_progress',
+      entityId: validated.requirementId,
+      action: validated.completed ? 'completed' : 'uncompleted',
+      changes: validated,
+    })
+
+    return { data: validated.completed, error: null }
+  } catch (error) {
+    Sentry.captureException(error)
+    return { data: null, error: 'Failed to update checklist item' }
   }
 }

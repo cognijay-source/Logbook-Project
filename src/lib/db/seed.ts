@@ -205,6 +205,15 @@ const milestones = [
     threshold: 100,
     sortOrder: 34,
   },
+  {
+    code: 'complex_endorsement',
+    name: 'Complex Endorsement',
+    description: 'Received complex aircraft endorsement',
+    category: 'event',
+    evaluationType: 'manual',
+    field: 'complex_endorsement',
+    sortOrder: 8,
+  },
 ]
 
 const currencyRules = [
@@ -264,6 +273,7 @@ type GoalSeed = {
     label: string
     requiredValue: string
     unit: string
+    requirementType: string
     sortOrder: number
   }[]
 }
@@ -272,124 +282,308 @@ const goals: GoalSeed[] = [
   {
     code: 'private',
     name: 'Private Pilot',
-    description: 'FAA Private Pilot Certificate requirements',
+    description: 'FAA Private Pilot Certificate requirements (§ 61.109)',
     category: 'certificate',
     sortOrder: 1,
     requirements: [
       {
         field: 'total_time',
-        label: 'Total Time',
+        label: '40 hours total flight time',
         requiredValue: '40',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 1,
       },
       {
         field: 'dual_received',
-        label: 'Dual Received',
+        label: '20 hours dual instruction',
         requiredValue: '20',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 2,
       },
       {
-        field: 'solo',
-        label: 'Solo',
-        requiredValue: '10',
+        field: 'cross_country',
+        label: '3 hours dual cross-country',
+        requiredValue: '3',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 3,
       },
       {
-        field: 'cross_country',
-        label: 'Cross-Country',
+        field: 'night',
+        label: '3 hours dual night flight',
         requiredValue: '3',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 4,
       },
       {
-        field: 'night',
-        label: 'Night',
+        field: 'actual_instrument',
+        label: '3 hours dual instrument training',
         requiredValue: '3',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 5,
       },
       {
-        field: 'actual_instrument',
-        label: 'Instrument Training',
-        requiredValue: '3',
-        unit: 'hours',
+        field: 'checklist_ppl_test_prep',
+        label:
+          '3 hours dual practical test prep (within 2 calendar months)',
+        requiredValue: '0',
+        unit: 'checklist',
+        requirementType: 'checklist',
         sortOrder: 6,
+      },
+      {
+        field: 'solo',
+        label: '10 hours solo flight',
+        requiredValue: '10',
+        unit: 'hours',
+        requirementType: 'hours',
+        sortOrder: 7,
+      },
+      {
+        field: 'cross_country_solo',
+        label: '5 hours solo cross-country',
+        requiredValue: '5',
+        unit: 'hours',
+        requirementType: 'hours',
+        sortOrder: 8,
+      },
+      {
+        field: 'checklist_ppl_long_xc',
+        label:
+          'Solo XC >150nm, 3 landings, one segment >50nm from departure',
+        requiredValue: '0',
+        unit: 'checklist',
+        requirementType: 'checklist',
+        sortOrder: 9,
+      },
+      {
+        field: 'checklist_ppl_night_xc',
+        label: 'Night XC >100nm total distance (within night dual)',
+        requiredValue: '0',
+        unit: 'checklist',
+        requirementType: 'checklist',
+        sortOrder: 10,
+      },
+      {
+        field: 'checklist_ppl_towered',
+        label:
+          '3 solo takeoffs/landings at towered airport (full stop)',
+        requiredValue: '0',
+        unit: 'checklist',
+        requirementType: 'checklist',
+        sortOrder: 11,
       },
     ],
   },
   {
     code: 'instrument',
     name: 'Instrument Rating',
-    description: 'FAA Instrument Rating requirements',
+    description: 'FAA Instrument Rating requirements (§ 61.65)',
     category: 'rating',
     sortOrder: 2,
     requirements: [
       {
-        field: 'total_time',
-        label: 'Total Time',
+        field: 'cross_country',
+        label: '50 hours PIC cross-country',
         requiredValue: '50',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 1,
       },
       {
-        field: 'cross_country',
-        label: 'Cross-Country PIC',
-        requiredValue: '50',
+        field: 'actual_instrument',
+        label: '40 hours actual or simulated instrument time',
+        requiredValue: '40',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 2,
       },
       {
-        field: 'actual_instrument',
-        label: 'Instrument Time',
-        requiredValue: '40',
+        field: 'instrument_instruction',
+        label: '15 hours instrument training from CFII',
+        requiredValue: '15',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 3,
+      },
+      {
+        field: 'checklist_ir_test_prep',
+        label:
+          '3 hours instrument training within 2 calendar months of checkride',
+        requiredValue: '0',
+        unit: 'checklist',
+        requirementType: 'checklist',
+        sortOrder: 4,
+      },
+      {
+        field: 'checklist_ir_long_xc',
+        label:
+          'IFR XC >250nm, approaches at each airport, 3 different approach types',
+        requiredValue: '0',
+        unit: 'checklist',
+        requirementType: 'checklist',
+        sortOrder: 5,
       },
     ],
   },
   {
     code: 'commercial',
     name: 'Commercial Pilot',
-    description: 'FAA Commercial Pilot Certificate requirements',
+    description: 'FAA Commercial Pilot Certificate requirements (§ 61.129)',
     category: 'certificate',
     sortOrder: 3,
     requirements: [
       {
         field: 'total_time',
-        label: 'Total Time',
+        label: '250 hours total flight time',
         requiredValue: '250',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 1,
       },
       {
         field: 'pic',
-        label: 'PIC Time',
+        label: '100 hours PIC time',
         requiredValue: '100',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 2,
       },
       {
         field: 'cross_country',
-        label: 'Cross-Country',
+        label: '50 hours PIC cross-country',
         requiredValue: '50',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 3,
       },
       {
-        field: 'night',
-        label: 'Night',
-        requiredValue: '10',
+        field: 'dual_received',
+        label: '20 hours dual instruction',
+        requiredValue: '20',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 4,
       },
       {
         field: 'actual_instrument',
-        label: 'Instrument',
+        label: '10 hours instrument training',
         requiredValue: '10',
         unit: 'hours',
+        requirementType: 'hours',
+        sortOrder: 5,
+      },
+      {
+        field: 'complex_taa',
+        label: '10 hours complex or TAA time',
+        requiredValue: '10',
+        unit: 'hours',
+        requirementType: 'hours',
+        sortOrder: 6,
+      },
+      {
+        field: 'checklist_cpl_day_xc',
+        label:
+          'Dual day VFR XC >2hrs, one leg >50nm from departure',
+        requiredValue: '0',
+        unit: 'checklist',
+        requirementType: 'checklist',
+        sortOrder: 7,
+      },
+      {
+        field: 'checklist_cpl_night_xc',
+        label:
+          'Dual night VFR XC >2hrs, one leg >50nm from departure',
+        requiredValue: '0',
+        unit: 'checklist',
+        requirementType: 'checklist',
+        sortOrder: 8,
+      },
+      {
+        field: 'checklist_cpl_test_prep',
+        label:
+          '3 hours dual practical test prep (within 2 calendar months)',
+        requiredValue: '0',
+        unit: 'checklist',
+        requirementType: 'checklist',
+        sortOrder: 9,
+      },
+      {
+        field: 'solo_pic',
+        label: '10 hours solo/PIC-with-instructor',
+        requiredValue: '10',
+        unit: 'hours',
+        requirementType: 'hours',
+        sortOrder: 10,
+      },
+      {
+        field: 'checklist_cpl_long_xc',
+        label: 'Solo XC >300nm, 3 landings, one segment >250nm',
+        requiredValue: '0',
+        unit: 'checklist',
+        requirementType: 'checklist',
+        sortOrder: 11,
+      },
+      {
+        field: 'checklist_cpl_night_solo',
+        label:
+          '5 hours solo night VFR with 10 takeoffs/landings (full stop)',
+        requiredValue: '0',
+        unit: 'checklist',
+        requirementType: 'checklist',
+        sortOrder: 12,
+      },
+    ],
+  },
+  {
+    code: 'atp',
+    name: 'ATP',
+    description: 'Airline Transport Pilot requirements (§ 61.159)',
+    category: 'certificate',
+    sortOrder: 4,
+    requirements: [
+      {
+        field: 'total_time',
+        label: '1500 hours total time',
+        requiredValue: '1500',
+        unit: 'hours',
+        requirementType: 'hours',
+        sortOrder: 1,
+      },
+      {
+        field: 'cross_country',
+        label: '500 hours cross-country',
+        requiredValue: '500',
+        unit: 'hours',
+        requirementType: 'hours',
+        sortOrder: 2,
+      },
+      {
+        field: 'night',
+        label: '100 hours night',
+        requiredValue: '100',
+        unit: 'hours',
+        requirementType: 'hours',
+        sortOrder: 3,
+      },
+      {
+        field: 'actual_instrument',
+        label: '75 hours instrument (max 25 in sim)',
+        requiredValue: '75',
+        unit: 'hours',
+        requirementType: 'hours',
+        sortOrder: 4,
+      },
+      {
+        field: 'pic',
+        label: '250 hours PIC',
+        requiredValue: '250',
+        unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 5,
       },
     ],
@@ -399,13 +593,14 @@ const goals: GoalSeed[] = [
     name: 'CFI',
     description: 'Certified Flight Instructor requirements',
     category: 'certificate',
-    sortOrder: 4,
+    sortOrder: 5,
     requirements: [
       {
         field: 'total_time',
         label: 'Total Time',
         requiredValue: '250',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 1,
       },
       {
@@ -413,6 +608,7 @@ const goals: GoalSeed[] = [
         label: 'PIC Time',
         requiredValue: '100',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 2,
       },
     ],
@@ -422,13 +618,14 @@ const goals: GoalSeed[] = [
     name: 'Regional First Officer',
     description: 'Typical regional airline first officer minimums',
     category: 'career',
-    sortOrder: 5,
+    sortOrder: 6,
     requirements: [
       {
         field: 'total_time',
         label: 'Total Time',
         requiredValue: '1500',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 1,
       },
       {
@@ -436,6 +633,7 @@ const goals: GoalSeed[] = [
         label: 'Cross-Country',
         requiredValue: '500',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 2,
       },
       {
@@ -443,6 +641,7 @@ const goals: GoalSeed[] = [
         label: 'Night',
         requiredValue: '100',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 3,
       },
       {
@@ -450,6 +649,7 @@ const goals: GoalSeed[] = [
         label: 'Instrument',
         requiredValue: '75',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 4,
       },
       {
@@ -457,6 +657,7 @@ const goals: GoalSeed[] = [
         label: 'Multi-Engine',
         requiredValue: '25',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 5,
       },
     ],
@@ -466,13 +667,14 @@ const goals: GoalSeed[] = [
     name: '135 Pilot',
     description: 'Part 135 operations typical minimums',
     category: 'career',
-    sortOrder: 6,
+    sortOrder: 7,
     requirements: [
       {
         field: 'total_time',
         label: 'Total Time',
         requiredValue: '1200',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 1,
       },
       {
@@ -480,6 +682,7 @@ const goals: GoalSeed[] = [
         label: 'PIC Time',
         requiredValue: '500',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 2,
       },
       {
@@ -487,6 +690,7 @@ const goals: GoalSeed[] = [
         label: 'Cross-Country',
         requiredValue: '500',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 3,
       },
       {
@@ -494,6 +698,7 @@ const goals: GoalSeed[] = [
         label: 'Night',
         requiredValue: '100',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 4,
       },
       {
@@ -501,6 +706,7 @@ const goals: GoalSeed[] = [
         label: 'Instrument',
         requiredValue: '75',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 5,
       },
     ],
@@ -511,13 +717,14 @@ const goals: GoalSeed[] = [
     description:
       'Competitive minimums for major airline applications — placeholder targets',
     category: 'career',
-    sortOrder: 7,
+    sortOrder: 8,
     requirements: [
       {
         field: 'total_time',
         label: 'Total Time',
         requiredValue: '3000',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 1,
       },
       {
@@ -525,6 +732,7 @@ const goals: GoalSeed[] = [
         label: 'PIC Time',
         requiredValue: '1500',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 2,
       },
       {
@@ -532,6 +740,7 @@ const goals: GoalSeed[] = [
         label: 'Turbine',
         requiredValue: '1000',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 3,
       },
       {
@@ -539,6 +748,7 @@ const goals: GoalSeed[] = [
         label: 'Multi-Engine',
         requiredValue: '1000',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 4,
       },
       {
@@ -546,6 +756,7 @@ const goals: GoalSeed[] = [
         label: 'Cross-Country',
         requiredValue: '1000',
         unit: 'hours',
+        requirementType: 'hours',
         sortOrder: 5,
       },
     ],
@@ -587,7 +798,12 @@ async function seed() {
       for (const r of g.requirements) {
         await db.insert(goalRequirements).values({
           goalProfileId: inserted.id,
-          ...r,
+          field: r.field,
+          label: r.label,
+          requiredValue: r.requiredValue,
+          unit: r.unit,
+          requirementType: r.requirementType,
+          sortOrder: r.sortOrder,
         })
       }
     }

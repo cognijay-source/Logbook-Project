@@ -1,7 +1,12 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getProgressData, getAvailableGoals, assignGoal } from './actions'
+import {
+  getProgressData,
+  getAvailableGoals,
+  assignGoal,
+  toggleChecklistItem,
+} from './actions'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -18,8 +23,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { PageTransition } from '@/components/page-transition'
+import { CountUp } from '@/components/count-up'
+import { ReadyIllustration } from '@/components/empty-state-illustrations'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Target, TrendingUp } from 'lucide-react'
+import { Target, TrendingUp, CheckSquare } from 'lucide-react'
 import { useState } from 'react'
 
 const totalsConfig = [
@@ -41,14 +49,16 @@ export default function ProgressPage() {
   const queryClient = useQueryClient()
   const [goalDialogOpen, setGoalDialogOpen] = useState(false)
 
-  const { data, isLoading, isError } = useQuery({
+  const { data: progressResult, isLoading, isError } = useQuery({
     queryKey: ['progress'],
-    queryFn: getProgressData,
+    queryFn: () => getProgressData(),
   })
 
-  const { data: availableGoals } = useQuery({
+  const data = progressResult?.data ?? null
+
+  const { data: goalsResult } = useQuery({
     queryKey: ['available-goals'],
-    queryFn: getAvailableGoals,
+    queryFn: () => getAvailableGoals(),
     enabled: goalDialogOpen,
   })
 
@@ -60,8 +70,16 @@ export default function ProgressPage() {
     },
   })
 
+  const checklistMutation = useMutation({
+    mutationFn: toggleChecklistItem,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['progress'] })
+    },
+  })
+
   if (isLoading) {
     return (
+      <PageTransition>
       <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -70,14 +88,16 @@ export default function ProgressPage() {
           ))}
         </div>
       </div>
+      </PageTransition>
     )
   }
 
   if (isError) {
     return (
+      <PageTransition>
       <div className="space-y-6">
         <h1 className="font-heading text-3xl font-bold tracking-tight">
-          Ready
+          🎯 Ready
         </h1>
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
           <p className="text-sm text-red-800 dark:text-red-200">
@@ -85,6 +105,7 @@ export default function ProgressPage() {
           </p>
         </div>
       </div>
+      </PageTransition>
     )
   }
 
@@ -92,11 +113,12 @@ export default function ProgressPage() {
   const progress = data?.progress
 
   return (
+    <PageTransition>
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-heading text-3xl font-bold tracking-tight">
-            Ready
+            🎯 Ready
           </h1>
           <p className="text-muted-foreground">
             {progress
@@ -119,7 +141,7 @@ export default function ProgressPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-2 py-4">
-              {availableGoals?.map((goal) => (
+              {goalsResult?.data?.map((goal) => (
                 <button
                   key={goal.id}
                   className="hover:bg-accent flex flex-col items-start rounded-lg border p-3 text-left transition-colors"
@@ -165,7 +187,7 @@ export default function ProgressPage() {
                   </div>
                   <div className="bg-muted mb-1 h-2 w-full rounded-full">
                     <div
-                      className={`h-2 rounded-full transition-all duration-700 ease-out ${req.percentage >= 100 ? 'bg-gradient-to-r from-green-500 to-emerald-400' : 'bg-gradient-to-r from-sky-500 to-cyan-400'}`}
+                      className={`h-2 rounded-full transition-all duration-700 ease-out ${req.percentage >= 100 ? 'bg-gradient-to-r from-green-500 to-emerald-400' : 'bg-gradient-to-r from-emerald-500 to-emerald-400'}`}
                       style={{
                         width: `${Math.min(100, req.percentage)}%`,
                       }}
@@ -186,6 +208,53 @@ export default function ProgressPage() {
         </section>
       )}
 
+      {/* Flight Requirements (Checklist) */}
+      {progress && progress.checklistItems.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <CheckSquare className="text-primary h-5 w-5" />
+            <h2 className="text-lg font-semibold">Flight Requirements</h2>
+          </div>
+          <div className="grid gap-2">
+            {progress.checklistItems.map((item) => (
+              <Card key={item.requirementId}>
+                <CardContent className="flex items-start gap-3 p-4">
+                  <input
+                    type="checkbox"
+                    checked={item.completed}
+                    onChange={() =>
+                      checklistMutation.mutate({
+                        requirementId: item.requirementId,
+                        completed: !item.completed,
+                      })
+                    }
+                    disabled={checklistMutation.isPending}
+                    className="accent-emerald-600 mt-0.5 h-4 w-4 rounded"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`text-sm font-medium ${item.completed ? 'text-muted-foreground line-through' : ''}`}
+                    >
+                      {item.label}
+                    </p>
+                    {item.completed && item.completedDate && (
+                      <p className="text-muted-foreground text-xs">
+                        Completed {item.completedDate}
+                      </p>
+                    )}
+                    {item.notes && (
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        {item.notes}
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Experience Totals */}
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Experience Totals</h2>
@@ -197,7 +266,7 @@ export default function ProgressPage() {
                 <CardContent className="p-4">
                   <p className="text-muted-foreground text-sm">{label}</p>
                   <p className="text-2xl font-bold tabular-nums">
-                    {value.toFixed(1)}
+                    {value > 0 ? <CountUp value={value} /> : '\u2014'}
                   </p>
                 </CardContent>
               </Card>
@@ -238,7 +307,9 @@ export default function ProgressPage() {
       {totals && totals.totalFlights === 0 && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <Target className="text-muted-foreground/50 mb-4 h-12 w-12" />
+            <div className="mb-4">
+              <ReadyIllustration />
+            </div>
             <CardTitle className="mb-2 text-lg">
               No flights logged yet
             </CardTitle>
@@ -250,5 +321,6 @@ export default function ProgressPage() {
         </Card>
       )}
     </div>
+    </PageTransition>
   )
 }

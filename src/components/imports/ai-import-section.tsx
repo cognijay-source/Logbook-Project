@@ -103,6 +103,17 @@ export function AiImportSection() {
         </div>
       )}
 
+      {/* AI accuracy warning */}
+      <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+        <span className="mt-0.5 shrink-0">&#9888;&#65039;</span>
+        <p>
+          AI-extracted flight data may contain errors. Handwriting recognition is
+          not perfect — numbers, letters, and decimal points may be misread. You
+          must carefully review and verify every field against your original
+          logbook before confirming this import.
+        </p>
+      </div>
+
       {/* Step: Upload */}
       {step === 'upload' && (
         <Card>

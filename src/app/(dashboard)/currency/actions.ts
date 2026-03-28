@@ -17,7 +17,10 @@ export type CurrencyPageData = {
   medical: MedicalInfo | null
 }
 
-export async function getCurrencyStatus(): Promise<CurrencyPageData> {
+export async function getCurrencyStatus(): Promise<{
+  data: CurrencyPageData | null
+  error: string | null
+}> {
   try {
     const profile = await getOrCreateProfile()
 
@@ -40,14 +43,23 @@ export async function getCurrencyStatus(): Promise<CurrencyPageData> {
         )
       : null
 
-    return { currency, medical }
+    return { data: { currency, medical }, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    throw error
+    return {
+      data: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to load currency status',
+    }
   }
 }
 
-export async function refreshCurrency(): Promise<CurrencyPageData> {
+export async function refreshCurrency(): Promise<{
+  data: CurrencyPageData | null
+  error: string | null
+}> {
   try {
     const profile = await getOrCreateProfile()
 
@@ -70,9 +82,15 @@ export async function refreshCurrency(): Promise<CurrencyPageData> {
         )
       : null
 
-    return { currency, medical }
+    return { data: { currency, medical }, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    throw error
+    return {
+      data: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to refresh currency status',
+    }
   }
 }

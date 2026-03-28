@@ -53,9 +53,12 @@ export const profileUpdateSchema = z.object({
   careerPhase: optionalString.pipe(z.enum(CAREER_PHASES).optional()),
 })
 
+const TRAINING_ENVIRONMENTS = ['part_61', 'part_141', 'both'] as const
+
 export const preferencesSchema = z.object({
   timeFormat: z.enum(TIME_FORMATS),
   timezone: z.string().min(1, 'Timezone is required'),
+  trainingEnvironment: z.enum(TRAINING_ENVIRONMENTS).optional().default('part_61'),
 })
 
 export const changePasswordSchema = z

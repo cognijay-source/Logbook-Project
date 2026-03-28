@@ -1,7 +1,7 @@
 'use server'
 
 import * as Sentry from '@sentry/nextjs'
-import { eq, and, desc } from 'drizzle-orm'
+import { eq, and, desc, sql } from 'drizzle-orm'
 import Papa from 'papaparse'
 import { z } from 'zod'
 import { db } from '@/lib/db'
@@ -122,23 +122,41 @@ export async function uploadCsv(data: unknown): Promise<{
 
 // ---------- Get Import Batches ----------
 
-export async function getImportBatches(): Promise<{
+export async function getImportBatches(params?: {
+  page?: number
+  pageSize?: number
+}): Promise<{
   data: ImportBatchRow[]
+  total: number
+  page: number
+  pageSize: number
   error: string | null
 }> {
   try {
     const profile = await getOrCreateProfile()
+    const page = params?.page ?? 1
+    const pageSize = params?.pageSize ?? 50
 
-    const rows = await db
-      .select()
-      .from(schema.importBatches)
-      .where(eq(schema.importBatches.profileId, profile.id))
-      .orderBy(desc(schema.importBatches.createdAt))
+    const [rows, countResult] = await Promise.all([
+      db
+        .select()
+        .from(schema.importBatches)
+        .where(eq(schema.importBatches.profileId, profile.id))
+        .orderBy(desc(schema.importBatches.createdAt))
+        .limit(pageSize)
+        .offset((page - 1) * pageSize),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.importBatches)
+        .where(eq(schema.importBatches.profileId, profile.id)),
+    ])
 
-    return { data: rows, error: null }
+    const total = Number(countResult[0]?.count) || 0
+
+    return { data: rows, total, page, pageSize, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    return { data: [], error: 'Failed to load import history' }
+    return { data: [], total: 0, page: params?.page ?? 1, pageSize: params?.pageSize ?? 50, error: 'Failed to load import history' }
   }
 }
 

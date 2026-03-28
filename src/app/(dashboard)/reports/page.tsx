@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { PageTransition } from '@/components/page-transition'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import {
@@ -115,9 +116,10 @@ export default function ReportsPage() {
   }
 
   return (
+    <PageTransition>
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-3xl font-bold">Reports</h1>
+        <h1 className="font-heading text-3xl font-bold">📊 Reports</h1>
         <p className="text-muted-foreground mt-1">
           Generate professional PDF reports from your flight data
         </p>
@@ -280,6 +282,7 @@ export default function ReportsPage() {
         </Card>
       )}
     </div>
+    </PageTransition>
   )
 }
 

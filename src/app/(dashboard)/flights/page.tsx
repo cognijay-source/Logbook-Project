@@ -3,7 +3,8 @@
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { Plus, Search, Plane, Download } from 'lucide-react'
+import { Plus, Search, Download } from 'lucide-react'
+import { LogbookIllustration } from '@/components/empty-state-illustrations'
 import * as Sentry from '@sentry/nextjs'
 
 import { Button } from '@/components/ui/button'
@@ -12,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { PaginationControls } from '@/components/ui/pagination-controls'
 import { FlightTable } from '@/components/flights/flight-table'
 import { FlightCard } from '@/components/flights/flight-card'
+import { PageTransition } from '@/components/page-transition'
 import { getFlights, getAircraftList, exportFlightsCsv } from './actions'
 
 export default function FlightsPage() {
@@ -91,11 +93,12 @@ export default function FlightsPage() {
   const aircraftOptions = aircraftQuery.data ?? []
 
   return (
+    <PageTransition>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-3xl font-bold">Logbook</h1>
+          <h1 className="font-heading text-3xl font-bold">📖 Logbook</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             {flightsQuery.isSuccess
               ? `${total} ${total === 1 ? 'entry' : 'entries'}`
@@ -178,9 +181,7 @@ export default function FlightsPage() {
       {/* Empty state */}
       {flightsQuery.isSuccess && flights.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16">
-          <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
-            <Plane className="text-muted-foreground h-6 w-6" />
-          </div>
+          <div className="mb-4"><LogbookIllustration /></div>
           <h3 className="mt-4 text-lg font-semibold">No flights found</h3>
           <p className="text-muted-foreground mt-1 text-sm">
             {search || aircraftId !== 'all' || status !== 'all'
@@ -220,6 +221,7 @@ export default function FlightsPage() {
         </>
       )}
     </div>
+    </PageTransition>
   )
 }
 

@@ -14,12 +14,12 @@ import {
   Wrench,
   Upload,
   ArrowRight,
-  Target,
   ShieldCheck,
   AlertTriangle,
   XCircle,
   HelpCircle,
 } from 'lucide-react'
+import { LogbookIllustration, CurrencyIllustration, ReadyIllustration } from '@/components/empty-state-illustrations'
 import {
   Card,
   CardContent,
@@ -29,6 +29,8 @@ import {
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PageTransition } from '@/components/page-transition'
+import { CountUp } from '@/components/count-up'
 import { getDashboardData, type DashboardData } from './actions'
 
 function formatHours(n: number): string {
@@ -75,7 +77,7 @@ function SummaryCards({ totals }: { totals: DashboardData['totals'] }) {
             </CardHeader>
             <CardContent>
               <p className="text-[32px] font-bold leading-none tabular-nums">
-                {formatHours(value)}
+                {value > 0 ? <CountUp value={value} /> : '\u2014'}
               </p>
             </CardContent>
           </Card>
@@ -124,7 +126,7 @@ function RecentFlights({
       <CardContent>
         {flights.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-8">
-            <Plane className="h-12 w-12 text-muted-foreground/30" />
+            <div className="mb-4"><LogbookIllustration /></div>
             <p className="text-center text-sm text-muted-foreground">
               No flights recorded yet.
             </p>
@@ -216,7 +218,7 @@ function CurrencyPanel({ currency }: { currency: DashboardData['currency'] }) {
       <CardContent>
         {currency.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-8">
-            <ShieldCheck className="h-12 w-12 text-muted-foreground/30" />
+            <div className="mb-4"><CurrencyIllustration /></div>
             <p className="text-center text-sm text-muted-foreground">
               No currency rules configured yet. Check back after adding flights.
             </p>
@@ -276,7 +278,7 @@ function GoalProgressPanel({
       <CardContent>
         {!goalProgress ? (
           <div className="flex flex-col items-center gap-3 py-8">
-            <Target className="h-12 w-12 text-muted-foreground/30" />
+            <div className="mb-4"><ReadyIllustration /></div>
             <p className="text-center text-sm text-muted-foreground">
               No goal assigned yet. Set one to track your progress.
             </p>
@@ -427,25 +429,30 @@ function DashboardSkeleton() {
 // ---------------------------------------------------------------------------
 
 export default function DashboardPage() {
-  const { data, isLoading, error } = useQuery({
+  const { data: result, isLoading, error } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => getDashboardData(),
     staleTime: 5 * 60 * 1000,
   })
 
+  const data = result?.data ?? null
+
   if (isLoading) {
     return (
+      <PageTransition>
       <div className="animate-fade-in space-y-6">
-        <h1 className="font-heading text-[28px] font-semibold">Daily</h1>
+        <h1 className="font-heading text-[28px] font-semibold">{'\ud83c\udfe0'} Daily</h1>
         <DashboardSkeleton />
       </div>
+      </PageTransition>
     )
   }
 
   if (error || !data) {
     return (
+      <PageTransition>
       <div className="animate-fade-in space-y-6">
-        <h1 className="font-heading text-[28px] font-semibold">Daily</h1>
+        <h1 className="font-heading text-[28px] font-semibold">{'\ud83c\udfe0'} Daily</h1>
         <Card className="border-red-200 bg-red-50/50">
           <CardContent className="py-10 text-center">
             <p className="text-red-600">
@@ -462,12 +469,14 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+      </PageTransition>
     )
   }
 
   return (
+    <PageTransition>
     <div className="animate-fade-in space-y-6">
-      <h1 className="font-heading text-[28px] font-semibold">Daily</h1>
+      <h1 className="font-heading text-[28px] font-semibold">{'\ud83c\udfe0'} Daily</h1>
 
       <SummaryCards totals={data.totals} />
 
@@ -486,5 +495,6 @@ export default function DashboardPage() {
         <QuickActions />
       </div>
     </div>
+    </PageTransition>
   )
 }

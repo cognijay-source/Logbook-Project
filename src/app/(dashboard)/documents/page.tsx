@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Skeleton } from '@/components/ui/skeleton'
 import { DocumentsClient } from './documents-client'
+import { PageTransition } from '@/components/page-transition'
 import { getDocuments } from './actions'
 
 export default function DocumentsPage() {
@@ -16,9 +17,10 @@ export default function DocumentsPage() {
   })
 
   return (
+    <PageTransition>
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-3xl font-bold">Documents</h1>
+        <h1 className="font-heading text-3xl font-bold">📁 Documents</h1>
         <p className="text-muted-foreground mt-1">
           Certificates, endorsements, and supporting records.
         </p>
@@ -43,5 +45,6 @@ export default function DocumentsPage() {
 
       {data && <DocumentsClient documents={data} />}
     </div>
+    </PageTransition>
   )
 }

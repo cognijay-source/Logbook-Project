@@ -3,10 +3,12 @@ import {
   uuid,
   text,
   timestamp,
+  date,
   numeric,
   integer,
   boolean,
   index,
+  unique,
 } from 'drizzle-orm/pg-core'
 import { profiles } from './profiles'
 
@@ -37,6 +39,7 @@ export const goalRequirements = pgTable(
       scale: 1,
     }).notNull(),
     unit: text('unit').default('hours'),
+    requirementType: text('requirement_type').default('hours').notNull(),
     sortOrder: integer('sort_order').default(0),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
@@ -44,6 +47,35 @@ export const goalRequirements = pgTable(
   },
   (table) => [
     index('goal_requirements_goal_profile_id_idx').on(table.goalProfileId),
+  ],
+)
+
+export const goalChecklistProgress = pgTable(
+  'goal_checklist_progress',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    profileId: uuid('profile_id')
+      .notNull()
+      .references(() => profiles.id, { onDelete: 'cascade' }),
+    requirementId: uuid('requirement_id')
+      .notNull()
+      .references(() => goalRequirements.id, { onDelete: 'cascade' }),
+    completed: boolean('completed').default(false).notNull(),
+    completedDate: date('completed_date'),
+    notes: text('notes'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('goal_checklist_progress_profile_id_idx').on(table.profileId),
+    unique('goal_checklist_progress_unique').on(
+      table.profileId,
+      table.requirementId,
+    ),
   ],
 )
 

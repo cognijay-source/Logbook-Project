@@ -47,6 +47,9 @@ export const flights = pgTable(
     // Landings
     dayLandings: integer('day_landings').default(0),
     nightLandings: integer('night_landings').default(0),
+    nightLandingsFullStop: integer('night_landings_full_stop')
+      .notNull()
+      .default(0),
 
     // Holds
     holds: integer('holds').default(0),
