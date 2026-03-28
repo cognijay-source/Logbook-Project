@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FileText, Download, Eye, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
 import {
   getReportData,
   generatePdf,
@@ -43,13 +44,73 @@ const reportTypes: { value: ReportType; label: string; description: string }[] =
     },
   ]
 
-function getDefaultDateRange() {
-  const end = new Date()
-  const start = new Date()
-  start.setFullYear(start.getFullYear() - 1)
-  return {
-    startDate: start.toISOString().split('T')[0],
-    endDate: end.toISOString().split('T')[0],
+type PresetKey =
+  | 'all_time'
+  | 'last_90'
+  | 'last_6_months'
+  | 'last_12_months'
+  | 'ytd'
+  | 'custom'
+
+const presetLabels: { key: PresetKey; label: string }[] = [
+  { key: 'all_time', label: 'All Time' },
+  { key: 'last_90', label: 'Last 90 Days' },
+  { key: 'last_6_months', label: 'Last 6 Months' },
+  { key: 'last_12_months', label: 'Last 12 Months' },
+  { key: 'ytd', label: 'Year to Date' },
+  { key: 'custom', label: 'Custom Range' },
+]
+
+function getPresetDates(preset: PresetKey): {
+  startDate: string
+  endDate: string
+} {
+  const now = new Date()
+  const endDate = now.toISOString().split('T')[0]
+
+  switch (preset) {
+    case 'all_time':
+      return { startDate: '', endDate }
+    case 'last_90': {
+      const d = new Date(now)
+      d.setDate(d.getDate() - 90)
+      return { startDate: d.toISOString().split('T')[0], endDate }
+    }
+    case 'last_6_months': {
+      const d = new Date(now)
+      d.setMonth(d.getMonth() - 6)
+      return { startDate: d.toISOString().split('T')[0], endDate }
+    }
+    case 'last_12_months': {
+      const d = new Date(now)
+      d.setFullYear(d.getFullYear() - 1)
+      return { startDate: d.toISOString().split('T')[0], endDate }
+    }
+    case 'ytd': {
+      return {
+        startDate: `${now.getFullYear()}-01-01`,
+        endDate,
+      }
+    }
+    case 'custom':
+    default: {
+      const d = new Date(now)
+      d.setFullYear(d.getFullYear() - 1)
+      return { startDate: d.toISOString().split('T')[0], endDate }
+    }
+  }
+}
+
+function getDefaultPreset(reportType: ReportType): PresetKey {
+  switch (reportType) {
+    case '8710-time':
+      return 'all_time'
+    case 'insurance':
+      return 'last_12_months'
+    case 'flight-summary':
+      return 'last_12_months'
+    case 'custom-range':
+      return 'custom'
   }
 }
 
@@ -58,21 +119,48 @@ function fmt(n: number): string {
 }
 
 export default function ReportsPage() {
-  const defaults = getDefaultDateRange()
   const [reportType, setReportType] = useState<ReportType>('flight-summary')
-  const [startDate, setStartDate] = useState(defaults.startDate)
-  const [endDate, setEndDate] = useState(defaults.endDate)
+  const [activePreset, setActivePreset] = useState<PresetKey>(() =>
+    getDefaultPreset('flight-summary'),
+  )
+  const defaultDates = getPresetDates(activePreset)
+  const [startDate, setStartDate] = useState(defaultDates.startDate)
+  const [endDate, setEndDate] = useState(defaultDates.endDate)
   const [previewData, setPreviewData] = useState<ReportData | null>(null)
   const [loading, setLoading] = useState(false)
   const [downloading, setDownloading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  function handlePresetClick(preset: PresetKey) {
+    setActivePreset(preset)
+    if (preset !== 'custom') {
+      const dates = getPresetDates(preset)
+      setStartDate(dates.startDate)
+      setEndDate(dates.endDate)
+    }
+    setPreviewData(null)
+  }
+
+  function handleReportTypeChange(type: ReportType) {
+    setReportType(type)
+    const preset = getDefaultPreset(type)
+    setActivePreset(preset)
+    const dates = getPresetDates(preset)
+    setStartDate(dates.startDate)
+    setEndDate(dates.endDate)
+    setPreviewData(null)
+  }
 
   async function handlePreview() {
     setLoading(true)
     setError(null)
     setPreviewData(null)
     try {
-      const result = await getReportData(reportType, startDate, endDate)
+      const result = await getReportData(
+        reportType,
+        startDate || '',
+        endDate,
+      )
       if (result.error) {
         setError(result.error)
       } else {
@@ -89,7 +177,11 @@ export default function ReportsPage() {
     setDownloading(true)
     setError(null)
     try {
-      const result = await generatePdf(reportType, startDate, endDate)
+      const result = await generatePdf(
+        reportType,
+        startDate || '',
+        endDate,
+      )
       if (result.error || !result.data) {
         setError(result.error ?? 'Failed to generate PDF')
         return
@@ -100,7 +192,7 @@ export default function ReportsPage() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `crosscheck-${reportType}-${startDate}-to-${endDate}.pdf`
+      a.download = `crosscheck-${reportType}-${startDate || 'all'}-to-${endDate}.pdf`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -129,17 +221,16 @@ export default function ReportsPage() {
             Choose a report type and date range to generate your report
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2">
               <Label htmlFor="report-type">Report Type</Label>
               <select
                 id="report-type"
                 value={reportType}
-                onChange={(e) => {
-                  setReportType(e.target.value as ReportType)
-                  setPreviewData(null)
-                }}
+                onChange={(e) =>
+                  handleReportTypeChange(e.target.value as ReportType)
+                }
                 className="border-input bg-background focus:border-ring focus:ring-ring/20 flex h-10 w-full rounded-md border px-3 py-2 text-sm shadow-sm transition-colors duration-200 focus:ring-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {reportTypes.map((rt) => (
@@ -158,8 +249,13 @@ export default function ReportsPage() {
                 value={startDate}
                 onChange={(e) => {
                   setStartDate(e.target.value)
+                  setActivePreset('custom')
                   setPreviewData(null)
                 }}
+                disabled={activePreset === 'all_time'}
+                placeholder={
+                  activePreset === 'all_time' ? 'All time' : undefined
+                }
               />
             </div>
 
@@ -171,6 +267,7 @@ export default function ReportsPage() {
                 value={endDate}
                 onChange={(e) => {
                   setEndDate(e.target.value)
+                  setActivePreset('custom')
                   setPreviewData(null)
                 }}
               />
@@ -200,7 +297,26 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <p className="text-muted-foreground mt-3 text-sm">
+          {/* Preset buttons */}
+          <div className="flex flex-wrap gap-2">
+            {presetLabels.map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => handlePresetClick(key)}
+                className={cn(
+                  'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                  activePreset === key
+                    ? 'bg-[#00d4aa] text-[#111118]'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <p className="text-muted-foreground text-sm">
             {reportTypes.find((rt) => rt.value === reportType)?.description}
           </p>
         </CardContent>

@@ -22,7 +22,10 @@ const reportParamsSchema = z.object({
   type: reportTypeEnum,
   startDate: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (expected YYYY-MM-DD)'),
+    .refine(
+      (v) => v === '' || /^\d{4}-\d{2}-\d{2}$/.test(v),
+      'Invalid date format (expected YYYY-MM-DD or empty for all time)',
+    ),
   endDate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (expected YYYY-MM-DD)'),
@@ -159,7 +162,9 @@ async function fetchFlightsInRange(
     .where(
       and(
         eq(schema.flights.profileId, profileId),
-        gte(schema.flights.flightDate, startDate),
+        ...(startDate
+          ? [gte(schema.flights.flightDate, startDate)]
+          : []),
         lte(schema.flights.flightDate, endDate),
       ),
     )
