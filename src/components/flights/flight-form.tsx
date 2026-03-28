@@ -21,6 +21,8 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { useToast } from '@/hooks/use-toast'
+import { useMediaQuery } from '@/hooks/use-media-query'
+import { FlightFormWizard } from '@/components/flights/flight-form-wizard'
 import {
   createFlight,
   updateFlight,
@@ -159,6 +161,7 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
     (initialData?.approaches?.length ?? 0) > 0,
   )
   const [crewOpen, setCrewOpen] = useState((initialData?.crew?.length ?? 0) > 0)
+  const isMobile = useMediaQuery('(max-width: 767px)')
 
   const isEdit = !!initialData
 
@@ -349,6 +352,130 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
     } finally {
       setSaving(false)
     }
+  }
+
+  async function handleFinalizeAndLogAnother(values: FormValues) {
+    setSaving(true)
+    try {
+      const flightPayload = {
+        flightDate: values.flightDate,
+        aircraftId: values.aircraftId || '',
+        departureAirport: values.departureAirport,
+        arrivalAirport: values.arrivalAirport,
+        route: values.route,
+        totalTime: values.totalTime,
+        pic: values.pic,
+        sic: values.sic,
+        crossCountry: values.crossCountry,
+        night: values.night,
+        actualInstrument: values.actualInstrument,
+        simulatedInstrument: values.simulatedInstrument,
+        dualReceived: values.dualReceived,
+        dualGiven: values.dualGiven,
+        solo: values.solo,
+        multiEngine: values.multiEngine,
+        turbine: values.turbine,
+        dayLandings: values.dayLandings,
+        nightLandings: values.nightLandings,
+        holds: values.holds,
+        operationType: values.operationType,
+        roleType: values.roleType,
+        remarks: values.remarks,
+        tags: values.tags,
+        isSoloFlight: values.isSoloFlight,
+        isCheckride: values.isCheckride,
+        status: 'final' as const,
+      }
+
+      const legsPayload = values.legs.map((l) => ({
+        ...l,
+        departureTime: l.departureTime
+          ? new Date(l.departureTime).toISOString()
+          : undefined,
+        arrivalTime: l.arrivalTime
+          ? new Date(l.arrivalTime).toISOString()
+          : undefined,
+      }))
+
+      const result = await createFlight({
+        flight: flightPayload,
+        legs: legsPayload,
+        approaches: values.approaches,
+        crew: values.crew,
+      })
+
+      if (result.error) {
+        toast({
+          title: 'Error',
+          description: result.error,
+          variant: 'destructive',
+        })
+        return
+      }
+
+      toast({ title: 'Flight saved' })
+
+      // Reset with smart defaults: keep aircraft, use arrival as new departure
+      form.reset({
+        flightDate: new Date().toISOString().slice(0, 10),
+        aircraftId: values.aircraftId,
+        departureAirport: values.arrivalAirport || '',
+        arrivalAirport: '',
+        route: '',
+        totalTime: '',
+        pic: '',
+        sic: '',
+        crossCountry: '',
+        night: '',
+        actualInstrument: '',
+        simulatedInstrument: '',
+        dualReceived: '',
+        dualGiven: '',
+        solo: '',
+        multiEngine: '',
+        turbine: '',
+        dayLandings: '',
+        nightLandings: '',
+        holds: '',
+        operationType: values.operationType,
+        roleType: values.roleType,
+        remarks: '',
+        tags: '',
+        isSoloFlight: false,
+        isCheckride: false,
+        status: 'draft',
+        legs: [],
+        approaches: [],
+        crew: [],
+      })
+
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (error) {
+      Sentry.captureException(error)
+      toast({
+        title: 'Error',
+        description:
+          'Could not save flight. Check your connection and try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (isMobile && !isEdit) {
+    return (
+      <Form {...form}>
+        <FlightFormWizard
+          form={form}
+          aircraftList={aircraftList}
+          saving={saving}
+          onSubmit={onSubmit}
+          onSubmitAndLogAnother={handleFinalizeAndLogAnother}
+          isEdit={isEdit}
+        />
+      </Form>
+    )
   }
 
   return (
@@ -1125,6 +1252,17 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
           >
             {saving ? 'Saving...' : 'Finalize Entry'}
           </Button>
+          {!isEdit && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={saving}
+              onClick={form.handleSubmit(handleFinalizeAndLogAnother)}
+              className="border-[#00d4aa] text-[#00916e] hover:bg-[#00d4aa]/10"
+            >
+              {saving ? 'Saving...' : 'Finalize & Log Another'}
+            </Button>
+          )}
         </div>
       </form>
     </Form>
