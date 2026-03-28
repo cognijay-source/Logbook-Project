@@ -95,9 +95,9 @@ export async function getDashboardData(): Promise<{
     const medical = pp
       ? evaluateMedical(
           pp.medicalClass,
-          pp.medicalIssueDate,
+          null,
           pp.medicalExpiry?.toISOString().split('T')[0] ?? null,
-          pp.dateOfBirth,
+          null,
         )
       : null
 

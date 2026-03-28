@@ -381,11 +381,13 @@ function DashboardSkeleton() {
 // ---------------------------------------------------------------------------
 
 export default function DashboardPage() {
-  const { data, isLoading, error } = useQuery({
+  const { data: result, isLoading, error } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => getDashboardData(),
     staleTime: 5 * 60 * 1000,
   })
+
+  const data = result?.data ?? null
 
   const onboarding = useQuery({
     queryKey: ['onboarding-status'],
@@ -402,7 +404,7 @@ export default function DashboardPage() {
     )
   }
 
-  if (error || !data) {
+  if (error || result?.error || !data) {
     return (
       <div className="animate-fade-in space-y-6">
         <h1 className="font-heading text-[28px] font-semibold">Daily</h1>

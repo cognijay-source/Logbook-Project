@@ -37,9 +37,9 @@ export async function getCurrencyStatus(): Promise<{
     const medical = pp
       ? evaluateMedical(
           pp.medicalClass,
-          pp.medicalIssueDate,
+          null,
           pp.medicalExpiry?.toISOString().split('T')[0] ?? null,
-          pp.dateOfBirth,
+          null,
         )
       : null
 
@@ -76,9 +76,9 @@ export async function refreshCurrency(): Promise<{
     const medical = pp
       ? evaluateMedical(
           pp.medicalClass,
-          pp.medicalIssueDate,
+          null,
           pp.medicalExpiry?.toISOString().split('T')[0] ?? null,
-          pp.dateOfBirth,
+          null,
         )
       : null
 

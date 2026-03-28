@@ -166,7 +166,6 @@ export async function updatePreferences(formData: FormData) {
       .set({
         timeFormat: values.timeFormat,
         timezone: values.timezone,
-        trainingEnvironment: values.trainingEnvironment ?? 'part_61',
         updatedAt: new Date(),
       })
       .where(eq(schema.profiles.id, profile.id))
