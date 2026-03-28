@@ -2,9 +2,12 @@
 
 import { useRef, useState, useTransition } from 'react'
 import * as Sentry from '@sentry/nextjs'
+import { Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { lookupAircraftType } from '@/app/(dashboard)/aircraft/actions'
+import type { AircraftTypeInfo } from '@/lib/services/faa-registry'
 
 type AircraftData = {
   id?: string
@@ -62,6 +65,50 @@ export function AircraftForm({
   const formRef = useRef<HTMLFormElement>(null)
   const [isPending, startTransition] = useTransition()
   const [errors, setErrors] = useState<Record<string, string[]>>({})
+  const [lookupResults, setLookupResults] = useState<AircraftTypeInfo[]>([])
+  const [lookupLoading, setLookupLoading] = useState(false)
+  const [lookupQuery, setLookupQuery] = useState('')
+
+  async function handleLookup() {
+    const model = formRef.current
+      ? (new FormData(formRef.current).get('model') as string)
+      : ''
+    const manufacturer = formRef.current
+      ? (new FormData(formRef.current).get('manufacturer') as string)
+      : ''
+    const query = `${manufacturer} ${model}`.trim()
+    if (query.length < 2) return
+
+    setLookupLoading(true)
+    setLookupQuery(query)
+    try {
+      const result = await lookupAircraftType(query)
+      setLookupResults(result.data)
+    } catch (error) {
+      Sentry.captureException(error)
+    } finally {
+      setLookupLoading(false)
+    }
+  }
+
+  function applyLookup(info: AircraftTypeInfo) {
+    if (!formRef.current) return
+    const form = formRef.current
+    const set = (name: string, value: string) => {
+      const el = form.elements.namedItem(name) as
+        | HTMLInputElement
+        | HTMLSelectElement
+        | null
+      if (el) el.value = value
+    }
+    set('manufacturer', info.manufacturer)
+    set('model', info.model)
+    set('category', info.category)
+    set('aircraftClass', info.class)
+    set('engineType', info.engineType)
+    setLookupResults([])
+    setLookupQuery('')
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -137,6 +184,48 @@ export function AircraftForm({
           />
         </div>
       </div>
+
+      <div className="flex items-end gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleLookup}
+          disabled={lookupLoading}
+        >
+          <Search className="mr-2 h-4 w-4" />
+          {lookupLoading ? 'Searching...' : 'Look up type'}
+        </Button>
+        <p className="text-muted-foreground text-xs">
+          Search by manufacturer or model to auto-fill category, class, and
+          engine type.
+        </p>
+      </div>
+
+      {lookupResults.length > 0 && (
+        <div className="rounded-md border">
+          <div className="bg-muted/50 px-3 py-2 text-xs font-medium">
+            Results for &quot;{lookupQuery}&quot; &mdash; click to apply
+          </div>
+          <div className="max-h-48 overflow-y-auto">
+            {lookupResults.map((info, i) => (
+              <button
+                key={`${info.manufacturer}-${info.model}-${i}`}
+                type="button"
+                className="hover:bg-muted w-full px-3 py-2 text-left text-sm"
+                onClick={() => applyLookup(info)}
+              >
+                <span className="font-medium">
+                  {info.manufacturer} {info.model}
+                </span>
+                <span className="text-muted-foreground ml-2 text-xs">
+                  {info.category} / {info.class} / {info.engineType}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
