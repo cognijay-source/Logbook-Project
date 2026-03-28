@@ -14,7 +14,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { navItems } from '@/components/dashboard/sidebar-nav'
+import { navGroups } from '@/components/dashboard/sidebar-nav'
 
 export function MobileNav() {
   const pathname = usePathname()
@@ -40,34 +40,45 @@ export function MobileNav() {
           </SheetDescription>
         </SheetHeader>
         <nav className="grid gap-0.5 px-3">
-          {navItems.map((item) => {
-            const isActive =
-              pathname === item.href || pathname.startsWith(item.href + '/')
-            return (
-              <SheetClose key={item.href} asChild>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    'relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                    isActive
-                      ? 'bg-white/[0.08] text-white'
-                      : 'text-[#8a8a9a] hover:bg-white/[0.04] hover:text-white',
-                  )}
-                >
-                  {isActive && (
-                    <div className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[#00d4aa]" />
-                  )}
-                  <item.icon
-                    className={cn(
-                      'h-4 w-4',
-                      isActive ? 'text-[#00d4aa]' : 'text-[#6b6b7b]',
-                    )}
-                  />
-                  {item.label}
-                </Link>
-              </SheetClose>
-            )
-          })}
+          {navGroups.map((group, groupIndex) => (
+            <div key={group.label}>
+              {groupIndex > 0 && (
+                <div className="border-t border-white/5 mt-4 mb-1" />
+              )}
+              <div className="px-3 mt-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/30">
+                {group.label}
+              </div>
+              {group.items.map((item) => {
+                const isActive =
+                  pathname === item.href ||
+                  pathname.startsWith(item.href + '/')
+                return (
+                  <SheetClose key={item.href} asChild>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        'relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                        isActive
+                          ? 'bg-white/[0.08] text-white'
+                          : 'text-[#8a8a9a] hover:bg-white/[0.04] hover:text-white',
+                      )}
+                    >
+                      {isActive && (
+                        <div className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[#00d4aa]" />
+                      )}
+                      <item.icon
+                        className={cn(
+                          'h-4 w-4',
+                          isActive ? 'text-[#00d4aa]' : 'text-[#6b6b7b]',
+                        )}
+                      />
+                      {item.label}
+                    </Link>
+                  </SheetClose>
+                )
+              })}
+            </div>
+          ))}
         </nav>
       </SheetContent>
     </Sheet>
