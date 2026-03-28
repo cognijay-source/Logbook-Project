@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { FileText } from 'lucide-react'
+import { DocumentsIllustration } from '@/components/empty-state-illustrations'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -70,7 +70,7 @@ export function DocumentsClient({ documents }: Props) {
       {/* Document list */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16">
-          <FileText className="text-muted-foreground mb-4 h-12 w-12" />
+          <div className="mb-4"><DocumentsIllustration /></div>
           <h2 className="text-lg font-semibold">No documents</h2>
           <p className="text-muted-foreground text-sm">
             {categoryFilter === 'all'

@@ -19,6 +19,7 @@ import { SummaryCards } from '@/components/money/summary-cards'
 import { EntryCard } from '@/components/money/entry-card'
 import { FinancialEntryForm } from '@/components/money/financial-entry-form'
 import type { FinancialEntryCreate } from '@/lib/validators/financial'
+import { PageTransition } from '@/components/page-transition'
 import { useToast } from '@/hooks/use-toast'
 import {
   getFinancialEntries,
@@ -181,10 +182,11 @@ export default function MoneyPage() {
   const isSubmitting = createMutation.isPending || updateMutation.isPending
 
   return (
+    <PageTransition>
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-3xl font-bold">Costs</h1>
+          <h1 className="font-heading text-3xl font-bold">💰 Costs</h1>
           <p className="text-muted-foreground mt-1">
             Expenses, income, and financial position.
           </p>
@@ -330,5 +332,6 @@ export default function MoneyPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </PageTransition>
   )
 }

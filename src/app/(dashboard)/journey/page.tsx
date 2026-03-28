@@ -27,7 +27,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
-  Award,
   Calendar,
   CheckCircle2,
   Circle,
@@ -35,6 +34,8 @@ import {
   RefreshCw,
   Trash2,
 } from 'lucide-react'
+import { MasteryIllustration } from '@/components/empty-state-illustrations'
+import { PageTransition } from '@/components/page-transition'
 import { useState } from 'react'
 
 export default function JourneyPage() {
@@ -87,6 +88,7 @@ export default function JourneyPage() {
 
   if (isLoading) {
     return (
+      <PageTransition>
       <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
         <div className="grid gap-4 md:grid-cols-2">
@@ -95,14 +97,16 @@ export default function JourneyPage() {
           ))}
         </div>
       </div>
+      </PageTransition>
     )
   }
 
   if (isError) {
     return (
+      <PageTransition>
       <div className="space-y-6">
         <h1 className="font-heading text-3xl font-bold tracking-tight">
-          Mastery
+          🏆 Mastery
         </h1>
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
           <p className="text-sm text-red-800 dark:text-red-200">
@@ -110,6 +114,7 @@ export default function JourneyPage() {
           </p>
         </div>
       </div>
+      </PageTransition>
     )
   }
 
@@ -117,11 +122,12 @@ export default function JourneyPage() {
   const pendingCount = evaluation?.pending.length ?? 0
 
   return (
+    <PageTransition>
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-heading text-3xl font-bold tracking-tight">
-            Mastery
+            🏆 Mastery
           </h1>
           <p className="text-muted-foreground">
             {achievedCount} {achievedCount === 1 ? 'milestone' : 'milestones'}{' '}
@@ -266,7 +272,7 @@ export default function JourneyPage() {
                         </div>
                         <div className="bg-muted h-1.5 w-full rounded-full">
                           <div
-                            className="h-1.5 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 transition-all duration-700 ease-out"
+                            className="h-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-700 ease-out"
                             style={{
                               width: `${Math.min(100, m.progress)}%`,
                             }}
@@ -287,7 +293,7 @@ export default function JourneyPage() {
         (!evaluation || evaluation.pending.length === 0) && (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <Award className="text-muted-foreground/50 mb-4 h-12 w-12" />
+              <div className="mb-4"><MasteryIllustration /></div>
               <CardTitle className="mb-2 text-lg">No milestones yet</CardTitle>
               <CardDescription className="max-w-sm">
                 Milestones appear here as you build flight time and reach career
@@ -297,5 +303,6 @@ export default function JourneyPage() {
           </Card>
         )}
     </div>
+    </PageTransition>
   )
 }

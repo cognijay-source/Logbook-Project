@@ -15,6 +15,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
 import type { CurrencyResult } from '@/lib/services/currency-evaluator'
+import { PageTransition } from '@/components/page-transition'
 import { getCurrencyStatus, refreshCurrency } from './actions'
 
 function StatusBadge({ status }: { status: CurrencyResult['status'] }) {
@@ -123,10 +124,11 @@ export default function CurrencyPage() {
   })
 
   return (
+    <PageTransition>
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-3xl font-bold">Currency</h1>
+          <h1 className="font-heading text-3xl font-bold">🔄 Currency</h1>
           <p className="text-muted-foreground mt-1">
             FAR 61 currency status and compliance tracking.
           </p>
@@ -180,5 +182,6 @@ export default function CurrencyPage() {
         </div>
       )}
     </div>
+    </PageTransition>
   )
 }

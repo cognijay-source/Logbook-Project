@@ -7,12 +7,13 @@ import {
   PlusCircle,
   Pencil,
   Trash2,
-  GraduationCap,
   Award,
   FileCheck,
   BookOpen,
 } from 'lucide-react'
+import { TrainingIllustration } from '@/components/empty-state-illustrations'
 
+import { PageTransition } from '@/components/page-transition'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -116,9 +117,10 @@ const ENDORSEMENT_TYPES = [
 
 export default function TrainingPage() {
   return (
+    <PageTransition>
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-3xl font-bold">Training</h1>
+        <h1 className="font-heading text-3xl font-bold">📚 Training</h1>
         <p className="text-muted-foreground mt-1">
           Track training events, certificates, and endorsements
         </p>
@@ -151,6 +153,7 @@ export default function TrainingPage() {
         </TabsContent>
       </Tabs>
     </div>
+    </PageTransition>
   )
 }
 
@@ -300,7 +303,7 @@ function TrainingEntriesTab() {
 
       {data && data.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16">
-          <GraduationCap className="text-muted-foreground mb-4 h-12 w-12" />
+          <div className="mb-4"><TrainingIllustration /></div>
           <h2 className="text-lg font-semibold">No training entries yet</h2>
           <p className="text-muted-foreground mb-6 text-sm">
             Log ground school, simulator sessions, and flight training.
@@ -641,7 +644,7 @@ function CertificatesTab() {
 
       {data && data.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16">
-          <Award className="text-muted-foreground mb-4 h-12 w-12" />
+          <div className="mb-4"><TrainingIllustration /></div>
           <h2 className="text-lg font-semibold">No certificates yet</h2>
           <p className="text-muted-foreground mb-6 text-sm">
             Track your pilot certificates and ratings.
@@ -989,7 +992,7 @@ function EndorsementsTab() {
 
       {data && data.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16">
-          <FileCheck className="text-muted-foreground mb-4 h-12 w-12" />
+          <div className="mb-4"><TrainingIllustration /></div>
           <h2 className="text-lg font-semibold">No endorsements yet</h2>
           <p className="text-muted-foreground mb-6 text-sm">
             Track your instructor endorsements.

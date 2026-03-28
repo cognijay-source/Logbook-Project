@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { PlusCircle, Plane } from 'lucide-react'
+import { PlusCircle } from 'lucide-react'
+import { AircraftIllustration } from '@/components/empty-state-illustrations'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -58,7 +59,7 @@ export function AircraftListClient({ aircraft }: AircraftListClientProps) {
   if (aircraft.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16">
-        <Plane className="text-muted-foreground mb-4 h-12 w-12" />
+        <div className="mb-4"><AircraftIllustration /></div>
         <h2 className="text-lg font-semibold">No aircraft yet</h2>
         <p className="text-muted-foreground mb-6 text-sm">
           Add an aircraft to begin logging against it.

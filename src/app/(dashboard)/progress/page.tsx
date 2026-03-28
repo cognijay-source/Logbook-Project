@@ -23,6 +23,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { PageTransition } from '@/components/page-transition'
+import { CountUp } from '@/components/count-up'
+import { ReadyIllustration } from '@/components/empty-state-illustrations'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Target, TrendingUp, CheckSquare } from 'lucide-react'
 import { useState } from 'react'
@@ -74,6 +77,7 @@ export default function ProgressPage() {
 
   if (isLoading) {
     return (
+      <PageTransition>
       <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -82,14 +86,16 @@ export default function ProgressPage() {
           ))}
         </div>
       </div>
+      </PageTransition>
     )
   }
 
   if (isError) {
     return (
+      <PageTransition>
       <div className="space-y-6">
         <h1 className="font-heading text-3xl font-bold tracking-tight">
-          Ready
+          🎯 Ready
         </h1>
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
           <p className="text-sm text-red-800 dark:text-red-200">
@@ -97,6 +103,7 @@ export default function ProgressPage() {
           </p>
         </div>
       </div>
+      </PageTransition>
     )
   }
 
@@ -104,11 +111,12 @@ export default function ProgressPage() {
   const progress = data?.progress
 
   return (
+    <PageTransition>
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-heading text-3xl font-bold tracking-tight">
-            Ready
+            🎯 Ready
           </h1>
           <p className="text-muted-foreground">
             {progress
@@ -177,7 +185,7 @@ export default function ProgressPage() {
                   </div>
                   <div className="bg-muted mb-1 h-2 w-full rounded-full">
                     <div
-                      className={`h-2 rounded-full transition-all duration-700 ease-out ${req.percentage >= 100 ? 'bg-gradient-to-r from-green-500 to-emerald-400' : 'bg-gradient-to-r from-sky-500 to-cyan-400'}`}
+                      className={`h-2 rounded-full transition-all duration-700 ease-out ${req.percentage >= 100 ? 'bg-gradient-to-r from-green-500 to-emerald-400' : 'bg-gradient-to-r from-emerald-500 to-emerald-400'}`}
                       style={{
                         width: `${Math.min(100, req.percentage)}%`,
                       }}
@@ -256,7 +264,7 @@ export default function ProgressPage() {
                 <CardContent className="p-4">
                   <p className="text-muted-foreground text-sm">{label}</p>
                   <p className="text-2xl font-bold tabular-nums">
-                    {value.toFixed(1)}
+                    {value > 0 ? <CountUp value={value} /> : '\u2014'}
                   </p>
                 </CardContent>
               </Card>
@@ -297,7 +305,9 @@ export default function ProgressPage() {
       {totals && totals.totalFlights === 0 && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <Target className="text-muted-foreground/50 mb-4 h-12 w-12" />
+            <div className="mb-4">
+              <ReadyIllustration />
+            </div>
             <CardTitle className="mb-2 text-lg">
               No flights logged yet
             </CardTitle>
@@ -309,5 +319,6 @@ export default function ProgressPage() {
         </Card>
       )}
     </div>
+    </PageTransition>
   )
 }

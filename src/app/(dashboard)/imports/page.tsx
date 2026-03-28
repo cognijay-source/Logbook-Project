@@ -11,6 +11,7 @@ import { ColumnMappingStep } from '@/components/imports/column-mapping'
 import { ImportHistory } from '@/components/imports/import-history'
 import { BatchDetails } from '@/components/imports/batch-details'
 import { AiImportSection } from '@/components/imports/ai-import-section'
+import { PageTransition } from '@/components/page-transition'
 import { uploadCsv, processImportBatch } from './actions'
 import { autoDetectMapping, type ColumnMapping } from '@/lib/validators/import'
 
@@ -126,9 +127,10 @@ export default function ImportsPage() {
   }, [])
 
   return (
+    <PageTransition>
     <div className="space-y-8">
       <div>
-        <h1 className="font-heading text-3xl font-bold">Imports</h1>
+        <h1 className="font-heading text-3xl font-bold">📥 Imports</h1>
         <p className="text-muted-foreground mt-2">
           Bring in flight records from other logbooks.
         </p>
@@ -247,5 +249,6 @@ export default function ImportsPage() {
         </TabsContent>
       </Tabs>
     </div>
+    </PageTransition>
   )
 }
