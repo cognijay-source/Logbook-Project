@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -29,6 +29,16 @@ import {
   type FlightDetail,
   type AircraftOption,
 } from '@/app/(dashboard)/flights/actions'
+import {
+  createTemplate,
+  type FlightTemplate,
+} from '@/app/(dashboard)/flights/template-actions'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 // ---------- Form schema ----------
 
@@ -101,6 +111,7 @@ type FormValues = z.infer<typeof formSchema>
 interface FlightFormProps {
   initialData?: FlightDetail
   aircraftList: AircraftOption[]
+  template?: FlightTemplate | null
 }
 
 // ---------- Helpers ----------
@@ -152,7 +163,11 @@ const CREW_ROLES = [
 
 // ---------- Component ----------
 
-export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
+export function FlightForm({
+  initialData,
+  aircraftList,
+  template,
+}: FlightFormProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [saving, setSaving] = useState(false)
@@ -161,6 +176,8 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
     (initialData?.approaches?.length ?? 0) > 0,
   )
   const [crewOpen, setCrewOpen] = useState((initialData?.crew?.length ?? 0) > 0)
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false)
+  const [templateName, setTemplateName] = useState('')
   const isMobile = useMediaQuery('(max-width: 767px)')
 
   const isEdit = !!initialData
@@ -263,6 +280,42 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
     name: 'approaches',
   })
   const crewField = useFieldArray({ control: form.control, name: 'crew' })
+
+  // Apply template values when template changes
+  useEffect(() => {
+    if (template && !isEdit) {
+      if (template.aircraftId) form.setValue('aircraftId', template.aircraftId)
+      if (template.departureAirport)
+        form.setValue('departureAirport', template.departureAirport)
+      if (template.arrivalAirport)
+        form.setValue('arrivalAirport', template.arrivalAirport)
+      if (template.route) form.setValue('route', template.route)
+      if (template.operationType)
+        form.setValue('operationType', template.operationType)
+      if (template.role) form.setValue('roleType', template.role)
+    }
+  }, [template, isEdit, form])
+
+  async function handleSaveAsTemplate() {
+    if (!templateName.trim()) return
+    const values = form.getValues()
+    const result = await createTemplate({
+      name: templateName.trim(),
+      aircraftId: values.aircraftId || undefined,
+      departureAirport: values.departureAirport || undefined,
+      arrivalAirport: values.arrivalAirport || undefined,
+      route: values.route || undefined,
+      operationType: values.operationType || undefined,
+      role: values.roleType || undefined,
+    })
+    if (result.error) {
+      toast({ title: 'Error', description: result.error, variant: 'destructive' })
+    } else {
+      toast({ title: 'Template saved' })
+    }
+    setTemplateDialogOpen(false)
+    setTemplateName('')
+  }
 
   async function onSubmit(values: FormValues, status: 'draft' | 'final') {
     setSaving(true)
@@ -484,10 +537,57 @@ export function FlightForm({ initialData, aircraftList }: FlightFormProps) {
         onSubmit={form.handleSubmit((v) => onSubmit(v, v.status))}
         className="space-y-6"
       >
+        {/* ---- Save as Template Dialog ---- */}
+        <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Save as Template</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <Label htmlFor="template-name">Template Name</Label>
+                <Input
+                  id="template-name"
+                  value={templateName}
+                  onChange={(e) => setTemplateName(e.target.value)}
+                  placeholder='e.g. "Local Training — KBED"'
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setTemplateDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSaveAsTemplate}
+                  disabled={!templateName.trim()}
+                >
+                  Save Template
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* ---- Flight Info ---- */}
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Flight Details</CardTitle>
+            {!isEdit && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setTemplateDialogOpen(true)}
+                className="text-xs text-muted-foreground"
+              >
+                Save as Template
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
