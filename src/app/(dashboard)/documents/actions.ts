@@ -1,7 +1,7 @@
 'use server'
 
 import * as Sentry from '@sentry/nextjs'
-import { eq, and, desc } from 'drizzle-orm'
+import { eq, and, desc, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import * as schema from '@/lib/db/schema'
@@ -129,42 +129,52 @@ export async function uploadDocument(formData: FormData): Promise<{
 
 // ---------- Get Documents ----------
 
-export async function getDocuments(
-  category?: string,
-): Promise<{ data: DocumentRecord[]; error: string | null }> {
+export async function getDocuments(params?: {
+  category?: string
+  page?: number
+  pageSize?: number
+}): Promise<{
+  data: DocumentRecord[]
+  total: number
+  page: number
+  pageSize: number
+  error: string | null
+}> {
   try {
     const profile = await getOrCreateProfile()
+    const page = params?.page ?? 1
+    const pageSize = params?.pageSize ?? 50
+    const category = params?.category
+    const conditions = [eq(schema.documents.profileId, profile.id)]
 
     if (category && category !== 'all') {
       const parsed = documentCategoryEnum.safeParse(category)
       if (!parsed.success) {
-        return { data: [], error: 'Invalid category' }
+        return { data: [], total: 0, page, pageSize, error: 'Invalid category' }
       }
-
-      const rows = await db
-        .select()
-        .from(schema.documents)
-        .where(
-          and(
-            eq(schema.documents.profileId, profile.id),
-            eq(schema.documents.documentType, parsed.data),
-          ),
-        )
-        .orderBy(desc(schema.documents.createdAt))
-
-      return { data: rows, error: null }
+      conditions.push(eq(schema.documents.documentType, parsed.data))
     }
 
-    const rows = await db
-      .select()
-      .from(schema.documents)
-      .where(eq(schema.documents.profileId, profile.id))
-      .orderBy(desc(schema.documents.createdAt))
+    const [rows, countResult] = await Promise.all([
+      db
+        .select()
+        .from(schema.documents)
+        .where(and(...conditions))
+        .orderBy(desc(schema.documents.createdAt))
+        .limit(pageSize)
+        .offset((page - 1) * pageSize),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.documents)
+        .where(and(...conditions)),
+    ])
 
-    return { data: rows, error: null }
+    const total = Number(countResult[0]?.count) || 0
+
+    return { data: rows, total, page, pageSize, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    return { data: [], error: 'Failed to load documents' }
+    return { data: [], total: 0, page: params?.page ?? 1, pageSize: params?.pageSize ?? 50, error: 'Failed to load documents' }
   }
 }
 

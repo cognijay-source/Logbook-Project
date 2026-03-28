@@ -1,6 +1,6 @@
 import { task } from '@trigger.dev/sdk/v3'
 import * as Sentry from '@sentry/nextjs'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, sql } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import * as schema from '@/lib/db/schema'
 import { importRowSchema } from '@/lib/validators/import'
@@ -88,6 +88,7 @@ export const importProcessingTask = task({
 
     let totalProcessed = 0
     let totalErrored = 0
+    let totalSkippedDuplicates = 0
 
     // Process in chunks of CHUNK_SIZE
     for (let i = 0; i < allRows.length; i += CHUNK_SIZE) {
@@ -171,6 +172,41 @@ export const importProcessingTask = task({
             }
           }
 
+          // Check for duplicate flight
+          const existingFlight = await db
+            .select({ id: schema.flights.id })
+            .from(schema.flights)
+            .where(
+              and(
+                eq(schema.flights.profileId, profileId),
+                eq(schema.flights.flightDate, validRow.flightDate),
+                sql`${schema.flights.departureAirport} IS NOT DISTINCT FROM ${validRow.departureAirport ?? null}`,
+                sql`${schema.flights.arrivalAirport} IS NOT DISTINCT FROM ${validRow.arrivalAirport ?? null}`,
+                sql`${schema.flights.totalTime}::numeric IS NOT DISTINCT FROM ${validRow.totalTime !== undefined ? String(validRow.totalTime) : null}::numeric`,
+              ),
+            )
+            .limit(1)
+
+          if (existingFlight.length > 0) {
+            await db
+              .update(schema.importRows)
+              .set({
+                normalizedData: mapped,
+                status: 'errored',
+                errors: [
+                  {
+                    path: 'duplicate',
+                    message: 'Duplicate flight — skipped',
+                  },
+                ],
+                updatedAt: new Date(),
+              })
+              .where(eq(schema.importRows.id, row.id))
+
+            totalSkippedDuplicates++
+            continue
+          }
+
           // Insert flight
           const insertedFlight = await db
             .insert(schema.flights)
@@ -195,6 +231,11 @@ export const importProcessingTask = task({
               turbine: toStr(validRow.turbine),
               dayLandings: validRow.dayLandings ?? 0,
               nightLandings: validRow.nightLandings ?? 0,
+              // Conservative assumption: if the import source doesn't distinguish
+              // full-stop from touch-and-go night landings, treat all night
+              // landings as full-stop. This matches ForeFlight behavior where
+              // "Night Landings" typically means full-stop per § 61.57(b).
+              nightLandingsFullStop: validRow.nightLandings ?? 0,
               holds: validRow.holds ?? 0,
               remarks: validRow.remarks,
               status: 'draft',
@@ -250,13 +291,14 @@ export const importProcessingTask = task({
     }
 
     // Final batch status update
+    const totalErrors = totalErrored + totalSkippedDuplicates
     await db
       .update(schema.importBatches)
       .set({
         status:
-          totalErrored > 0 && totalProcessed === 0 ? 'failed' : 'completed',
+          totalErrors > 0 && totalProcessed === 0 ? 'failed' : 'completed',
         processedRows: totalProcessed,
-        errorRows: totalErrored,
+        errorRows: totalErrors,
         completedAt: new Date(),
         updatedAt: new Date(),
       })
@@ -267,12 +309,16 @@ export const importProcessingTask = task({
       entityType: 'importBatch',
       entityId: batchId,
       action: 'update',
-      changes: { processed: totalProcessed, errored: totalErrored },
+      changes: {
+        processed: totalProcessed,
+        errored: totalErrored,
+        skippedDuplicates: totalSkippedDuplicates,
+      },
       metadata: { action: 'importProcessingTask' },
     })
 
     console.log(
-      `[import-processing] Done — ${totalProcessed} processed, ${totalErrored} errored`,
+      `[import-processing] Done — ${totalProcessed} processed, ${totalErrored} errored, ${totalSkippedDuplicates} skipped (duplicate)`,
     )
 
     return {
@@ -280,6 +326,7 @@ export const importProcessingTask = task({
       batchId,
       processed: totalProcessed,
       errored: totalErrored,
+      skippedDuplicates: totalSkippedDuplicates,
     }
   },
 })

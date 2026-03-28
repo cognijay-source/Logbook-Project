@@ -30,7 +30,10 @@ interface FlightData {
     flightDate: string
     dayLandings: number | null
     nightLandings: number | null
+    nightLandingsFullStop: number | null
     holds: number | null
+    aircraftCategory: string | null
+    aircraftClass: string | null
   }[]
   approachCount6m: number
   approachCount12m: number
@@ -39,6 +42,9 @@ interface FlightData {
   pilotProfile: { flightReviewDate: Date | null } | null
   latestCheckride: { flightDate: string } | null
   latestFlightReviewTraining: { entryDate: string } | null
+  latestWingsPhase: { entryDate: string } | null
+  latestProficiencyCheck: { entryDate: string } | null
+  lastInstrumentEventDate: string | null
 }
 
 async function prefetchFlightData(
@@ -55,16 +61,26 @@ async function prefetchFlightData(
     pilotProfileResult,
     checkrideResult,
     trainingResult,
+    wingsResult,
+    profCheckResult,
+    lastInstrumentEventResult,
   ] = await Promise.all([
-    // All flights in last 90 days with landings
+    // All flights in last 90 days with landings, joined to aircraft for category/class
     db
       .select({
         flightDate: schema.flights.flightDate,
         dayLandings: schema.flights.dayLandings,
         nightLandings: schema.flights.nightLandings,
+        nightLandingsFullStop: schema.flights.nightLandingsFullStop,
         holds: schema.flights.holds,
+        aircraftCategory: schema.aircraft.category,
+        aircraftClass: schema.aircraft.aircraftClass,
       })
       .from(schema.flights)
+      .leftJoin(
+        schema.aircraft,
+        eq(schema.flights.aircraftId, schema.aircraft.id),
+      )
       .where(
         and(
           eq(schema.flights.profileId, profileId),
@@ -148,6 +164,47 @@ async function prefetchFlightData(
       )
       .orderBy(desc(schema.trainingEntries.entryDate))
       .limit(1),
+    // Latest WINGS phase completion
+    db
+      .select({ entryDate: schema.trainingEntries.entryDate })
+      .from(schema.trainingEntries)
+      .where(
+        and(
+          eq(schema.trainingEntries.profileId, profileId),
+          eq(schema.trainingEntries.entryType, 'wings_phase'),
+        ),
+      )
+      .orderBy(desc(schema.trainingEntries.entryDate))
+      .limit(1),
+    // Latest proficiency check
+    db
+      .select({ entryDate: schema.trainingEntries.entryDate })
+      .from(schema.trainingEntries)
+      .where(
+        and(
+          eq(schema.trainingEntries.profileId, profileId),
+          eq(schema.trainingEntries.entryType, 'proficiency_check'),
+        ),
+      )
+      .orderBy(desc(schema.trainingEntries.entryDate))
+      .limit(1),
+    // Last instrument qualifying event (approach or hold) in 12 months for grace period calc
+    db
+      .select({ flightDate: schema.flights.flightDate })
+      .from(schema.flights)
+      .innerJoin(
+        schema.flightApproaches,
+        eq(schema.flightApproaches.flightId, schema.flights.id),
+      )
+      .where(
+        and(
+          eq(schema.flights.profileId, profileId),
+          eq(schema.flights.status, 'final'),
+          gte(schema.flights.flightDate, twelveMonthCutoff),
+        ),
+      )
+      .orderBy(desc(schema.flights.flightDate))
+      .limit(1),
   ])
 
   // Compute holds totals for 6m and 12m from the single query
@@ -168,7 +225,39 @@ async function prefetchFlightData(
     pilotProfile: pilotProfileResult[0] ?? null,
     latestCheckride: checkrideResult[0] ?? null,
     latestFlightReviewTraining: trainingResult[0] ?? null,
+    latestWingsPhase: wingsResult[0] ?? null,
+    latestProficiencyCheck: profCheckResult[0] ?? null,
+    lastInstrumentEventDate: lastInstrumentEventResult[0]?.flightDate ?? null,
   }
+}
+
+const CATEGORY_CLASS_LABELS: Record<string, string> = {
+  'airplane|single-engine land': 'ASEL',
+  'airplane|multi-engine land': 'AMEL',
+  'airplane|single-engine sea': 'ASES',
+  'airplane|multi-engine sea': 'AMES',
+  'rotorcraft|helicopter': 'Rotorcraft/Helicopter',
+  'rotorcraft|gyroplane': 'Rotorcraft/Gyroplane',
+  'glider|glider': 'Glider',
+}
+
+function formatCategoryClass(catClass: string): string {
+  return CATEGORY_CLASS_LABELS[catClass] ?? catClass.replace('|', ' / ')
+}
+
+function groupByCategoryClass(
+  flights: FlightData['landingFlights'],
+): Map<string, FlightData['landingFlights']> {
+  const groups = new Map<string, FlightData['landingFlights']>()
+  for (const f of flights) {
+    const cat = f.aircraftCategory ?? 'airplane'
+    const cls = f.aircraftClass ?? 'single-engine land'
+    const key = `${cat}|${cls}`
+    const list = groups.get(key) ?? []
+    list.push(f)
+    groups.set(key, list)
+  }
+  return groups
 }
 
 export async function evaluateCurrency(
@@ -192,24 +281,46 @@ export async function evaluateCurrency(
 
     const results: CurrencyResult[] = []
 
-    for (const rule of rules) {
-      let result: CurrencyResult
+    // Group landing flights by category+class for per-type currency (§ 61.57(a)/(b))
+    const categoryClassGroups = groupByCategoryClass(
+      flightData.landingFlights,
+    )
 
+    for (const rule of rules) {
       switch (rule.code) {
         case 'passenger_day':
-          result = evaluatePassengerDay(rule, flightData, now)
+          // Evaluate per category/class per § 61.57(a)
+          for (const [catClass, flights] of categoryClassGroups) {
+            results.push(
+              evaluatePassengerDay(rule, flights, now, catClass),
+            )
+          }
+          // If no flights at all, show one generic expired result
+          if (categoryClassGroups.size === 0) {
+            results.push(evaluatePassengerDay(rule, [], now, null))
+          }
           break
         case 'passenger_night':
-          result = evaluatePassengerNight(rule, flightData, now)
+          // Evaluate per category/class per § 61.57(b)
+          for (const [catClass, flights] of categoryClassGroups) {
+            results.push(
+              evaluatePassengerNight(rule, flights, now, catClass),
+            )
+          }
+          if (categoryClassGroups.size === 0) {
+            results.push(evaluatePassengerNight(rule, [], now, null))
+          }
           break
         case 'instrument':
-          result = evaluateInstrument(rule, flightData, now, sixMonthCutoff)
+          results.push(
+            evaluateInstrument(rule, flightData, now, sixMonthCutoff),
+          )
           break
         case 'flight_review':
-          result = evaluateFlightReview(rule, flightData, now)
+          results.push(evaluateFlightReview(rule, flightData, now))
           break
         default:
-          result = {
+          results.push({
             rule,
             status: 'expired',
             isCurrent: null,
@@ -217,11 +328,9 @@ export async function evaluateCurrency(
             details: `No evaluator implemented for rule: ${rule.code}`,
             needed: null,
             evaluatedAt: now.toISOString(),
-          }
+          })
           break
       }
-
-      results.push(result)
     }
 
     return results
@@ -238,11 +347,13 @@ export async function evaluateCurrency(
  */
 function evaluatePassengerDay(
   rule: typeof schema.currencyRuleDefinitions.$inferSelect,
-  flightData: FlightData,
+  flights: FlightData['landingFlights'],
   now: Date,
+  catClass: string | null,
 ): CurrencyResult {
   const requiredCount = rule.requiredCount ?? 3
-  const flights = flightData.landingFlights
+  const label = catClass ? formatCategoryClass(catClass) : ''
+  const suffix = label ? ` (${label})` : ''
 
   const total = flights.reduce((sum, f) => sum + (f.dayLandings ?? 0), 0)
   const isCurrent = total >= requiredCount
@@ -253,14 +364,17 @@ function evaluatePassengerDay(
 
   const status = computeStatus(isCurrent, expiresAt, now)
   const deficit = requiredCount - total
-  const needed = deficit > 0 ? `Need ${deficit} more day landing(s)` : null
+  const needed = deficit > 0 ? `Need ${deficit} more day landing(s)${suffix}` : null
 
   return {
-    rule,
+    rule: {
+      ...rule,
+      name: label ? `${rule.name} — ${label}` : rule.name,
+    },
     status,
     isCurrent,
     expiresAt,
-    details: `${total} day landing(s) in last 90 days (${requiredCount} required)`,
+    details: `${total} day landing(s) in last 90 days${suffix} (${requiredCount} required)`,
     needed,
     evaluatedAt: now.toISOString(),
   }
@@ -272,29 +386,46 @@ function evaluatePassengerDay(
  */
 function evaluatePassengerNight(
   rule: typeof schema.currencyRuleDefinitions.$inferSelect,
-  flightData: FlightData,
+  flights: FlightData['landingFlights'],
   now: Date,
+  catClass: string | null,
 ): CurrencyResult {
   const requiredCount = rule.requiredCount ?? 3
-  const flights = flightData.landingFlights
+  const label = catClass ? formatCategoryClass(catClass) : ''
+  const suffix = label ? ` (${label})` : ''
 
-  const total = flights.reduce((sum, f) => sum + (f.nightLandings ?? 0), 0)
+  // § 61.57(b) requires full-stop landings at night — touch-and-go do not count
+  const total = flights.reduce(
+    (sum, f) => sum + (f.nightLandingsFullStop ?? 0),
+    0,
+  )
   const isCurrent = total >= requiredCount
 
   const expiresAt = isCurrent
-    ? findNthLandingExpiry(flights, 'nightLandings', requiredCount, 90)
+    ? findNthLandingExpiry(
+        flights,
+        'nightLandingsFullStop',
+        requiredCount,
+        90,
+      )
     : null
 
   const status = computeStatus(isCurrent, expiresAt, now)
   const deficit = requiredCount - total
-  const needed = deficit > 0 ? `Need ${deficit} more night landing(s)` : null
+  const needed =
+    deficit > 0
+      ? `Need ${deficit} more night full-stop landing(s)${suffix}`
+      : null
 
   return {
-    rule,
+    rule: {
+      ...rule,
+      name: label ? `${rule.name} — ${label}` : rule.name,
+    },
     status,
     isCurrent,
     expiresAt,
-    details: `${total} night landing(s) in last 90 days (${requiredCount} required)`,
+    details: `${total} night full-stop landing(s) in last 90 days${suffix} (${requiredCount} required)`,
     needed,
     evaluatedAt: now.toISOString(),
   }
@@ -324,16 +455,24 @@ function evaluateInstrument(
 
   // If not current in 6 months, check if still in grace period (6-12 months)
   let inGracePeriod = false
+  let graceExpiresAt: string | null = null
   if (!isCurrent) {
     const graceApproaches = flightData.approachCount12m
     const graceHolds = flightData.holdsTotal12m
     inGracePeriod = graceApproaches >= requiredApproaches && graceHolds >= 1
+
+    if (inGracePeriod && flightData.lastInstrumentEventDate) {
+      // Grace period ends at end of calendar month 12 months after last qualifying event
+      graceExpiresAt = endOfCalendarMonth(
+        addCalendarMonths(flightData.lastInstrumentEventDate, 12),
+      )
+    }
   }
 
   // Expiration: end of the 6th calendar month after the most recent qualifying period
   const expiresAt = isCurrent
     ? endOfCalendarMonth(addCalendarMonths(sixMonthCutoff, 6))
-    : null
+    : graceExpiresAt
 
   let status: CurrencyStatus
   let details: string
@@ -344,7 +483,8 @@ function evaluateInstrument(
     details = `${approachCount} approach(es), ${holdsCount} hold(s) in last 6 calendar months`
   } else if (inGracePeriod) {
     status = 'expiring'
-    details = `In grace period — ${approachCount} approach(es), ${holdsCount} hold(s) in last 6 months. Can regain currency with a safety pilot or IPC`
+    const graceEndStr = graceExpiresAt ?? 'unknown'
+    details = `Grace period ends ${graceEndStr}. Complete 6 approaches, holding, and tracking before this date or an IPC will be required`
     const approachDeficit = Math.max(0, requiredApproaches - approachCount)
     const holdDeficit = hasHolds ? 0 : 1
     const parts: string[] = []
@@ -409,6 +549,22 @@ function evaluateFlightReview(
     }
   }
 
+  // Source 4: WINGS phase completion (§ 61.56(e))
+  if (flightData.latestWingsPhase?.entryDate) {
+    const wingsDate = new Date(flightData.latestWingsPhase.entryDate)
+    if (!latestReviewDate || wingsDate > latestReviewDate) {
+      latestReviewDate = wingsDate
+    }
+  }
+
+  // Source 5: Proficiency check (§ 61.56(d))
+  if (flightData.latestProficiencyCheck?.entryDate) {
+    const profCheckDate = new Date(flightData.latestProficiencyCheck.entryDate)
+    if (!latestReviewDate || profCheckDate > latestReviewDate) {
+      latestReviewDate = profCheckDate
+    }
+  }
+
   if (!latestReviewDate) {
     return {
       rule,
@@ -453,8 +609,9 @@ function findNthLandingExpiry(
     flightDate: string
     dayLandings?: number | null
     nightLandings?: number | null
+    nightLandingsFullStop?: number | null
   }[],
-  field: 'dayLandings' | 'nightLandings',
+  field: 'dayLandings' | 'nightLandings' | 'nightLandingsFullStop',
   requiredCount: number,
   periodDays: number,
 ): string | null {

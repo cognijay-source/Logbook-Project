@@ -12,6 +12,14 @@ const optionalUuid = z
   .or(z.literal(''))
   .transform((v) => (v === '' ? undefined : v))
 
+export const paymentMethodEnum = z.enum([
+  'cash',
+  'loan',
+  'scholarship',
+  'gi_bill',
+  'other',
+])
+
 const financialBase = z.object({
   entryType: z.enum(['expense', 'income'], {
     required_error: 'Entry type is required',
@@ -29,6 +37,7 @@ const financialBase = z.object({
   flightId: optionalUuid,
   careerPhase: optionalString,
   vendor: optionalString,
+  paymentMethod: paymentMethodEnum.optional(),
   notes: optionalString,
 })
 
@@ -41,3 +50,22 @@ export type FinancialEntryCreateInput = z.input<
   typeof financialEntryCreateSchema
 >
 export type FinancialEntryUpdate = z.infer<typeof financialEntryUpdateSchema>
+
+// Loan validators
+export const loanCreateSchema = z.object({
+  name: z.string().min(1, 'Loan name is required'),
+  principalAmount: z.coerce
+    .number({ message: 'Principal must be a valid number' })
+    .positive('Principal must be positive'),
+  interestRate: z.coerce.number().min(0).max(1).optional(),
+  monthlyPayment: z.coerce.number().positive().optional(),
+  startDate: z.string().date().optional(),
+  termMonths: z.coerce.number().int().positive().optional(),
+  remainingBalance: z.coerce.number().min(0).optional(),
+  notes: optionalString,
+})
+
+export const loanUpdateSchema = loanCreateSchema.partial()
+
+export type LoanCreate = z.infer<typeof loanCreateSchema>
+export type LoanUpdate = z.infer<typeof loanUpdateSchema>

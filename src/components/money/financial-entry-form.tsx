@@ -40,6 +40,14 @@ const INCOME_CATEGORIES = [
   'Other',
 ]
 
+const PAYMENT_METHODS = [
+  { value: 'cash', label: 'Cash' },
+  { value: 'loan', label: 'Loan' },
+  { value: 'scholarship', label: 'Scholarship' },
+  { value: 'gi_bill', label: 'GI Bill' },
+  { value: 'other', label: 'Other' },
+]
+
 const CAREER_PHASES = [
   'Student',
   'Private',
@@ -73,6 +81,7 @@ export function FinancialEntryForm({
       description: defaultValues?.description ?? '',
       careerPhase: defaultValues?.careerPhase ?? '',
       vendor: defaultValues?.vendor ?? '',
+      paymentMethod: (defaultValues?.paymentMethod as 'cash' | 'loan' | 'scholarship' | 'gi_bill' | 'other') ?? 'cash',
       notes: defaultValues?.notes ?? '',
     },
   })
@@ -232,6 +241,30 @@ export function FinancialEntryForm({
                   {CAREER_PHASES.map((phase) => (
                     <option key={phase} value={phase}>
                       {phase}
+                    </option>
+                  ))}
+                </select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="paymentMethod"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Payment Method</FormLabel>
+              <FormControl>
+                <select
+                  className="border-input bg-background focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                  value={field.value ?? 'cash'}
+                  onChange={field.onChange}
+                >
+                  {PAYMENT_METHODS.map((pm) => (
+                    <option key={pm.value} value={pm.value}>
+                      {pm.label}
                     </option>
                   ))}
                 </select>

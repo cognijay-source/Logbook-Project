@@ -48,12 +48,12 @@ export default function AboutPage() {
   return (
     <>
       {/* Hero */}
-      <section className="px-6 pt-24 pb-16 sm:pt-32 sm:pb-20 lg:px-8">
+      <section className="px-6 pt-24 pb-12 sm:pt-32 sm:pb-16 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+          <h1 className="font-heading text-4xl font-bold tracking-tight text-white sm:text-5xl">
             About CrossCheck
           </h1>
-          <p className="mt-4 text-lg leading-relaxed text-[#8a8a9a]">
+          <p className="mt-4 text-base leading-relaxed text-[#8a8a9a] sm:text-lg">
             Built because aviation is structured on paper but opaque in
             practice.
           </p>
@@ -61,9 +61,9 @@ export default function AboutPage() {
       </section>
 
       {/* Origin */}
-      <section className="border-t border-white/[0.06] px-6 py-24 sm:py-32 lg:px-8">
+      <section className="border-t border-white/[0.06] px-6 py-16 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+          <h2 className="font-heading text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Why CrossCheck exists
           </h2>
           <div className="mt-6 space-y-4 text-base leading-relaxed text-[#8a8a9a]">
@@ -90,9 +90,9 @@ export default function AboutPage() {
       </section>
 
       {/* Mission */}
-      <section className="bg-white/[0.02] px-6 py-24 sm:py-32 lg:px-8">
+      <section className="bg-[#12121a] px-6 py-16 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+          <h2 className="font-heading text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Mission
           </h2>
           <p className="mt-6 text-base leading-relaxed text-[#8a8a9a]">
@@ -105,15 +105,18 @@ export default function AboutPage() {
       </section>
 
       {/* Values */}
-      <section className="border-t border-white/[0.06] px-6 py-24 sm:py-32 lg:px-8">
+      <section className="border-t border-white/[0.06] px-6 py-16 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <h2 className="mb-12 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+          <h2 className="font-heading mb-10 text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Values
           </h2>
-          <div className="grid gap-8 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2">
             {values.map((v) => (
-              <div key={v.principle}>
-                <h3 className="text-base font-semibold text-white">
+              <div
+                key={v.principle}
+                className="rounded-2xl border border-white/[0.08] bg-[#12121a] p-5 transition-all duration-300 hover:border-white/[0.15]"
+              >
+                <h3 className="font-heading text-base font-semibold text-white">
                   {v.principle}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-[#8a8a9a]">

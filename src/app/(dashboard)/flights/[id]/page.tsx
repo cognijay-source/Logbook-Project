@@ -19,6 +19,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { FlightForm } from '@/components/flights/flight-form'
+import { PageTransition } from '@/components/page-transition'
 import { useToast } from '@/hooks/use-toast'
 import { getFlight, getAircraftList, deleteFlight } from '../actions'
 
@@ -93,6 +94,7 @@ export default function FlightDetailPage() {
   const isReady = flightQuery.isSuccess && aircraftQuery.isSuccess
 
   return (
+    <PageTransition>
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -188,5 +190,6 @@ export default function FlightDetailPage() {
         />
       )}
     </div>
+    </PageTransition>
   )
 }

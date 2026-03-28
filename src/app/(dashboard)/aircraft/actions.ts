@@ -10,6 +10,10 @@ import {
 } from '@/lib/validators/aircraft'
 import { createAuditEvent } from '@/lib/services/audit'
 import { getOrCreateProfile } from '@/lib/services/profile'
+import {
+  searchAircraftTypes,
+  type AircraftTypeInfo,
+} from '@/lib/services/faa-registry'
 
 function formDataToObject(formData: FormData) {
   return {
@@ -27,6 +31,18 @@ function formDataToObject(formData: FormData) {
     isTailwheel: formData.get('isTailwheel') === 'on',
     isActive: formData.get('isActive') !== 'off',
     notes: (formData.get('notes') as string) || undefined,
+  }
+}
+
+export async function lookupAircraftType(
+  query: string,
+): Promise<{ data: AircraftTypeInfo[]; error: string | null }> {
+  try {
+    const results = searchAircraftTypes(query)
+    return { data: results, error: null }
+  } catch (error) {
+    Sentry.captureException(error)
+    return { data: [], error: 'Failed to search aircraft types' }
   }
 }
 

@@ -7,6 +7,7 @@ import * as schema from '@/lib/db/schema'
 import { getOrCreateProfile } from '@/lib/services/profile'
 import { createAuditEvent } from '@/lib/services/audit'
 import { flightCreateSchema, flightUpdateSchema } from '@/lib/validators/flight'
+import { aircraftCreateSchema } from '@/lib/validators/aircraft'
 import { flightLegSchema } from '@/lib/validators/flight-leg'
 import { flightApproachSchema } from '@/lib/validators/flight-approach'
 import { flightCrewSchema } from '@/lib/validators/flight-crew'
@@ -280,7 +281,11 @@ export async function createFlight(
         turbine: toStr(flightData.turbine),
         dayLandings: flightData.dayLandings ?? 0,
         nightLandings: flightData.nightLandings ?? 0,
+        nightLandingsFullStop: flightData.nightLandingsFullStop ?? 0,
         holds: flightData.holds ?? 0,
+        instructorName: flightData.instructorName,
+        instructorCertNumber: flightData.instructorCertNumber,
+        safetyPilotName: flightData.safetyPilotName,
         operationType: flightData.operationType,
         roleType: flightData.roleType,
         remarks: flightData.remarks,
@@ -423,7 +428,11 @@ export async function updateFlight(
         turbine: toStr(flightData.turbine),
         dayLandings: flightData.dayLandings,
         nightLandings: flightData.nightLandings,
+        nightLandingsFullStop: flightData.nightLandingsFullStop,
         holds: flightData.holds,
+        instructorName: flightData.instructorName,
+        instructorCertNumber: flightData.instructorCertNumber,
+        safetyPilotName: flightData.safetyPilotName,
         operationType: flightData.operationType,
         roleType: flightData.roleType,
         remarks: flightData.remarks,
@@ -512,6 +521,149 @@ export async function updateFlight(
   }
 }
 
+// ---------- Export ----------
+
+export async function exportFlightsCsv(): Promise<{
+  data: string | null
+  error: string | null
+}> {
+  try {
+    const profile = await getOrCreateProfile()
+
+    const rows = await db
+      .select({
+        flightDate: schema.flights.flightDate,
+        tailNumber: schema.aircraft.tailNumber,
+        manufacturer: schema.aircraft.manufacturer,
+        model: schema.aircraft.model,
+        departureAirport: schema.flights.departureAirport,
+        arrivalAirport: schema.flights.arrivalAirport,
+        route: schema.flights.route,
+        totalTime: schema.flights.totalTime,
+        pic: schema.flights.pic,
+        sic: schema.flights.sic,
+        dualReceived: schema.flights.dualReceived,
+        dualGiven: schema.flights.dualGiven,
+        solo: schema.flights.solo,
+        crossCountry: schema.flights.crossCountry,
+        night: schema.flights.night,
+        actualInstrument: schema.flights.actualInstrument,
+        simulatedInstrument: schema.flights.simulatedInstrument,
+        multiEngine: schema.flights.multiEngine,
+        dayLandings: schema.flights.dayLandings,
+        nightLandings: schema.flights.nightLandings,
+        holds: schema.flights.holds,
+        instructorName: schema.flights.instructorName,
+        instructorCertNumber: schema.flights.instructorCertNumber,
+        safetyPilotName: schema.flights.safetyPilotName,
+        operationType: schema.flights.operationType,
+        roleType: schema.flights.roleType,
+        remarks: schema.flights.remarks,
+        tags: schema.flights.tags,
+      })
+      .from(schema.flights)
+      .leftJoin(
+        schema.aircraft,
+        eq(schema.flights.aircraftId, schema.aircraft.id),
+      )
+      .where(
+        and(
+          eq(schema.flights.profileId, profile.id),
+          eq(schema.flights.status, 'final'),
+        ),
+      )
+      .orderBy(desc(schema.flights.flightDate))
+
+    const headers = [
+      'Date',
+      'AircraftID',
+      'Make/Model',
+      'Route From',
+      'Route To',
+      'Route',
+      'TotalTime',
+      'PIC',
+      'SIC',
+      'DualReceived',
+      'DualGiven',
+      'Solo',
+      'CrossCountry',
+      'Night',
+      'ActualInstrument',
+      'SimulatedInstrument',
+      'MultiEngine',
+      'DayLandings',
+      'NightLandings',
+      'Holds',
+      'InstructorName',
+      'InstructorCert',
+      'SafetyPilot',
+      'OperationType',
+      'Role',
+      'Remarks',
+      'Tags',
+    ]
+
+    const escCsv = (val: string | number | null | undefined): string => {
+      if (val === null || val === undefined) return ''
+      const s = String(val)
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+        return `"${s.replace(/"/g, '""')}"`
+      }
+      return s
+    }
+
+    const csvLines = [headers.join(',')]
+    for (const r of rows) {
+      const makeModel = [r.manufacturer, r.model].filter(Boolean).join(' ')
+      csvLines.push(
+        [
+          escCsv(r.flightDate),
+          escCsv(r.tailNumber),
+          escCsv(makeModel),
+          escCsv(r.departureAirport),
+          escCsv(r.arrivalAirport),
+          escCsv(r.route),
+          escCsv(r.totalTime),
+          escCsv(r.pic),
+          escCsv(r.sic),
+          escCsv(r.dualReceived),
+          escCsv(r.dualGiven),
+          escCsv(r.solo),
+          escCsv(r.crossCountry),
+          escCsv(r.night),
+          escCsv(r.actualInstrument),
+          escCsv(r.simulatedInstrument),
+          escCsv(r.multiEngine),
+          escCsv(r.dayLandings),
+          escCsv(r.nightLandings),
+          escCsv(r.holds),
+          escCsv(r.instructorName),
+          escCsv(r.instructorCertNumber),
+          escCsv(r.safetyPilotName),
+          escCsv(r.operationType),
+          escCsv(r.roleType),
+          escCsv(r.remarks),
+          escCsv(r.tags),
+        ].join(','),
+      )
+    }
+
+    await createAuditEvent({
+      profileId: profile.id,
+      entityType: 'flight',
+      entityId: profile.id,
+      action: 'export',
+      changes: { format: 'csv', count: rows.length },
+    })
+
+    return { data: csvLines.join('\n'), error: null }
+  } catch (error) {
+    Sentry.captureException(error)
+    return { data: null, error: 'Failed to export flights' }
+  }
+}
+
 export async function deleteFlight(
   id: string,
 ): Promise<{ success: boolean; error: string | null }> {
@@ -548,5 +700,50 @@ export async function deleteFlight(
   } catch (error) {
     Sentry.captureException(error)
     return { success: false, error: 'Failed to delete flight' }
+  }
+}
+
+// ---------- Quick Create Aircraft (inline from flight form) ----------
+
+export async function quickCreateAircraft(
+  formData: FormData,
+): Promise<{ data: AircraftOption | null; error: string | null }> {
+  try {
+    const profile = await getOrCreateProfile()
+
+    const raw = {
+      tailNumber: formData.get('tailNumber') as string,
+      manufacturer: formData.get('manufacturer') as string,
+      model: formData.get('model') as string,
+    }
+
+    const validated = aircraftCreateSchema.parse(raw)
+
+    const [aircraft] = await db
+      .insert(schema.aircraft)
+      .values({
+        ...validated,
+        profileId: profile.id,
+      })
+      .returning({
+        id: schema.aircraft.id,
+        tailNumber: schema.aircraft.tailNumber,
+        model: schema.aircraft.model,
+      })
+
+    await createAuditEvent({
+      profileId: profile.id,
+      entityType: 'aircraft',
+      entityId: aircraft.id,
+      action: 'create',
+    })
+
+    return { data: aircraft, error: null }
+  } catch (error) {
+    Sentry.captureException(error)
+    if (error instanceof z.ZodError) {
+      return { data: null, error: error.errors[0]?.message ?? 'Validation failed' }
+    }
+    return { data: null, error: 'Failed to create aircraft' }
   }
 }

@@ -14,7 +14,13 @@ const CERTIFICATE_LEVELS = [
   'ATP',
 ] as const
 
-const MEDICAL_CLASSES = ['First', 'Second', 'Third', 'BasicMed'] as const
+const MEDICAL_CLASSES = [
+  'First',
+  'Second',
+  'Third',
+  'BasicMed',
+  'None',
+] as const
 
 const CAREER_PHASES = [
   'Student',
@@ -31,9 +37,11 @@ const TIME_FORMATS = ['decimal', 'hhmm'] as const
 
 export const profileUpdateSchema = z.object({
   displayName: optionalString,
+  dateOfBirth: optionalString,
   certificateLevel: optionalString.pipe(z.enum(CERTIFICATE_LEVELS).optional()),
   certificateNumber: optionalString,
   medicalClass: optionalString.pipe(z.enum(MEDICAL_CLASSES).optional()),
+  medicalIssueDate: optionalString,
   medicalExpiry: optionalString,
   homeAirport: optionalString.pipe(
     z
@@ -45,9 +53,12 @@ export const profileUpdateSchema = z.object({
   careerPhase: optionalString.pipe(z.enum(CAREER_PHASES).optional()),
 })
 
+const TRAINING_ENVIRONMENTS = ['part_61', 'part_141', 'both'] as const
+
 export const preferencesSchema = z.object({
   timeFormat: z.enum(TIME_FORMATS),
   timezone: z.string().min(1, 'Timezone is required'),
+  trainingEnvironment: z.enum(TRAINING_ENVIRONMENTS).optional().default('part_61'),
 })
 
 export const changePasswordSchema = z

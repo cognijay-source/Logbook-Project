@@ -3,7 +3,8 @@
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { Plus, Search, Plane } from 'lucide-react'
+import { Plus, Search, Download } from 'lucide-react'
+import { LogbookIllustration } from '@/components/empty-state-illustrations'
 import * as Sentry from '@sentry/nextjs'
 
 import { Button } from '@/components/ui/button'
@@ -12,13 +13,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { PaginationControls } from '@/components/ui/pagination-controls'
 import { FlightTable } from '@/components/flights/flight-table'
 import { FlightCard } from '@/components/flights/flight-card'
-import { getFlights, getAircraftList } from './actions'
+import { PageTransition } from '@/components/page-transition'
+import { getFlights, getAircraftList, exportFlightsCsv } from './actions'
 
 export default function FlightsPage() {
   const [search, setSearch] = useState('')
   const [aircraftId, setAircraftId] = useState('all')
   const [status, setStatus] = useState('all')
   const [page, setPage] = useState(1)
+  const [exporting, setExporting] = useState(false)
 
   const setSearchAndReset = useCallback((v: string) => {
     setSearch(v)
@@ -59,29 +62,65 @@ export default function FlightsPage() {
     },
   })
 
+  async function handleExportCsv() {
+    setExporting(true)
+    try {
+      const result = await exportFlightsCsv()
+      if (result.error || !result.data) {
+        const err = new Error(result.error ?? 'Export failed')
+        Sentry.captureException(err)
+        return
+      }
+      const blob = new Blob([result.data], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `crosscheck-flights-export-${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      Sentry.captureException(error)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   const flights = flightsQuery.data?.data ?? []
   const total = flightsQuery.data?.total ?? 0
   const pageSize = flightsQuery.data?.pageSize ?? 50
   const aircraftOptions = aircraftQuery.data ?? []
 
   return (
+    <PageTransition>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-3xl font-bold">Logbook</h1>
+          <h1 className="font-heading text-3xl font-bold">📖 Logbook</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             {flightsQuery.isSuccess
               ? `${total} ${total === 1 ? 'entry' : 'entries'}`
               : '\u00A0'}
           </p>
         </div>
-        <Button asChild>
-          <Link href="/flights/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Log Flight
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleExportCsv}
+            disabled={exporting}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {exporting ? 'Exporting...' : 'Export CSV'}
+          </Button>
+          <Button asChild>
+            <Link href="/flights/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Log Flight
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -142,9 +181,7 @@ export default function FlightsPage() {
       {/* Empty state */}
       {flightsQuery.isSuccess && flights.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16">
-          <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
-            <Plane className="text-muted-foreground h-6 w-6" />
-          </div>
+          <div className="mb-4"><LogbookIllustration /></div>
           <h3 className="mt-4 text-lg font-semibold">No flights found</h3>
           <p className="text-muted-foreground mt-1 text-sm">
             {search || aircraftId !== 'all' || status !== 'all'
@@ -184,6 +221,7 @@ export default function FlightsPage() {
         </>
       )}
     </div>
+    </PageTransition>
   )
 }
 
