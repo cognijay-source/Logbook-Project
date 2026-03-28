@@ -39,6 +39,9 @@ interface FlightData {
   pilotProfile: { flightReviewDate: Date | null } | null
   latestCheckride: { flightDate: string } | null
   latestFlightReviewTraining: { entryDate: string } | null
+  latestWingsPhase: { entryDate: string } | null
+  latestProficiencyCheck: { entryDate: string } | null
+  lastInstrumentEventDate: string | null
 }
 
 async function prefetchFlightData(
@@ -55,6 +58,9 @@ async function prefetchFlightData(
     pilotProfileResult,
     checkrideResult,
     trainingResult,
+    wingsResult,
+    profCheckResult,
+    lastInstrumentEventResult,
   ] = await Promise.all([
     // All flights in last 90 days with landings
     db
@@ -148,6 +154,47 @@ async function prefetchFlightData(
       )
       .orderBy(desc(schema.trainingEntries.entryDate))
       .limit(1),
+    // Latest WINGS phase completion
+    db
+      .select({ entryDate: schema.trainingEntries.entryDate })
+      .from(schema.trainingEntries)
+      .where(
+        and(
+          eq(schema.trainingEntries.profileId, profileId),
+          eq(schema.trainingEntries.entryType, 'wings_phase'),
+        ),
+      )
+      .orderBy(desc(schema.trainingEntries.entryDate))
+      .limit(1),
+    // Latest proficiency check
+    db
+      .select({ entryDate: schema.trainingEntries.entryDate })
+      .from(schema.trainingEntries)
+      .where(
+        and(
+          eq(schema.trainingEntries.profileId, profileId),
+          eq(schema.trainingEntries.entryType, 'proficiency_check'),
+        ),
+      )
+      .orderBy(desc(schema.trainingEntries.entryDate))
+      .limit(1),
+    // Last instrument qualifying event (approach or hold) in 12 months for grace period calc
+    db
+      .select({ flightDate: schema.flights.flightDate })
+      .from(schema.flights)
+      .innerJoin(
+        schema.flightApproaches,
+        eq(schema.flightApproaches.flightId, schema.flights.id),
+      )
+      .where(
+        and(
+          eq(schema.flights.profileId, profileId),
+          eq(schema.flights.status, 'final'),
+          gte(schema.flights.flightDate, twelveMonthCutoff),
+        ),
+      )
+      .orderBy(desc(schema.flights.flightDate))
+      .limit(1),
   ])
 
   // Compute holds totals for 6m and 12m from the single query
@@ -168,6 +215,9 @@ async function prefetchFlightData(
     pilotProfile: pilotProfileResult[0] ?? null,
     latestCheckride: checkrideResult[0] ?? null,
     latestFlightReviewTraining: trainingResult[0] ?? null,
+    latestWingsPhase: wingsResult[0] ?? null,
+    latestProficiencyCheck: profCheckResult[0] ?? null,
+    lastInstrumentEventDate: lastInstrumentEventResult[0]?.flightDate ?? null,
   }
 }
 
@@ -324,16 +374,24 @@ function evaluateInstrument(
 
   // If not current in 6 months, check if still in grace period (6-12 months)
   let inGracePeriod = false
+  let graceExpiresAt: string | null = null
   if (!isCurrent) {
     const graceApproaches = flightData.approachCount12m
     const graceHolds = flightData.holdsTotal12m
     inGracePeriod = graceApproaches >= requiredApproaches && graceHolds >= 1
+
+    if (inGracePeriod && flightData.lastInstrumentEventDate) {
+      // Grace period ends at end of calendar month 12 months after last qualifying event
+      graceExpiresAt = endOfCalendarMonth(
+        addCalendarMonths(flightData.lastInstrumentEventDate, 12),
+      )
+    }
   }
 
   // Expiration: end of the 6th calendar month after the most recent qualifying period
   const expiresAt = isCurrent
     ? endOfCalendarMonth(addCalendarMonths(sixMonthCutoff, 6))
-    : null
+    : graceExpiresAt
 
   let status: CurrencyStatus
   let details: string
@@ -344,7 +402,8 @@ function evaluateInstrument(
     details = `${approachCount} approach(es), ${holdsCount} hold(s) in last 6 calendar months`
   } else if (inGracePeriod) {
     status = 'expiring'
-    details = `In grace period — ${approachCount} approach(es), ${holdsCount} hold(s) in last 6 months. Can regain currency with a safety pilot or IPC`
+    const graceEndStr = graceExpiresAt ?? 'unknown'
+    details = `Grace period ends ${graceEndStr}. Complete 6 approaches, holding, and tracking before this date or an IPC will be required`
     const approachDeficit = Math.max(0, requiredApproaches - approachCount)
     const holdDeficit = hasHolds ? 0 : 1
     const parts: string[] = []
@@ -406,6 +465,22 @@ function evaluateFlightReview(
     )
     if (!latestReviewDate || trainingDate > latestReviewDate) {
       latestReviewDate = trainingDate
+    }
+  }
+
+  // Source 4: WINGS phase completion (§ 61.56(e))
+  if (flightData.latestWingsPhase?.entryDate) {
+    const wingsDate = new Date(flightData.latestWingsPhase.entryDate)
+    if (!latestReviewDate || wingsDate > latestReviewDate) {
+      latestReviewDate = wingsDate
+    }
+  }
+
+  // Source 5: Proficiency check (§ 61.56(d))
+  if (flightData.latestProficiencyCheck?.entryDate) {
+    const profCheckDate = new Date(flightData.latestProficiencyCheck.entryDate)
+    if (!latestReviewDate || profCheckDate > latestReviewDate) {
+      latestReviewDate = profCheckDate
     }
   }
 

@@ -2,13 +2,20 @@
 
 import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db'
-import { goalProfiles, userGoalAssignments } from '@/lib/db/schema'
+import {
+  goalProfiles,
+  goalChecklistProgress,
+  userGoalAssignments,
+} from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { getOrCreateProfile } from '@/lib/services/profile'
 import { getFlightTotals } from '@/lib/services/flight-totals'
 import { getGoalProgress } from '@/lib/services/goal-progress'
 import { createAuditEvent } from '@/lib/services/audit'
-import { goalAssignmentSchema } from '@/lib/validators/goal'
+import {
+  goalAssignmentSchema,
+  goalChecklistToggleSchema,
+} from '@/lib/validators/goal'
 
 export async function getProgressData() {
   try {
@@ -99,5 +106,54 @@ export async function assignGoal(data: unknown) {
   } catch (error) {
     Sentry.captureException(error)
     return { success: false, error: 'Failed to assign goal' }
+  }
+}
+
+export async function toggleChecklistItem(
+  data: unknown,
+): Promise<{ data: boolean | null; error: string | null }> {
+  try {
+    const profile = await getOrCreateProfile()
+    const validated = goalChecklistToggleSchema.parse(data)
+
+    const now = new Date()
+    const todayStr = now.toISOString().split('T')[0]
+
+    await db
+      .insert(goalChecklistProgress)
+      .values({
+        profileId: profile.id,
+        requirementId: validated.requirementId,
+        completed: validated.completed,
+        completedDate: validated.completed
+          ? (validated.completedDate ?? todayStr)
+          : null,
+        notes: validated.notes ?? null,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [goalChecklistProgress.profileId, goalChecklistProgress.requirementId],
+        set: {
+          completed: validated.completed,
+          completedDate: validated.completed
+            ? (validated.completedDate ?? todayStr)
+            : null,
+          notes: validated.notes ?? null,
+          updatedAt: now,
+        },
+      })
+
+    await createAuditEvent({
+      profileId: profile.id,
+      entityType: 'goal_checklist_progress',
+      entityId: validated.requirementId,
+      action: validated.completed ? 'completed' : 'uncompleted',
+      changes: validated,
+    })
+
+    return { data: validated.completed, error: null }
+  } catch (error) {
+    Sentry.captureException(error)
+    return { data: null, error: 'Failed to update checklist item' }
   }
 }

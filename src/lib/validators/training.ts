@@ -4,9 +4,19 @@ import { z } from 'zod'
 
 const trainingEntryBase = z.object({
   entryDate: z.string().min(1, 'Date is required'),
-  entryType: z.enum(['ground', 'simulator', 'flight'], {
-    required_error: 'Type is required',
-  }),
+  entryType: z.enum(
+    [
+      'ground',
+      'simulator',
+      'flight',
+      'flight_review',
+      'wings_phase',
+      'proficiency_check',
+    ],
+    {
+      required_error: 'Type is required',
+    },
+  ),
   duration: z.coerce.number().min(0).optional(),
   instructor: z
     .string()

@@ -1,7 +1,12 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getProgressData, getAvailableGoals, assignGoal } from './actions'
+import {
+  getProgressData,
+  getAvailableGoals,
+  assignGoal,
+  toggleChecklistItem,
+} from './actions'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -19,7 +24,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Target, TrendingUp } from 'lucide-react'
+import { Target, TrendingUp, CheckSquare } from 'lucide-react'
 import { useState } from 'react'
 
 const totalsConfig = [
@@ -57,6 +62,13 @@ export default function ProgressPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['progress'] })
       setGoalDialogOpen(false)
+    },
+  })
+
+  const checklistMutation = useMutation({
+    mutationFn: toggleChecklistItem,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['progress'] })
     },
   })
 
@@ -177,6 +189,53 @@ export default function ProgressPage() {
                     </span>
                     {req.remaining > 0 && (
                       <span>{req.remaining.toFixed(1)} remaining</span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Flight Requirements (Checklist) */}
+      {progress && progress.checklistItems.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <CheckSquare className="text-primary h-5 w-5" />
+            <h2 className="text-lg font-semibold">Flight Requirements</h2>
+          </div>
+          <div className="grid gap-2">
+            {progress.checklistItems.map((item) => (
+              <Card key={item.requirementId}>
+                <CardContent className="flex items-start gap-3 p-4">
+                  <input
+                    type="checkbox"
+                    checked={item.completed}
+                    onChange={() =>
+                      checklistMutation.mutate({
+                        requirementId: item.requirementId,
+                        completed: !item.completed,
+                      })
+                    }
+                    disabled={checklistMutation.isPending}
+                    className="accent-emerald-600 mt-0.5 h-4 w-4 rounded"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`text-sm font-medium ${item.completed ? 'text-muted-foreground line-through' : ''}`}
+                    >
+                      {item.label}
+                    </p>
+                    {item.completed && item.completedDate && (
+                      <p className="text-muted-foreground text-xs">
+                        Completed {item.completedDate}
+                      </p>
+                    )}
+                    {item.notes && (
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        {item.notes}
+                      </p>
                     )}
                   </div>
                 </CardContent>

@@ -11,6 +11,16 @@ export type RequirementProgress = {
   current: number
   percentage: number
   remaining: number
+  requirementType: string
+}
+
+export type ChecklistItemProgress = {
+  requirementId: string
+  field: string
+  label: string
+  completed: boolean
+  completedDate: string | null
+  notes: string | null
 }
 
 export type GoalProgress = {
@@ -23,6 +33,7 @@ export type GoalProgress = {
   }
   assignmentId: string
   requirements: RequirementProgress[]
+  checklistItems: ChecklistItemProgress[]
 }
 
 export async function getGoalProgress(
@@ -54,17 +65,34 @@ export async function getGoalProgress(
     const goalProfile = goalProfiles[0]
     if (!goalProfile) return null
 
-    // Get the goal requirements
-    const requirements = await db
-      .select()
-      .from(schema.goalRequirements)
-      .where(eq(schema.goalRequirements.goalProfileId, goalProfile.id))
+    // Get the goal requirements and checklist progress in parallel
+    const [requirements, checklistRows, totals] = await Promise.all([
+      db
+        .select()
+        .from(schema.goalRequirements)
+        .where(eq(schema.goalRequirements.goalProfileId, goalProfile.id)),
+      db
+        .select()
+        .from(schema.goalChecklistProgress)
+        .where(eq(schema.goalChecklistProgress.profileId, profileId)),
+      getFlightTotals(profileId),
+    ])
 
-    // Get the user's flight totals
-    const totals = await getFlightTotals(profileId)
+    // Build a lookup for checklist progress by requirementId
+    const checklistMap = new Map(
+      checklistRows.map((c) => [c.requirementId, c]),
+    )
 
-    // Calculate progress for each requirement
-    const requirementProgress: RequirementProgress[] = requirements.map(
+    // Separate hour requirements from checklist items
+    const hourRequirements = requirements.filter(
+      (r) => (r.requirementType ?? 'hours') === 'hours',
+    )
+    const checklistRequirements = requirements.filter(
+      (r) => r.requirementType === 'checklist',
+    )
+
+    // Calculate progress for hour requirements
+    const requirementProgress: RequirementProgress[] = hourRequirements.map(
       (req) => {
         const required = parseFloat(req.requiredValue) || 0
         const current = getTotalForField(totals, req.field)
@@ -79,6 +107,22 @@ export async function getGoalProgress(
           current,
           percentage: Math.round(percentage * 10) / 10,
           remaining: Math.round(remaining * 10) / 10,
+          requirementType: 'hours',
+        }
+      },
+    )
+
+    // Build checklist item progress
+    const checklistItems: ChecklistItemProgress[] = checklistRequirements.map(
+      (req) => {
+        const progress = checklistMap.get(req.id)
+        return {
+          requirementId: req.id,
+          field: req.field,
+          label: req.label,
+          completed: progress?.completed ?? false,
+          completedDate: progress?.completedDate ?? null,
+          notes: progress?.notes ?? null,
         }
       },
     )
@@ -93,6 +137,7 @@ export async function getGoalProgress(
       },
       assignmentId: assignment.id,
       requirements: requirementProgress,
+      checklistItems,
     }
   } catch (error) {
     Sentry.captureException(error)
