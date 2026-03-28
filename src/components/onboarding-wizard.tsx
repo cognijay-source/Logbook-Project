@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Compass, ArrowLeft, ArrowRight, Plane, X } from 'lucide-react'
+import { Compass, ArrowLeft, ArrowRight } from 'lucide-react'
 import * as Sentry from '@sentry/nextjs'
 
 import { Button } from '@/components/ui/button'

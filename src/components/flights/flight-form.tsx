@@ -21,6 +21,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { useToast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { FlightFormWizard } from '@/components/flights/flight-form-wizard'
 import {
@@ -189,8 +190,8 @@ function FieldWarning({ warnings, field }: { warnings: FlightWarning[]; field: s
   )
 }
 
-function AirportHintDisplay({ code }: { code: string }) {
-  const hint = checkAirportCode(code)
+function AirportHintDisplay({ code }: { code: string | undefined }) {
+  const hint = checkAirportCode(code ?? '')
   if (!hint) return null
   return (
     <p
