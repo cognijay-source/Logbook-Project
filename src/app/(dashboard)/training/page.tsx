@@ -35,6 +35,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PaginationControls } from '@/components/ui/pagination-controls'
 import { useToast } from '@/hooks/use-toast'
+// Page transitions handled at layout level via PageWrapper
 
 import {
   getTrainingEntries,
@@ -117,39 +118,39 @@ const ENDORSEMENT_TYPES = [
 export default function TrainingPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-heading text-3xl font-bold">Training</h1>
-        <p className="text-muted-foreground mt-1">
-          Track training events, certificates, and endorsements
-        </p>
-      </div>
+        <div>
+          <h1 className="font-heading text-2xl font-semibold sm:text-[32px]">📚 Training</h1>
+          <p className="text-muted-foreground mt-1">
+            Track training events, certificates, and endorsements
+          </p>
+        </div>
 
-      <Tabs defaultValue="entries">
-        <TabsList>
-          <TabsTrigger value="entries" className="gap-2">
-            <BookOpen className="h-4 w-4" />
-            Training Entries
-          </TabsTrigger>
-          <TabsTrigger value="certificates" className="gap-2">
-            <Award className="h-4 w-4" />
-            Certificates
-          </TabsTrigger>
-          <TabsTrigger value="endorsements" className="gap-2">
-            <FileCheck className="h-4 w-4" />
-            Endorsements
-          </TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="entries">
+          <TabsList>
+            <TabsTrigger value="entries" className="gap-2">
+              <BookOpen className="h-4 w-4" />
+              Training Entries
+            </TabsTrigger>
+            <TabsTrigger value="certificates" className="gap-2">
+              <Award className="h-4 w-4" />
+              Certificates
+            </TabsTrigger>
+            <TabsTrigger value="endorsements" className="gap-2">
+              <FileCheck className="h-4 w-4" />
+              Endorsements
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="entries">
-          <TrainingEntriesTab />
-        </TabsContent>
-        <TabsContent value="certificates">
-          <CertificatesTab />
-        </TabsContent>
-        <TabsContent value="endorsements">
-          <EndorsementsTab />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="entries">
+            <TrainingEntriesTab />
+          </TabsContent>
+          <TabsContent value="certificates">
+            <CertificatesTab />
+          </TabsContent>
+          <TabsContent value="endorsements">
+            <EndorsementsTab />
+          </TabsContent>
+        </Tabs>
     </div>
   )
 }

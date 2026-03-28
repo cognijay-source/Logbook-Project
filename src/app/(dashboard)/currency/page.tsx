@@ -3,13 +3,8 @@
 import * as React from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as Sentry from '@sentry/nextjs'
-import {
-  AlertTriangle,
-  RefreshCw,
-  Shield,
-  ShieldAlert,
-  ShieldCheck,
-} from 'lucide-react'
+import { AlertTriangle, RefreshCw } from 'lucide-react'
+import { PageTransition } from '@/components/dashboard/page-transition'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -27,22 +22,22 @@ function StatusBadge({ status }: { status: CurrencyResult['status'] }) {
   switch (status) {
     case 'current':
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
-          <ShieldCheck className="h-3 w-3" />
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           Current
         </span>
       )
     case 'expiring':
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-          <Shield className="h-3 w-3" />
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
           Expiring Soon
         </span>
       )
     case 'expired':
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-400">
-          <ShieldAlert className="h-3 w-3" />
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
           Expired
         </span>
       )
@@ -118,12 +113,20 @@ export default function CurrencyPage() {
 
   const currencyQuery = useQuery({
     queryKey: ['currency-status'],
-    queryFn: () => getCurrencyStatus(),
+    queryFn: async () => {
+      const result = await getCurrencyStatus()
+      if (result.error) throw new Error(result.error)
+      return result.data!
+    },
     staleTime: 5 * 60 * 1000,
   })
 
   const refreshMutation = useMutation({
-    mutationFn: () => refreshCurrency(),
+    mutationFn: async () => {
+      const result = await refreshCurrency()
+      if (result.error) throw new Error(result.error)
+      return result.data!
+    },
     onSuccess: (data) => {
       queryClient.setQueryData(['currency-status'], data)
       toast({
@@ -142,6 +145,7 @@ export default function CurrencyPage() {
   })
 
   return (
+    <PageTransition>
     <div className="space-y-6">
       <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -155,7 +159,7 @@ export default function CurrencyPage() {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-3xl font-bold">Currency</h1>
+          <h1 className="font-heading text-2xl font-semibold sm:text-[32px]">🔄 Currency</h1>
           <p className="text-muted-foreground mt-1">
             FAR 61 currency status and compliance tracking.
           </p>
@@ -170,6 +174,11 @@ export default function CurrencyPage() {
           />
           Refresh
         </Button>
+      </div>
+
+      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+        <strong>Part 141 note:</strong> Part 141 currency requirements are managed by your training provider.
+        CrossCheck tracks Part 61 requirements. Part 141 curriculum tracking coming soon.
       </div>
 
       {currencyQuery.isLoading ? (
@@ -209,5 +218,6 @@ export default function CurrencyPage() {
         </div>
       )}
     </div>
+    </PageTransition>
   )
 }

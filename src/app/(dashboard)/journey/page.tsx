@@ -36,6 +36,7 @@ import {
   RefreshCw,
   Trash2,
 } from 'lucide-react'
+import { PageTransition } from '@/components/dashboard/page-transition'
 import { useState } from 'react'
 
 export default function JourneyPage() {
@@ -44,12 +45,20 @@ export default function JourneyPage() {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['milestones'],
-    queryFn: getMilestoneTimeline,
+    queryFn: async () => {
+      const result = await getMilestoneTimeline()
+      if (result.error) throw new Error(result.error)
+      return result.data!
+    },
   })
 
   const { data: evaluation } = useQuery({
     queryKey: ['milestone-evaluation'],
-    queryFn: runMilestoneEvaluation,
+    queryFn: async () => {
+      const result = await runMilestoneEvaluation()
+      if (result.error) throw new Error(result.error)
+      return result.data!
+    },
   })
 
   const refreshMutation = useMutation({
@@ -102,8 +111,8 @@ export default function JourneyPage() {
   if (isError) {
     return (
       <div className="space-y-6">
-        <h1 className="font-heading text-3xl font-bold tracking-tight">
-          Mastery
+        <h1 className="font-heading text-2xl font-semibold sm:text-[32px]">
+          🏆 Mastery
         </h1>
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-950">
           <p className="text-sm text-red-800 dark:text-red-200">
@@ -118,6 +127,7 @@ export default function JourneyPage() {
   const pendingCount = evaluation?.pending.length ?? 0
 
   return (
+    <PageTransition>
     <div className="space-y-8">
       <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200">
         <Info className="mt-0.5 h-4 w-4 shrink-0" />
@@ -132,8 +142,8 @@ export default function JourneyPage() {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-3xl font-bold tracking-tight">
-            Mastery
+          <h1 className="font-heading text-2xl font-semibold sm:text-[32px]">
+            🏆 Mastery
           </h1>
           <p className="text-muted-foreground">
             {achievedCount} {achievedCount === 1 ? 'milestone' : 'milestones'}{' '}
@@ -278,7 +288,7 @@ export default function JourneyPage() {
                         </div>
                         <div className="bg-muted h-1.5 w-full rounded-full">
                           <div
-                            className="h-1.5 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 transition-all duration-700 ease-out"
+                            className="h-1.5 rounded-full bg-gradient-to-r from-[#10B981] to-[#059669] transition-all duration-700 ease-out"
                             style={{
                               width: `${Math.min(100, m.progress)}%`,
                             }}
@@ -309,5 +319,6 @@ export default function JourneyPage() {
           </Card>
         )}
     </div>
+    </PageTransition>
   )
 }

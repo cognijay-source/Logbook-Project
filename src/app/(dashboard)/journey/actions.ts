@@ -3,39 +3,68 @@
 import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db'
 import { userMilestones, milestoneDefinitions } from '@/lib/db/schema'
-import { eq, and, desc } from 'drizzle-orm'
+import { eq, and, desc, sql } from 'drizzle-orm'
 import { getOrCreateProfile } from '@/lib/services/profile'
 import { evaluateMilestones } from '@/lib/services/milestone-engine'
 import { createAuditEvent } from '@/lib/services/audit'
 import { milestoneCreateSchema } from '@/lib/validators/milestone'
 
-export async function getMilestoneTimeline() {
+export async function getMilestoneTimeline(params?: {
+  page?: number
+  pageSize?: number
+}) {
   try {
     const profile = await getOrCreateProfile()
+    const page = params?.page ?? 1
+    const pageSize = params?.pageSize ?? 50
 
-    const achieved = await db
-      .select({
-        id: userMilestones.id,
-        name: userMilestones.name,
-        description: userMilestones.description,
-        category: userMilestones.category,
-        achievedAt: userMilestones.achievedAt,
-        isManual: userMilestones.isManual,
-        notes: userMilestones.notes,
-      })
-      .from(userMilestones)
-      .where(eq(userMilestones.profileId, profile.id))
-      .orderBy(desc(userMilestones.achievedAt))
+    const [achieved, countResult, definitions] = await Promise.all([
+      db
+        .select({
+          id: userMilestones.id,
+          name: userMilestones.name,
+          description: userMilestones.description,
+          category: userMilestones.category,
+          achievedAt: userMilestones.achievedAt,
+          isManual: userMilestones.isManual,
+          notes: userMilestones.notes,
+        })
+        .from(userMilestones)
+        .where(eq(userMilestones.profileId, profile.id))
+        .orderBy(desc(userMilestones.achievedAt))
+        .limit(pageSize)
+        .offset((page - 1) * pageSize),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(userMilestones)
+        .where(eq(userMilestones.profileId, profile.id)),
+      db
+        .select()
+        .from(milestoneDefinitions)
+        .orderBy(milestoneDefinitions.sortOrder),
+    ])
 
-    const definitions = await db
-      .select()
-      .from(milestoneDefinitions)
-      .orderBy(milestoneDefinitions.sortOrder)
+    const total = Number(countResult[0]?.count) || 0
 
-    return { achieved, definitions }
+    return {
+      data: { achieved, definitions },
+      total,
+      page,
+      pageSize,
+      error: null,
+    }
   } catch (error) {
     Sentry.captureException(error)
-    throw error
+    return {
+      data: null,
+      total: 0,
+      page: params?.page ?? 1,
+      pageSize: params?.pageSize ?? 50,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to load milestone timeline',
+    }
   }
 }
 
@@ -43,10 +72,16 @@ export async function runMilestoneEvaluation() {
   try {
     const profile = await getOrCreateProfile()
     const result = await evaluateMilestones(profile.id)
-    return result
+    return { data: result, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    throw error
+    return {
+      data: null,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to run milestone evaluation',
+    }
   }
 }
 
@@ -70,7 +105,7 @@ export async function createManualMilestone(data: unknown) {
 
     const milestone = inserted[0]
     if (!milestone) {
-      return { success: false, error: 'Failed to create milestone' }
+      return { data: null, error: 'Failed to create milestone' }
     }
 
     await createAuditEvent({
@@ -81,10 +116,10 @@ export async function createManualMilestone(data: unknown) {
       changes: validated,
     })
 
-    return { success: true, milestone }
+    return { data: milestone, error: null }
   } catch (error) {
     Sentry.captureException(error)
-    return { success: false, error: 'Failed to create milestone' }
+    return { data: null, error: 'Failed to create milestone' }
   }
 }
 
@@ -108,9 +143,9 @@ export async function deleteUserMilestone(id: string) {
       action: 'delete',
     })
 
-    return { success: true }
+    return { error: null }
   } catch (error) {
     Sentry.captureException(error)
-    return { success: false, error: 'Failed to delete milestone' }
+    return { error: 'Failed to delete milestone' }
   }
 }
