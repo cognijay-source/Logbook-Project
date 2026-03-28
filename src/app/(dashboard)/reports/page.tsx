@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { FileText, Download, Eye, Loader2 } from 'lucide-react'
+import { FileText, Download, Eye, Loader2, FileSpreadsheet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -18,6 +18,7 @@ import {
   type ReportType,
   type ReportData,
 } from './actions'
+import { exportFlightsCsv } from '@/app/(dashboard)/flights/actions'
 
 const reportTypes: { value: ReportType; label: string; description: string }[] =
   [
@@ -65,6 +66,7 @@ export default function ReportsPage() {
   const [previewData, setPreviewData] = useState<ReportData | null>(null)
   const [loading, setLoading] = useState(false)
   const [downloading, setDownloading] = useState(false)
+  const [csvExporting, setCsvExporting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handlePreview() {
@@ -176,7 +178,7 @@ export default function ReportsPage() {
               />
             </div>
 
-            <div className="flex items-end gap-2">
+            <div className="flex flex-wrap items-end gap-2">
               <Button onClick={handlePreview} disabled={loading}>
                 {loading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -196,6 +198,43 @@ export default function ReportsPage() {
                   <Download className="mr-2 h-4 w-4" />
                 )}
                 Download PDF
+              </Button>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  setCsvExporting(true)
+                  setError(null)
+                  try {
+                    const result = await exportFlightsCsv()
+                    if (result.error || !result.data) {
+                      setError(result.error ?? 'CSV export failed')
+                      return
+                    }
+                    const blob = new Blob([result.data], {
+                      type: 'text/csv;charset=utf-8;',
+                    })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `crosscheck-flights-export-${startDate}-to-${endDate}.csv`
+                    document.body.appendChild(a)
+                    a.click()
+                    document.body.removeChild(a)
+                    URL.revokeObjectURL(url)
+                  } catch {
+                    setError('Failed to export CSV')
+                  } finally {
+                    setCsvExporting(false)
+                  }
+                }}
+                disabled={csvExporting}
+              >
+                {csvExporting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                )}
+                Export CSV
               </Button>
             </div>
           </div>

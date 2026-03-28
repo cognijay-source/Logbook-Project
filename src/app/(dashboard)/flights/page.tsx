@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { Plus, Search, Plane } from 'lucide-react'
+import { Plus, Search, Plane, Download } from 'lucide-react'
 import * as Sentry from '@sentry/nextjs'
 
 import { Button } from '@/components/ui/button'
@@ -12,13 +12,14 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { PaginationControls } from '@/components/ui/pagination-controls'
 import { FlightTable } from '@/components/flights/flight-table'
 import { FlightCard } from '@/components/flights/flight-card'
-import { getFlights, getAircraftList } from './actions'
+import { getFlights, getAircraftList, exportFlightsCsv } from './actions'
 
 export default function FlightsPage() {
   const [search, setSearch] = useState('')
   const [aircraftId, setAircraftId] = useState('all')
   const [status, setStatus] = useState('all')
   const [page, setPage] = useState(1)
+  const [exporting, setExporting] = useState(false)
 
   const setSearchAndReset = useCallback((v: string) => {
     setSearch(v)
@@ -59,6 +60,31 @@ export default function FlightsPage() {
     },
   })
 
+  async function handleExportCsv() {
+    setExporting(true)
+    try {
+      const result = await exportFlightsCsv()
+      if (result.error || !result.data) {
+        const err = new Error(result.error ?? 'Export failed')
+        Sentry.captureException(err)
+        return
+      }
+      const blob = new Blob([result.data], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `crosscheck-flights-export-${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      Sentry.captureException(error)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   const flights = flightsQuery.data?.data ?? []
   const total = flightsQuery.data?.total ?? 0
   const pageSize = flightsQuery.data?.pageSize ?? 50
@@ -76,12 +102,22 @@ export default function FlightsPage() {
               : '\u00A0'}
           </p>
         </div>
-        <Button asChild>
-          <Link href="/flights/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Log Flight
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleExportCsv}
+            disabled={exporting}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {exporting ? 'Exporting...' : 'Export CSV'}
+          </Button>
+          <Button asChild>
+            <Link href="/flights/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Log Flight
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
