@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -167,44 +168,25 @@ function SunTimesCard({
 }: {
   form: ReturnType<typeof useForm<FormValues>>
 }) {
-  const [sunTimes, setSunTimes] = useState<SunTimesData | null>(null)
-  const [lastFetched, setLastFetched] = useState('')
-
   const flightDate = form.watch('flightDate')
   const departureAirport = form.watch('departureAirport')
 
-  const fetchSunTimes = useCallback(async () => {
-    if (!flightDate || !departureAirport || departureAirport.length < 3) {
-      setSunTimes(null)
-      return
-    }
+  const enabled =
+    !!flightDate && !!departureAirport && departureAirport.length >= 3
 
-    const key = `${departureAirport}-${flightDate}`
-    if (key === lastFetched) return
-    setLastFetched(key)
-
-    try {
+  const { data: sunTimes } = useQuery({
+    queryKey: ['sun-times', departureAirport, flightDate],
+    queryFn: async (): Promise<SunTimesData | null> => {
       const res = await fetch(
-        `/api/sun-times?airport=${encodeURIComponent(departureAirport)}&date=${encodeURIComponent(flightDate)}`,
+        `/api/sun-times?airport=${encodeURIComponent(departureAirport!)}&date=${encodeURIComponent(flightDate!)}`,
       )
-      if (!res.ok) {
-        setSunTimes(null)
-        return
-      }
+      if (!res.ok) return null
       const json = await res.json()
-      if (json.data) {
-        setSunTimes(json.data)
-      } else {
-        setSunTimes(null)
-      }
-    } catch {
-      setSunTimes(null)
-    }
-  }, [flightDate, departureAirport, lastFetched])
-
-  useEffect(() => {
-    fetchSunTimes()
-  }, [fetchSunTimes])
+      return json?.data ?? null
+    },
+    enabled,
+    staleTime: Infinity,
+  })
 
   if (!sunTimes) return null
 
